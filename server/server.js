@@ -9,8 +9,26 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet());
+// Configure CORS to allow multiple origins. Use ALLOWED_ORIGINS (comma separated)
+// or fall back to CLIENT_URL or localhost for development.
+const allowedOriginsEnv = process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:3000';
+const allowedOrigins = allowedOriginsEnv.split(',').map(o => o.trim()).filter(Boolean);
+
+console.log('🔐 CORS allowed origins:', allowedOrigins);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'https://incept-iq.vercel.app',
+  origin: function (origin, callback) {
+    // Allow non-browser requests like curl/postman (no origin)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+
+    // Not allowed
+    const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+    return callback(new Error(msg), false);
+  },
   credentials: true
 }));
 app.use(morgan('combined'));
