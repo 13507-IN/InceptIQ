@@ -85,23 +85,72 @@ class ApiService {
   }
 
   // Download PDF report
-  async downloadReport(analysisId: string): Promise<Blob> {
+  async downloadReport(analysisId: string): Promise<void> {
     try {
       const response = await api.get(`/reports/${analysisId}`, {
-        responseType: 'blob',
+        responseType: 'arraybuffer',
         headers: {
           'Accept': 'application/pdf',
         },
       });
-      
-      return response.data;
+
+      const contentType = (response.headers && (response.headers['content-type'] || response.headers['Content-Type'])) || '';
+
+      // If server returned JSON (error), try to parse it and throw a readable error
+      if (contentType.includes('application/json')) {
+        const text = new TextDecoder().decode(response.data);
+        let parsed = null;
+        try {
+          parsed = JSON.parse(text);
+        } catch (e) {
+          parsed = { message: text };
+        }
+        console.error('Server-side error while generating/downloading PDF:', parsed);
+        throw new Error(parsed.message || parsed.error || JSON.stringify(parsed));
+      }
+
+      // Build a proper PDF Blob with correct MIME
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+
+      // Parse filename from Content-Disposition header if provided
+      const cd = (response.headers && (response.headers['content-disposition'] || response.headers['Content-Disposition'])) || '';
+      let filename = `startup-analysis-${analysisId}.pdf`;
+      const match = /filename\*?=(?:UTF-8'')?"?([^;"']+)"?/i.exec(cd);
+      if (match && match[1]) {
+        try {
+          filename = decodeURIComponent(match[1]);
+        } catch {
+          filename = match[1];
+        }
+      }
+
+      // Trigger browser download
+      downloadFile(pdfBlob, filename);
     } catch (error: any) {
       console.error('PDF download failed:', error);
-      
+
+      // If server responded with arraybuffer error payload, try to decode and show message
+      try {
+        const resp = error.response;
+        if (resp && resp.data) {
+          // resp.data might be an ArrayBuffer
+          const text = new TextDecoder().decode(resp.data);
+          try {
+            const parsed = JSON.parse(text);
+            throw new Error(parsed.message || parsed.error || JSON.stringify(parsed));
+          } catch (e) {
+            // not JSON
+            console.warn('PDF download failed, server response:', text);
+          }
+        }
+      } catch (readErr) {
+        console.warn('Could not decode server error payload for PDF download:', readErr);
+      }
+
       if (error.response?.status === 404) {
         throw new Error('Report not found. Please generate the analysis first.');
       }
-      
+
       throw new Error('Failed to download PDF report.');
     }
   }

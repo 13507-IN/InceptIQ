@@ -42,8 +42,7 @@ const Results: React.FC = () => {
     if (!analysisId) return;
     try {
       setDownloadingPdf(true);
-      const pdfBlob = await apiService.downloadReport(analysisId);
-      downloadFile(pdfBlob, `startup-analysis-${analysisId}.pdf`);
+      await apiService.downloadReport(analysisId);
     } catch {
       alert("Failed to download PDF report.");
     } finally {
