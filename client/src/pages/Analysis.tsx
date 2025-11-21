@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lightbulb, Loader2, Send, FileUp } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -10,6 +10,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `${process.env.PUBLIC_URL || ''}/pdf.wo
 
 const Analysis: React.FC = () => {
   const navigate = useNavigate();
+  const formSectionRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState<StartupIdea>({
     ideaTitle: '',
     ideaDescription: '',
@@ -25,6 +26,7 @@ const Analysis: React.FC = () => {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
   const [pdfFileName, setPdfFileName] = useState<string>('');
+  const [pdfProcessedCount, setPdfProcessedCount] = useState(0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -81,20 +83,58 @@ const Analysis: React.FC = () => {
       const result = await apiService.extractFormFieldsFromPdf(fullText);
 
       if (result.success && result.data) {
-        // Apply extracted fields to form, filtering out null values
+        // Apply extracted fields to form, filtering out null/empty values
         const updates: Partial<StartupIdea> = {};
-        if (result.data.ideaTitle) updates.ideaTitle = result.data.ideaTitle;
-        if (result.data.ideaDescription) updates.ideaDescription = result.data.ideaDescription;
-        if (result.data.targetMarket) updates.targetMarket = result.data.targetMarket;
-        if (result.data.businessModel) updates.businessModel = result.data.businessModel;
-        if (result.data.industry) updates.industry = result.data.industry;
-        if (result.data.budget) updates.budget = result.data.budget;
-        if (result.data.timeline) updates.timeline = result.data.timeline;
+        let fieldCount = 0;
+        
+        if (result.data.ideaTitle) {
+          updates.ideaTitle = result.data.ideaTitle;
+          fieldCount++;
+        }
+        if (result.data.ideaDescription) {
+          updates.ideaDescription = result.data.ideaDescription;
+          fieldCount++;
+        }
+        if (result.data.targetMarket) {
+          updates.targetMarket = result.data.targetMarket;
+          fieldCount++;
+        }
+        if (result.data.businessModel) {
+          updates.businessModel = result.data.businessModel;
+          fieldCount++;
+        }
+        if (result.data.industry) {
+          updates.industry = result.data.industry;
+          fieldCount++;
+        }
+        if (result.data.budget) {
+          updates.budget = result.data.budget;
+          fieldCount++;
+        }
+        if (result.data.timeline) {
+          updates.timeline = result.data.timeline;
+          fieldCount++;
+        }
 
-        setFormData(prev => ({ ...prev, ...updates }));
+        console.log('📋 Extracted fields from PDF:', result.data);
+        console.log('📝 Updates to apply:', updates);
+        console.log(`📊 Number of fields populated: ${fieldCount}`);
+        
+        setFormData(prev => {
+          const newFormData = { ...prev, ...updates };
+          console.log('📊 Form data after update:', newFormData);
+          return newFormData;
+        });
+        
         setPdfFileName(file.name);
+        setPdfProcessedCount(fieldCount);
         setSubmitError(null);
         console.log('✅ Form fields extracted and filled successfully');
+        
+        // Scroll to form section to show the filled fields
+        setTimeout(() => {
+          formSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
       } else {
         throw new Error(result.message || 'Failed to extract form fields');
       }
@@ -196,8 +236,17 @@ const Analysis: React.FC = () => {
           OR fill in the form manually below
         </div>
 
+        {/* Success message after PDF upload */}
+        {pdfProcessedCount > 0 && (
+          <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-green-700 text-sm font-medium">
+              ✅ Successfully extracted and populated <strong>{pdfProcessedCount}</strong> field{pdfProcessedCount !== 1 ? 's' : ''} from your PDF
+            </p>
+          </div>
+        )}
+
         {/* Required Fields */}
-        <div className="mb-8">
+        <div className="mb-8" ref={formSectionRef}>
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">Basic Information</h2>
           
           <div className="grid md:grid-cols-1 gap-6">
