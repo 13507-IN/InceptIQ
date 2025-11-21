@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lightbulb, Loader2, Send } from 'lucide-react';
+import { Lightbulb, Loader2, Send, FileUp } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist';
 import { StartupIdea, FormErrors } from '../types';
 import { apiService } from '../services/api';
+
+// Set up PDF.js worker — use public path for bundled worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `${process.env.PUBLIC_URL || ''}/pdf.worker.min.mjs`;
 
 const Analysis: React.FC = () => {
   const navigate = useNavigate();
@@ -19,6 +23,8 @@ const Analysis: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isProcessingPdf, setIsProcessingPdf] = useState(false);
+  const [pdfFileName, setPdfFileName] = useState<string>('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -47,6 +53,72 @@ const Analysis: React.FC = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const extractTextFromPdf = async (file: File) => {
+    try {
+      setIsProcessingPdf(true);
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+
+      // Extract text from all pages
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+        fullText += pageText + ' ';
+      }
+
+      if (!fullText.trim()) {
+        throw new Error('No text found in PDF');
+      }
+
+      // Send extracted text to Gemini AI for intelligent field extraction
+      console.log('Sending PDF text to Gemini AI for form field extraction...');
+      const result = await apiService.extractFormFieldsFromPdf(fullText);
+
+      if (result.success && result.data) {
+        // Apply extracted fields to form, filtering out null values
+        const updates: Partial<StartupIdea> = {};
+        if (result.data.ideaTitle) updates.ideaTitle = result.data.ideaTitle;
+        if (result.data.ideaDescription) updates.ideaDescription = result.data.ideaDescription;
+        if (result.data.targetMarket) updates.targetMarket = result.data.targetMarket;
+        if (result.data.businessModel) updates.businessModel = result.data.businessModel;
+        if (result.data.industry) updates.industry = result.data.industry;
+        if (result.data.budget) updates.budget = result.data.budget;
+        if (result.data.timeline) updates.timeline = result.data.timeline;
+
+        setFormData(prev => ({ ...prev, ...updates }));
+        setPdfFileName(file.name);
+        setSubmitError(null);
+        console.log('✅ Form fields extracted and filled successfully');
+      } else {
+        throw new Error(result.message || 'Failed to extract form fields');
+      }
+    } catch (error) {
+      console.error('PDF extraction failed:', error);
+      setSubmitError(`Failed to extract fields from PDF: ${error instanceof Error ? error.message : 'Unknown error'}. Please fill in the form manually or try another file.`);
+    } finally {
+      setIsProcessingPdf(false);
+    }
+  };
+
+  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        setSubmitError('Please upload a valid PDF file.');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setSubmitError('PDF file must be smaller than 10MB.');
+        return;
+      }
+      extractTextFromPdf(file);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,6 +161,41 @@ const Analysis: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8">
+        {/* PDF Upload Section */}
+        <div className="mb-8 p-6 bg-blue-50 rounded-lg border-2 border-dashed border-blue-300">
+          <div className="flex items-center justify-center mb-4">
+            <FileUp className="h-8 w-8 text-blue-600 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-900">Upload PDF Document</h2>
+          </div>
+          <p className="text-gray-600 text-center mb-4">
+            Have a PDF about your startup idea? Upload it and we'll automatically extract and fill in the form fields.
+          </p>
+          <div className="flex items-center justify-center">
+            <label className="flex flex-col items-center justify-center w-full h-20 border-2 border-blue-400 border-dashed rounded-lg cursor-pointer bg-white hover:bg-blue-100 transition">
+              <div className="flex flex-col items-center justify-center pt-3 pb-3">
+                <span className="text-sm text-blue-600 font-medium">
+                  {isProcessingPdf ? 'Processing PDF...' : pdfFileName ? `Uploaded: ${pdfFileName}` : 'Click to upload PDF'}
+                </span>
+              </div>
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={handlePdfUpload}
+                disabled={isProcessingPdf || isSubmitting}
+                className="hidden"
+              />
+            </label>
+          </div>
+          {pdfFileName && !isProcessingPdf && (
+            <p className="text-sm text-green-600 mt-2 text-center">✓ PDF uploaded and processed successfully</p>
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className="mb-8 text-center text-gray-500 text-sm">
+          OR fill in the form manually below
+        </div>
+
         {/* Required Fields */}
         <div className="mb-8">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">Basic Information</h2>

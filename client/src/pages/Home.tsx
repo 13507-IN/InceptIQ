@@ -60,11 +60,11 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 text-white overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-700 via-black to-gray-950 text-white overflow-hidden">
       {/* Hero Section with Aurora Background */}
       <AuroraBackground>
-        <section className="relative py-32">
-          <div className="container mx-auto px-4 text-center relative z-10">
+        <section className="relative py-2">
+          <div className="container w-full px-2 py-1 text-center relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}

@@ -128,6 +128,36 @@ const analysisController = {
         };
 
         res.status(200).json(stats);
+    },
+
+    // Extract form fields from PDF text using Gemini AI
+    async extractFormFieldsFromPdf(req, res) {
+        try {
+            const { pdfText } = req.body;
+
+            if (!pdfText || !pdfText.trim()) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Missing PDF text',
+                    message: 'Please provide extracted PDF text'
+                });
+            }
+
+            console.log('📄 Extracting form fields from PDF text...');
+            const result = await geminiService.extractFormFieldsFromPdfText(pdfText);
+
+            res.status(200).json(result);
+
+        } catch (error) {
+            console.error('❌ Form field extraction failed:', error.message);
+            
+            res.status(500).json({
+                success: false,
+                error: 'Failed to extract form fields',
+                message: error.message,
+                timestamp: new Date().toISOString()
+            });
+        }
     }
 };
 

@@ -84,6 +84,17 @@ class ApiService {
     }
   }
 
+  // Extract form fields from PDF text using Gemini AI
+  async extractFormFieldsFromPdf(pdfText: string): Promise<any> {
+    try {
+      const response = await api.post('/analyze/extract-pdf-fields', { pdfText });
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to extract form fields from PDF:', error);
+      throw new Error(error.response?.data?.message || 'Failed to extract form fields from PDF.');
+    }
+  }
+
   // Download PDF report
   async downloadReport(analysisId: string): Promise<void> {
     try {

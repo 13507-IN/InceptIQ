@@ -13,6 +13,7 @@
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.12.2",
     "clsx": "^2.1.1",
+    "pdfjs-dist": "^4.0.379",
     "framer-motion": "^12.23.22",
     "lucide-react": "^0.544.0",
     "react": "^19.2.0",

@@ -20,9 +20,9 @@ const Header: React.FC = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">
-                AI Startup Validator
+                inceptIQ
               </h1>
-              <p className="text-xs text-gray-500">Powered by Google Gemini</p>
+              <p className="text-xs text-gray-500">Powered by AI</p>
             </div>
           </Link>
 

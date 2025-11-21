@@ -218,6 +218,67 @@ Focus on: uniqueness, market potential, and one key challenge.
             return "Unable to generate insights at this time. Please try again.";
         }
     }
+
+    async extractFormFieldsFromPdfText(pdfText) {
+        const prompt = `
+You are an expert at extracting structured information from documents. 
+I have extracted text from a PDF about a startup idea. 
+Please analyze this text and extract the following fields in JSON format:
+
+**Extracted PDF Text:**
+${pdfText}
+
+Please respond ONLY with a valid JSON object (no markdown, no extra text) with these fields:
+{
+  "ideaTitle": "The main startup idea or product name (max 200 chars)",
+  "ideaDescription": "A detailed description of the startup idea (max 5000 chars)",
+  "targetMarket": "Who are the target customers/market?",
+  "businessModel": "What is the business model? (choose from: subscription, marketplace, ecommerce, freemium, advertising, transaction, licensing, other)",
+  "industry": "What industry? (choose from: technology, healthcare, finance, education, retail, manufacturing, services, entertainment, other)",
+  "budget": "What is the budget range? (choose from: under-10k, 10k-50k, 50k-100k, 100k-500k, 500k-1m, over-1m)",
+  "timeline": "Timeline to market? (choose from: 3-months, 6-months, 1-year, over-1-year)"
+}
+
+Be intelligent about inferring missing information from context. If a field cannot be determined, use null.
+`;
+
+        try {
+            console.log('🔍 Extracting form fields from PDF text using Gemini...');
+            const result = await this.model.generateContent(prompt);
+            const response = await result.response;
+            const jsonText = response.text().trim();
+
+            // Parse JSON response
+            let parsed = null;
+            try {
+                // Extract JSON from response (in case there's markdown wrapping)
+                const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    parsed = JSON.parse(jsonMatch[0]);
+                } else {
+                    parsed = JSON.parse(jsonText);
+                }
+            } catch (parseErr) {
+                console.error('Failed to parse Gemini JSON response:', parseErr);
+                console.log('Raw response:', jsonText);
+                return {
+                    success: false,
+                    message: 'Failed to parse AI response',
+                    rawResponse: jsonText
+                };
+            }
+
+            console.log('✅ Form fields extracted successfully');
+            return {
+                success: true,
+                data: parsed,
+                timestamp: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Form field extraction failed:', error);
+            throw new Error(`Failed to extract form fields: ${error.message}`);
+        }
+    }
 }
 
 module.exports = new GeminiService();
