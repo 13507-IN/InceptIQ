@@ -106,10 +106,15 @@ const reportsController = {
 
             } catch (pdfError) {
                 console.error('PDF generation/retrieval failed:', pdfError);
+                console.error('Full error details:', {
+                    message: pdfError.message,
+                    stack: pdfError.stack,
+                    analysisId: id
+                });
                 res.status(500).json({
                     error: 'PDF generation failed',
                     message: pdfError.message,
-                    details: 'Unable to generate or retrieve the analysis report'
+                    details: 'Unable to generate or retrieve the analysis report. Check server logs for details.'
                 });
             }
 
