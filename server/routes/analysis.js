@@ -9,6 +9,7 @@ const validateAnalysisRequest = require('../middleware/validateAnalysisRequest')
 router.post('/', validateAnalysisRequest, analysisController.analyzeIdea);
 
 // POST /api/analyze/extract-pdf-fields - Extract form fields from PDF text using AI
+// MUST be before /:id route to avoid being caught by wildcard
 router.post('/extract-pdf-fields', analysisController.extractFormFieldsFromPdf);
 
 // GET /api/analyze/:id - Get analysis result by ID
