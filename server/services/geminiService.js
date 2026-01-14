@@ -230,13 +230,16 @@ ${pdfText}
 
 Please respond ONLY with a valid JSON object (no markdown, no extra text) with these fields:
 {
-  "ideaTitle": "The main startup idea or product name (max 200 chars)",
-  "ideaDescription": "A detailed description of the startup idea (max 5000 chars)",
-  "targetMarket": "Who are the target customers/market?",
-  "businessModel": "What is the business model? (choose from: subscription, marketplace, ecommerce, freemium, advertising, transaction, licensing, other)",
-  "industry": "What industry? (choose from: technology, healthcare, finance, education, retail, manufacturing, services, entertainment, other)",
-  "budget": "What is the budget range? (choose from: under-10k, 10k-50k, 50k-100k, 100k-500k, 500k-1m, over-1m)",
-  "timeline": "Timeline to market? (choose from: 3-months, 6-months, 1-year, over-1-year)"
+    "ideaTitle": "The main startup idea or product name (max 200 chars)",
+    "ideaDescription": "A detailed description of the startup idea (max 5000 chars)",
+    "targetMarket": "Who are the target customers/market?",
+    "businessModel": "What is the business model? (choose from: subscription, marketplace, ecommerce, freemium, advertising, transaction, licensing, other)",
+    "industry": "What industry? (choose from: technology, healthcare, finance, education, retail, manufacturing, services, entertainment, other)",
+    "budget": "What is the budget range? (choose from: under-10k, 10k-50k, 50k-100k, 100k-500k, 500k-1m, over-1m)",
+    "timeline": "Timeline to market? (choose from: 3-months, 6-months, 1-year, over-1-year)",
+    "founderName": "(optional) Founder or contact name if present in the document",
+    "contactEmail": "(optional) Any contact email found in the PDF",
+    "website": "(optional) Website or URL mentioned in the document"
 }
 
 Be intelligent about inferring missing information from context. If a field cannot be determined, use null.

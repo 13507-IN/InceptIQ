@@ -4,10 +4,12 @@ const router = express.Router();
 // Import route modules
 const analysisRoutes = require('./analysis');
 const reportRoutes = require('./reports');
+const authRoutes = require('./auth');
 
 // Route definitions
 router.use('/analyze', analysisRoutes);
 router.use('/reports', reportRoutes);
+router.use('/auth', authRoutes);
 
 // API info endpoint
 router.get('/', (req, res) => {

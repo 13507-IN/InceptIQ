@@ -89,7 +89,50 @@ setInterval(() => {
     analysisStorage.cleanup();
 }, 60 * 60 * 1000);
 
+// Simple in-memory user storage (for demo/dev only)
+class UserStorage {
+    constructor() {
+        // userId -> user object { id, email, passwordHash, createdAt }
+        this.userMap = new Map();
+        // userId -> array of request summaries { id, input, createdAt }
+        this.userRequests = new Map();
+    }
+
+    addUser(user) {
+        this.userMap.set(user.id, user);
+        if (!this.userRequests.has(user.id)) this.userRequests.set(user.id, []);
+    }
+
+    getUserById(id) {
+        return this.userMap.get(id) || null;
+    }
+
+    getUserByEmail(email) {
+        for (const u of this.userMap.values()) {
+            if (u.email === email) return u;
+        }
+        return null;
+    }
+
+    addRequestForUser(userId, requestSummary) {
+        if (!this.userRequests.has(userId)) this.userRequests.set(userId, []);
+        const arr = this.userRequests.get(userId);
+        arr.push(requestSummary);
+        // keep last 100
+        if (arr.length > 100) arr.shift();
+    }
+
+    getRequestsForUser(userId) {
+        return this.userRequests.get(userId) || [];
+    }
+}
+
+const userStorage = new UserStorage();
+
 module.exports = {
     analysisStorage,
-    AnalysisStorage
+    AnalysisStorage,
+    userStorage,
+    UserStorage
 };
+

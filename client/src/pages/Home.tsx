@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import axios from 'axios';
+import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { Brain, Target, FileText, Sparkles, ArrowRight, Rocket } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -14,6 +16,23 @@ import { GlowingEffect } from '../components/ui/glowing-effect';
 // import { GlowingEffect } from '../components/GlowingEffect';
 
 const Home: React.FC = () => {
+  const { token } = useContext<AuthContextValue>(AuthContext);
+  const [requests, setRequests] = useState<any[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!token) return;
+      try {
+        const resp = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/requests`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (resp.data && resp.data.requests) setRequests(resp.data.requests || []);
+      } catch (e) {
+        // ignore
+      }
+    };
+    load();
+  }, [token]);
   const features = [
     {
       icon: Brain,
@@ -248,6 +267,23 @@ const Home: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent"></div>
         </div>
       </section>
+      {/* User's previous requests (if logged in) */}
+      {requests && requests.length > 0 && (
+        <section className="py-12">
+          <div className="container mx-auto px-4">
+            <h3 className="text-2xl font-semibold mb-4">Your recent analyses</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {requests.map(r => (
+                <div key={r.id} className="p-4 bg-white/5 rounded">
+                  <div className="text-sm text-gray-300">{new Date(r.createdAt).toLocaleString()}</div>
+                  <div className="text-lg font-medium mt-1">{r.input?.ideaTitle || 'Untitled'}</div>
+                  <div className="text-sm text-gray-400 mt-2">{(r.input?.ideaDescription || '').slice(0, 140)}{(r.input?.ideaDescription || '').length>140?'...':''}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

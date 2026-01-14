@@ -1,6 +1,7 @@
 const geminiService = require('../services/geminiService');
 const { v4: uuidv4 } = require('uuid');
 const { analysisStorage } = require('../utils/storage');
+const User = require('../models/user');
 
 const analysisController = {
     async analyzeIdea(req, res) {
@@ -22,6 +23,35 @@ const analysisController = {
             };
 
             analysisStorage.set(analysisId, analysisResult);
+
+            // If a user is authenticated, attach a brief request summary to their MongoDB record
+            try {
+                if (req.user && req.user.id) {
+                    const summary = {
+                        id: analysisId,
+                        input: {
+                            ideaTitle: ideaData.ideaTitle,
+                            ideaDescription: ideaData.ideaDescription,
+                            targetMarket: ideaData.targetMarket || null,
+                        },
+                        createdAt: analysisResult.createdAt
+                    };
+
+                    // Push into user's requests array (create user record missing handling)
+                    try {
+                        const user = await User.findById(req.user.id);
+                        if (user) {
+                            await user.addRequest(summary);
+                        } else {
+                            console.warn('Authenticated user not found in DB:', req.user.id);
+                        }
+                    } catch (dbErr) {
+                        console.warn('Failed to save request to user in DB:', dbErr.message || dbErr);
+                    }
+                }
+            } catch (attachErr) {
+                console.warn('Failed to attach analysis to user record:', attachErr.message || attachErr);
+            }
 
             console.log(`✅ Analysis completed for ID: ${analysisId}`);
 

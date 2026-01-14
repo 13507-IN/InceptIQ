@@ -1,5 +1,6 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
 import { Brain, Home, FileText } from 'lucide-react';
 
 const Header: React.FC = () => {
@@ -52,18 +53,47 @@ const Header: React.FC = () => {
               <span>New Analysis</span>
             </Link>
           </nav>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button className="text-gray-600 hover:text-gray-900 p-2">
-              <svg className="h-6 w-6" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                <path d="M4 6h16M4 12h16M4 18h16"></path>
-              </svg>
-            </button>
+          {/* Right side: auth */}
+          <div className="flex items-center space-x-4">
+            {/** Auth status */}
+            <AuthStatus />
+            <div className="md:hidden">
+              <button className="text-gray-600 hover:text-gray-900 p-2">
+                <svg className="h-6 w-6" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                  <path d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </header>
+  );
+};
+
+const AuthStatus: React.FC = () => {
+  const { user, setAuth } = useContext<AuthContextValue>(AuthContext);
+  const navigate = useNavigate();
+
+  const logout = () => {
+    setAuth(null);
+    localStorage.removeItem('iv_token');
+    navigate('/');
+  };
+
+  if (user) {
+    return (
+      <div className="flex items-center space-x-3">
+        <div className="text-sm text-gray-700">{user.email}</div>
+        <button onClick={logout} className="text-sm px-3 py-1 bg-gray-100 rounded">Logout</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center space-x-3">
+      <Link to="/login" className="text-sm px-3 py-1 bg-primary-50 text-primary-700 rounded">Login</Link>
+    </div>
   );
 };
 

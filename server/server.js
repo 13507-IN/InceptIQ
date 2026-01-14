@@ -9,6 +9,17 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet());
+// Attach optional auth middleware early so routes can access req.user when Authorization header present
+const authMiddleware = require('./middleware/auth');
+app.use(authMiddleware);
+
+// Connect to MongoDB (if available)
+try {
+  const db = require('./db');
+  db.connect();
+} catch (e) {
+  console.warn('MongoDB helper load failed:', e.message || e);
+}
 // Configure CORS to allow multiple origins. Use ALLOWED_ORIGINS (comma separated)
 // or fall back to CLIENT_URL or localhost for development.
 const allowedOriginsEnv = process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || 'http://localhost:3000';
@@ -34,6 +45,8 @@ app.use(cors({
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// NOTE: auth middleware already attached earlier; avoid double-registration
 
 // Routes
 app.use('/api', require('./routes/index'));

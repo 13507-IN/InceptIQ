@@ -15,6 +15,16 @@ const api = axios.create({
 // Request interceptor for logging
 api.interceptors.request.use(
   (config) => {
+    // Attach auth token if present
+    try {
+      const token = localStorage.getItem('iv_token');
+      if (token) {
+        if (!config.headers) config.headers = {} as any;
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+    } catch (e) {
+      // ignore
+    }
     console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
