@@ -11,7 +11,7 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 // Signup
 router.post('/signup', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, name } = req.body;
         if (!email || !password) return res.status(400).json({ error: 'Missing email or password' });
 
         const existing = await User.findOne({ email });
@@ -19,12 +19,12 @@ router.post('/signup', async (req, res) => {
 
         const id = uuidv4();
         const passwordHash = await bcrypt.hash(password, 10);
-        const user = new User({ _id: id, email, passwordHash, createdAt: new Date().toISOString() });
+        const user = new User({ _id: id, name: name || undefined, email, passwordHash, createdAt: new Date().toISOString() });
         await user.save();
 
         const token = jwt.sign({ id: user._id.toString(), email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-        res.status(201).json({ success: true, token, user: { id: user._id.toString(), email: user.email } });
+        res.status(201).json({ success: true, token, user: { id: user._id.toString(), name: user.name || null, email: user.email } });
     } catch (err) {
         console.error('Signup failed:', err);
         res.status(500).json({ error: 'Signup failed', message: err.message || String(err) });
