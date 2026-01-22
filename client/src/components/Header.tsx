@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
-import { Brain, Home, FileText, Menu, X } from 'lucide-react';
+import { Brain, Home, FileText, Menu, X, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Header: React.FC = () => {
@@ -114,6 +114,9 @@ const Header: React.FC = () => {
                 <span>New Analysis</span>
               </div>
             </Link>
+
+            {/* Mobile auth section */}
+            <MobileAuthStatus mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
           </motion.div>
         )}
       </div>
@@ -139,10 +142,17 @@ const AuthStatus: React.FC = () => {
         animate={{ opacity: 1 }}
       >
         <div className="text-sm text-gray-300">{user.email}</div>
+        <Link
+          to="/profile"
+          className="text-sm px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 rounded border border-blue-600/30 hover:border-blue-600/50 transition-all flex items-center gap-2"
+        >
+          <User className="h-4 w-4" />
+          Profile
+        </Link>
         <motion.button 
           whileHover={{ scale: 1.05 }}
           onClick={logout} 
-          className="text-sm px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+          className="text-sm px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
         >
           Logout
         </motion.button>
@@ -163,6 +173,57 @@ const AuthStatus: React.FC = () => {
         Login
       </Link>
     </motion.div>
+  );
+};
+
+interface MobileAuthStatusProps {
+  mobileMenuOpen: boolean;
+  setMobileMenuOpen: (open: boolean) => void;
+}
+
+const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, setMobileMenuOpen }) => {
+  const { user, setAuth } = useContext<AuthContextValue>(AuthContext);
+  const navigate = useNavigate();
+
+  const logout = () => {
+    setAuth(null);
+    localStorage.removeItem('iv_token');
+    setMobileMenuOpen(false);
+    navigate('/');
+  };
+
+  if (user) {
+    return (
+      <div className="mt-4 pt-4 border-t border-gray-700/50 space-y-2">
+        <div className="text-sm text-gray-400 px-3">{user.email}</div>
+        <Link
+          to="/profile"
+          onClick={() => setMobileMenuOpen(false)}
+          className="block px-3 py-2 bg-blue-600/20 text-blue-300 rounded border border-blue-600/30 transition-colors flex items-center gap-2"
+        >
+          <User className="h-4 w-4" />
+          Profile
+        </Link>
+        <button
+          onClick={logout}
+          className="w-full text-left px-3 py-2 bg-red-600/20 text-red-300 rounded border border-red-600/30 transition-colors"
+        >
+          Logout
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-700/50">
+      <Link
+        to="/login"
+        onClick={() => setMobileMenuOpen(false)}
+        className="block px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+      >
+        Login
+      </Link>
+    </div>
   );
 };
 

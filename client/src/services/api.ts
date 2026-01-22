@@ -208,6 +208,22 @@ class ApiService {
       return null;
     }
   }
+
+  // Get user's research/analysis history
+  async getUserResearches(): Promise<any> {
+    try {
+      const response = await api.get('/auth/requests');
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to fetch user researches:', error);
+      
+      if (error.response?.status === 401) {
+        throw new Error('Please log in to view your research history.');
+      }
+      
+      throw new Error('Failed to retrieve your research history.');
+    }
+  }
 }
 
 // Export singleton instance

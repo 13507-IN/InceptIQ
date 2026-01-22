@@ -1,12 +1,21 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
+import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Analysis from './pages/Analysis';
 import Results from './pages/Results';
+import Profile from './pages/Profile';
+import Documentation from './pages/Documentation';
+import FAQ from './pages/FAQ';
+import Support from './pages/Support';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import CookiePolicy from './pages/CookiePolicy';
 import './App.css';
 
 function App() {
@@ -14,16 +23,31 @@ function App() {
     <ErrorBoundary>
       <Router>
         <AuthProvider>
-          <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950">
+          <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 flex flex-col">
             <Header />
-            <main className="container mx-auto px-4 py-8">
+            <main className="container mx-auto px-4 py-8 flex-1">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/analysis" element={<Analysis />} />
                 <Route path="/results/:analysisId" element={<Results />} />
                 <Route path="/login" element={<Login />} />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/documentation" element={<Documentation />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/cookies" element={<CookiePolicy />} />
               </Routes>
             </main>
+            <Footer />
           </div>
         </AuthProvider>
       </Router>

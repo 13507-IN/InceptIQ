@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { getToken, setToken, getMe } from '../services/auth';
 
-export interface User { id: string; email: string }
+export interface User { id: string; email: string; name?: string }
 
 export interface AuthContextValue {
   user: User | null;
