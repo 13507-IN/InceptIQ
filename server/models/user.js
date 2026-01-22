@@ -7,12 +7,13 @@ const RequestSchema = new Schema({
 }, { _id: false });
 
 const UserSchema = new Schema({
+  _id: { type: String, required: true },
   name: { type: String, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   requests: { type: [RequestSchema], default: [] }
-});
+}, { _id: false });
 
 UserSchema.methods.addRequest = async function (summary) {
   this.requests.push(summary);

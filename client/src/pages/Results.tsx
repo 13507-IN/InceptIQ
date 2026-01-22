@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Download, AlertCircle } from "lucide-react";
-import { apiService, downloadFile } from "../services/api";
+import { Download, AlertCircle, ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { apiService } from "../services/api";
 import ScoreChart from "../components/ScoreChart";
 import ScoreBadge from "../components/ScoreBadge";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const Results: React.FC = () => {
+  const navigate = useNavigate();
   const { analysisId } = useParams<{ analysisId: string }>();
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -20,15 +24,7 @@ const Results: React.FC = () => {
     try {
       setLoading(true);
       const response = await apiService.getAnalysis(id);
-      // The API helper returns response.data (the server JSON). Server returns { success, data }
-      // where `data` is the stored analysis object which itself often contains an `analysis` field
-      // (the Detailed Analysis / AnalysisResult). Support both shapes:
-      // - response = { success, data: { analysis: AnalysisResult, ... } }
-      // - response = { success, data: AnalysisResult }
-      // - response = AnalysisResult (older helper behavior)
-      console.debug('Raw analysis response:', response);
       const resolved = response?.data?.analysis ?? response?.data ?? response ?? null;
-      console.debug('Resolved analysisData to set:', resolved);
       setAnalysisData(resolved);
     } catch (err: any) {
       console.error("Failed to fetch analysis:", err);
@@ -50,21 +46,13 @@ const Results: React.FC = () => {
     }
   };
 
-  if (loading)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin h-12 w-12 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-3"></div>
-          <p className="text-gray-700 font-medium">Loading analysis results...</p>
-        </div>
-      </div>
-    );
+  if (loading) return <LoadingSpinner fullScreen message="Loading analysis results..." />;
 
   if (error || !analysisData)
     return (
       <div className="flex flex-col justify-center items-center h-screen">
         <AlertCircle className="w-12 h-12 text-red-500 mb-3" />
-        <p className="text-lg text-gray-700">{error}</p>
+        <p className="text-lg text-gray-300">{error}</p>
       </div>
     );
 
@@ -73,175 +61,293 @@ const Results: React.FC = () => {
     analysis, recommendations, risks, opportunities, keyMetrics 
   } = analysisData;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <motion.div 
+      className="max-w-6xl mx-auto px-6 py-10"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <motion.div 
+        variants={itemVariants}
+        className="flex justify-between items-center mb-8"
+      >
         <div>
-          <h1 className="text-3xl font-bold text-green-800 mb-2">Startup Analysis Results</h1>
-          <p className="text-gray-600">Analysis ID: {analysisId}</p>
+          <div className="flex items-center gap-4 mb-2">
+            <button
+              onClick={() => navigate('/')}
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5 text-gray-400" />
+            </button>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+              Startup Analysis Results
+            </h1>
+          </div>
+          <p className="text-gray-400 ml-14">Analysis ID: {analysisId}</p>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={handleDownloadPdf}
           disabled={downloadingPdf}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center"
+          className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
         >
-          <Download className="h-5 w-5 mr-2" />
+          <Download className="h-5 w-5" />
           {downloadingPdf ? "Downloading..." : "Download PDF"}
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* Overall Score */}
-      <div className="bg-white shadow-md rounded-xl p-8 text-center mb-10">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Overall Viability Score</h2>
-        <div className="text-6xl font-bold text-green-700">{overallScore ?? 0}</div>
-        <p className="text-gray-500">out of 100</p>
-      </div>
+      <motion.div 
+        variants={itemVariants}
+        className="bg-gradient-to-br from-gray-800 to-gray-900 shadow-xl rounded-xl p-8 text-center mb-10 border border-gray-700"
+      >
+        <h2 className="text-2xl font-semibold text-gray-200 mb-4">Overall Viability Score</h2>
+        <div className="text-6xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+          {overallScore ?? 0}
+        </div>
+        <p className="text-gray-400 mt-2">out of 100</p>
+      </motion.div>
 
       {/* Score Breakdown */}
-      <div className="grid md:grid-cols-3 gap-6 mb-10">
+      <motion.div 
+        variants={containerVariants}
+        className="grid md:grid-cols-3 gap-6 mb-10"
+      >
         {[
           { label: "Uniqueness", score: uniquenessScore },
           { label: "Market Viability", score: marketViabilityScore },
           { label: "Competition", score: competitionScore },
         ].map((item, i) => (
-          <div key={i} className="bg-white p-6 rounded-xl shadow-md text-center">
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">{item.label}</h3>
+          <motion.div 
+            key={i} 
+            variants={itemVariants}
+            className="bg-gray-800/50 border border-gray-700 p-6 rounded-xl shadow-lg hover:shadow-xl hover:border-blue-500/50 transition-all"
+          >
+            <h3 className="text-xl font-semibold text-gray-200 mb-4">{item.label}</h3>
             <ScoreBadge score={item.score ?? 0} label={`${item.label} Score`} />
             <div className="mt-4">
               <ScoreChart score={item.score ?? 0} />
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* --- Uniqueness --- */}
-      <section className="bg-white rounded-xl shadow-md p-8 mb-10">
-        <h2 className="text-2xl font-semibold mb-4 text-green-700">Uniqueness</h2>
-        <p className="text-gray-700 mb-4">{analysis?.uniqueness?.summary}</p>
+      <motion.section 
+        variants={itemVariants}
+        className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg p-8 mb-10"
+      >
+        <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">Uniqueness Analysis</h2>
+        <p className="text-gray-300 mb-6">{analysis?.uniqueness?.summary}</p>
 
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <h4 className="font-semibold text-green-600 mb-2">Strengths</h4>
-            <ul className="list-disc list-inside text-gray-600">
+            <h4 className="font-semibold text-green-400 mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+              Strengths
+            </h4>
+            <ul className="space-y-2 text-gray-300">
               {analysis?.uniqueness?.strengths?.map((s: string, i: number) => (
-                <li key={i}>{s}</li>
+                <li key={i} className="flex gap-2">
+                  <span className="text-green-400">✓</span>
+                  {s}
+                </li>
               ))}
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold text-red-600 mb-2">Concerns</h4>
-            <ul className="list-disc list-inside text-gray-600">
+            <h4 className="font-semibold text-red-400 mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+              Concerns
+            </h4>
+            <ul className="space-y-2 text-gray-300">
               {analysis?.uniqueness?.concerns?.map((c: string, i: number) => (
-                <li key={i}>{c}</li>
+                <li key={i} className="flex gap-2">
+                  <span className="text-red-400">⚠</span>
+                  {c}
+                </li>
               ))}
             </ul>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* --- Market Viability --- */}
-      <section className="bg-white rounded-xl shadow-md p-8 mb-10">
-        <h2 className="text-2xl font-semibold mb-4 text-green-700">Market Viability</h2>
-        <p className="text-gray-700 mb-4">{analysis?.marketViability?.summary}</p>
-        <ul className="text-gray-700 space-y-2">
-          <li><b>Market Size:</b> {analysis?.marketViability?.marketSize}</li>
-          <li><b>Target Audience:</b> {analysis?.marketViability?.targetAudience}</li>
-          <li><b>Trends:</b>
-            <ul className="list-disc list-inside ml-5">
-              {analysis?.marketViability?.trends?.map((t: string, i: number) => (
-                <li key={i}>{t}</li>
-              ))}
-            </ul>
-          </li>
-        </ul>
-      </section>
+      <motion.section 
+        variants={itemVariants}
+        className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg p-8 mb-10"
+      >
+        <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">Market Viability</h2>
+        <p className="text-gray-300 mb-6">{analysis?.marketViability?.summary}</p>
+        <div className="space-y-3 text-gray-300">
+          <div className="p-3 bg-gray-900/50 rounded border border-gray-700">
+            <span className="font-semibold text-blue-400">Market Size:</span> {analysis?.marketViability?.marketSize}
+          </div>
+          <div className="p-3 bg-gray-900/50 rounded border border-gray-700">
+            <span className="font-semibold text-blue-400">Target Audience:</span> {analysis?.marketViability?.targetAudience}
+          </div>
+          {analysis?.marketViability?.trends && (
+            <div className="p-3 bg-gray-900/50 rounded border border-gray-700">
+              <span className="font-semibold text-blue-400">Key Trends:</span>
+              <ul className="mt-2 space-y-1 ml-4">
+                {analysis.marketViability.trends.map((t: string, i: number) => (
+                  <li key={i} className="text-gray-300">• {t}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </motion.section>
 
       {/* --- Competition --- */}
-      <section className="bg-white rounded-xl shadow-md p-8 mb-10">
-        <h2 className="text-2xl font-semibold mb-4 text-green-700">Competition</h2>
-        <p className="text-gray-700 mb-4">{analysis?.competition?.summary}</p>
+      <motion.section 
+        variants={itemVariants}
+        className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg p-8 mb-10"
+      >
+        <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">Competition</h2>
+        <p className="text-gray-300 mb-6">{analysis?.competition?.summary}</p>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
           <div>
-            <h4 className="font-semibold text-gray-800 mb-2">Direct Competitors</h4>
-            <ul className="list-disc list-inside text-gray-600">
+            <h4 className="font-semibold text-gray-200 mb-3">Direct Competitors</h4>
+            <div className="space-y-2">
               {analysis?.competition?.directCompetitors?.map((c: string, i: number) => (
-                <li key={i}>{c}</li>
+                <div key={i} className="p-2 bg-gray-900/50 rounded text-gray-300 border-l-2 border-orange-400">
+                  {c}
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
           <div>
-            <h4 className="font-semibold text-gray-800 mb-2">Indirect Competitors</h4>
-            <ul className="list-disc list-inside text-gray-600">
+            <h4 className="font-semibold text-gray-200 mb-3">Indirect Competitors</h4>
+            <div className="space-y-2">
               {analysis?.competition?.indirectCompetitors?.map((c: string, i: number) => (
-                <li key={i}>{c}</li>
+                <div key={i} className="p-2 bg-gray-900/50 rounded text-gray-300 border-l-2 border-blue-400">
+                  {c}
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         </div>
 
-        <div className="mt-4">
-          <h4 className="font-semibold text-green-700 mb-2">Competitive Advantage</h4>
-          <p className="text-gray-700">{analysis?.competition?.competitiveAdvantage}</p>
+        <div className="p-4 bg-gradient-to-r from-green-900/20 to-blue-900/20 rounded border border-green-700/50">
+          <h4 className="font-semibold text-green-400 mb-2">Competitive Advantage</h4>
+          <p className="text-gray-300">{analysis?.competition?.competitiveAdvantage}</p>
         </div>
-      </section>
+      </motion.section>
 
       {/* --- Key Metrics --- */}
-      <section className="bg-white rounded-xl shadow-md p-8 mb-10">
-        <h2 className="text-2xl font-semibold mb-4 text-green-700">Key Metrics</h2>
-        <ul className="text-gray-700 space-y-2">
-          <li><b>Funding Required:</b> {keyMetrics?.fundingRequired}</li>
-          <li><b>Break-even Point:</b> {keyMetrics?.breakEvenPoint}</li>
-          <li><b>Time to Market:</b> {keyMetrics?.timeToMarket}</li>
-          <li><b>Scalability Rating:</b> {keyMetrics?.scalabilityRating}</li>
-        </ul>
-      </section>
+      <motion.section 
+        variants={itemVariants}
+        className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg p-8 mb-10"
+      >
+        <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">Key Metrics</h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="p-4 bg-gray-900/50 rounded border border-gray-700">
+            <div className="text-sm text-gray-400">Funding Required</div>
+            <div className="text-lg font-semibold text-blue-400 mt-1">{keyMetrics?.fundingRequired}</div>
+          </div>
+          <div className="p-4 bg-gray-900/50 rounded border border-gray-700">
+            <div className="text-sm text-gray-400">Break-even Point</div>
+            <div className="text-lg font-semibold text-blue-400 mt-1">{keyMetrics?.breakEvenPoint}</div>
+          </div>
+          <div className="p-4 bg-gray-900/50 rounded border border-gray-700">
+            <div className="text-sm text-gray-400">Time to Market</div>
+            <div className="text-lg font-semibold text-blue-400 mt-1">{keyMetrics?.timeToMarket}</div>
+          </div>
+          <div className="p-4 bg-gray-900/50 rounded border border-gray-700">
+            <div className="text-sm text-gray-400">Scalability Rating</div>
+            <div className="text-lg font-semibold text-blue-400 mt-1">{keyMetrics?.scalabilityRating}</div>
+          </div>
+        </div>
+      </motion.section>
 
       {/* --- Risks --- */}
-      <section className="bg-white rounded-xl shadow-md p-8 mb-10">
-        <h2 className="text-2xl font-semibold mb-4 text-red-700">Risks</h2>
-        <div className="space-y-6">
+      <motion.section 
+        variants={itemVariants}
+        className="bg-gray-800/50 border border-red-700/30 rounded-xl shadow-lg p-8 mb-10"
+      >
+        <h2 className="text-2xl font-semibold mb-6 text-red-400">Risks & Challenges</h2>
+        <div className="space-y-4">
           {risks?.map((r: any, i: number) => (
-            <div key={i} className="border-l-4 border-red-500 pl-4">
-              <h4 className="font-semibold text-gray-900">{r.category}</h4>
-              <p className="text-gray-700 mb-2">{r.description}</p>
-              <p className="text-sm text-gray-600"><b>Severity:</b> {r.severity}</p>
-              <p className="text-sm text-gray-600"><b>Mitigation:</b> {r.mitigation}</p>
+            <div key={i} className="border-l-4 border-red-500 bg-red-900/10 pl-4 p-4 rounded">
+              <h4 className="font-semibold text-gray-200 mb-1">{r.category}</h4>
+              <p className="text-gray-300 mb-2 text-sm">{r.description}</p>
+              <div className="grid md:grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-red-400 font-medium">Severity:</span> 
+                  <span className="text-gray-300 ml-1">{r.severity}</span>
+                </div>
+                <div>
+                  <span className="text-green-400 font-medium">Mitigation:</span> 
+                  <span className="text-gray-300 ml-1">{r.mitigation}</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* --- Opportunities --- */}
-      <section className="bg-white rounded-xl shadow-md p-8 mb-10">
-        <h2 className="text-2xl font-semibold mb-4 text-green-700">Opportunities</h2>
-        <div className="space-y-6">
+      <motion.section 
+        variants={itemVariants}
+        className="bg-gray-800/50 border border-green-700/30 rounded-xl shadow-lg p-8 mb-10"
+      >
+        <h2 className="text-2xl font-semibold mb-6 text-green-400">Opportunities</h2>
+        <div className="space-y-4">
           {opportunities?.map((o: any, i: number) => (
-            <div key={i} className="border-l-4 border-green-500 pl-4">
-              <h4 className="font-semibold text-gray-900">{o.category}</h4>
-              <p className="text-gray-700">{o.description}</p>
-              <p className="text-sm text-gray-600"><b>Impact:</b> {o.impact}</p>
+            <div key={i} className="border-l-4 border-green-500 bg-green-900/10 pl-4 p-4 rounded">
+              <h4 className="font-semibold text-gray-200 mb-1">{o.category}</h4>
+              <p className="text-gray-300 mb-2 text-sm">{o.description}</p>
+              <span className="text-green-400 font-medium">Impact:</span> 
+              <span className="text-gray-300 ml-1">{o.impact}</span>
             </div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* --- Recommendations --- */}
-      <section className="bg-white rounded-xl shadow-md p-8">
-        <h2 className="text-2xl font-semibold mb-6 text-green-700">Recommendations</h2>
-        <div className="space-y-6">
+      <motion.section 
+        variants={itemVariants}
+        className="bg-gray-800/50 border border-blue-700/30 rounded-xl shadow-lg p-8"
+      >
+        <h2 className="text-2xl font-semibold mb-6 text-blue-400">Recommendations</h2>
+        <div className="space-y-4">
           {recommendations?.map((rec: any, i: number) => (
-            <div key={i} className="border-l-4 border-blue-500 pl-4">
-              <h4 className="font-semibold text-gray-900">{rec.category}</h4>
-              <p className="text-gray-700 mb-2">{rec.action}</p>
-              <p className="text-sm text-gray-600"><b>Priority:</b> {rec.priority}</p>
-              <p className="text-sm text-gray-600"><b>Timeline:</b> {rec.timeline}</p>
+            <div key={i} className="border-l-4 border-blue-500 bg-blue-900/10 pl-4 p-4 rounded">
+              <h4 className="font-semibold text-gray-200 mb-2">{rec.category}</h4>
+              <p className="text-gray-300 mb-3 text-sm">{rec.action}</p>
+              <div className="grid md:grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-blue-400 font-medium">Priority:</span> 
+                  <span className="text-gray-300 ml-1">{rec.priority}</span>
+                </div>
+                <div>
+                  <span className="text-blue-400 font-medium">Timeline:</span> 
+                  <span className="text-gray-300 ml-1">{rec.timeline}</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   );
 };
 

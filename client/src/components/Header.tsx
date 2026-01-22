@@ -1,29 +1,34 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
-import { Brain, Home, FileText } from 'lucide-react';
+import { Brain, Home, FileText, Menu, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Header: React.FC = () => {
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => {
     return location.pathname === path;
   };
 
   return (
-    <header className="bg-white shadow-md border-b border-gray-200">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 shadow-lg border-b border-gray-700/50 backdrop-blur-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
-          <Link to="/" className="flex items-center space-x-3">
-            <div className="p-2 bg-primary-600 rounded-lg">
+          <Link to="/" className="flex items-center space-x-3 group">
+            <motion.div 
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg group-hover:shadow-lg group-hover:shadow-blue-500/50 transition-all"
+            >
               <Brain className="h-6 w-6 text-white" />
-            </div>
+            </motion.div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 inceptIQ
               </h1>
-              <p className="text-xs text-gray-500">Powered by AI</p>
+              <p className="text-xs text-gray-400">AI-Powered Analysis</p>
             </div>
           </Link>
 
@@ -31,10 +36,10 @@ const Header: React.FC = () => {
           <nav className="hidden md:flex space-x-8">
             <Link
               to="/"
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 isActive('/')
-                  ? 'text-primary-700 bg-primary-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-blue-400 bg-blue-500/10 border border-blue-500/30'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
               }`}
             >
               <Home className="h-4 w-4" />
@@ -43,10 +48,10 @@ const Header: React.FC = () => {
             
             <Link
               to="/analysis"
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 isActive('/analysis')
-                  ? 'text-primary-700 bg-primary-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-blue-400 bg-blue-500/10 border border-blue-500/30'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
               }`}
             >
               <FileText className="h-4 w-4" />
@@ -58,14 +63,59 @@ const Header: React.FC = () => {
             {/** Auth status */}
             <AuthStatus />
             <div className="md:hidden">
-              <button className="text-gray-600 hover:text-gray-900 p-2">
-                <svg className="h-6 w-6" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-gray-300 hover:text-white p-2 transition-colors"
+              >
+                {mobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
               </button>
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="md:hidden pb-4 border-t border-gray-700/50"
+          >
+            <Link
+              to="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/')
+                  ? 'text-blue-400 bg-blue-500/10'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </div>
+            </Link>
+            
+            <Link
+              to="/analysis"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/analysis')
+                  ? 'text-blue-400 bg-blue-500/10'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <FileText className="h-4 w-4" />
+                <span>New Analysis</span>
+              </div>
+            </Link>
+          </motion.div>
+        )}
       </div>
     </header>
   );
@@ -83,17 +133,36 @@ const AuthStatus: React.FC = () => {
 
   if (user) {
     return (
-      <div className="flex items-center space-x-3">
-        <div className="text-sm text-gray-700">{user.email}</div>
-        <button onClick={logout} className="text-sm px-3 py-1 bg-gray-100 rounded">Logout</button>
-      </div>
+      <motion.div 
+        className="hidden md:flex items-center space-x-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="text-sm text-gray-300">{user.email}</div>
+        <motion.button 
+          whileHover={{ scale: 1.05 }}
+          onClick={logout} 
+          className="text-sm px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+        >
+          Logout
+        </motion.button>
+      </motion.div>
     );
   }
 
   return (
-    <div className="flex items-center space-x-3">
-      <Link to="/login" className="text-sm px-3 py-1 bg-primary-50 text-primary-700 rounded">Login</Link>
-    </div>
+    <motion.div 
+      className="hidden md:flex items-center space-x-3"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <Link 
+        to="/login" 
+        className="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+      >
+        Login
+      </Link>
+    </motion.div>
   );
 };
 

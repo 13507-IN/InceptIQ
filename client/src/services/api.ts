@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { StartupIdea, AnalysisResponse, ApiResponse } from '../types';
+import { StartupIdea, AnalysisResponse } from '../types';
 
 // Base API configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
