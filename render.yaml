@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: inceptiq-app
+    runtime: node
+    plan: free
+    
+    buildCommand: |
+      cd client && npm install && npm run build && cd .. && npm install
+    
+    startCommand: node server/server.js
+    
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: GEMINI_API_KEY
+        scope: secret
+      - key: CLIENT_URL
+        value: https://inceptiq.onrender.com
+      - key: ALLOWED_ORIGINS
+        value: https://inceptiq.onrender.com
+
+  # Optional: Separate database service
+  # - type: pserv
+  #   name: inceptiq-db
+  #   plan: free
+  #   ipWhitelist: []
+  #   preDeployCommand: npm run migrate

@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -60,20 +61,40 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ============================================
+// SERVE STATIC FRONTEND FILES (Production)
+// ============================================
+// Serve React build files from ../client/build
+const buildPath = path.join(__dirname, '..', 'client', 'build');
+app.use(express.static(buildPath));
+
+// SPA fallback: serve index.html for all non-API routes
+// This allows React Router to handle client-side routing
+app.get(/^(?!\/api\/).*$/, (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'), (err) => {
+    if (err) {
+      res.status(404).json({
+        error: 'Not found',
+        message: 'The requested resource does not exist'
+      });
+    }
+  });
+});
+
+// Handle API 404s
+app.use('/api', (req, res) => {
+  res.status(404).json({
+    error: 'Route not found',
+    message: `The requested route ${req.originalUrl} does not exist`
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     error: 'Something went wrong!',
     message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
-  });
-});
-
-// ✅ 404 handler (Express 5 compatible)
-app.use( (req, res) => {
-  res.status(404).json({
-    error: 'Route not found',
-    message: `The requested route ${req.originalUrl} does not exist`
   });
 });
 
