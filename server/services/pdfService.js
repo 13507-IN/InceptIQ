@@ -18,51 +18,116 @@ class PDFService {
                 const fileName = `analysis-report-${analysisId}.pdf`;
                 const filePath = path.join(this.reportsDir, fileName);
 
-                // Validate required data
+                // Comprehensive validation with detailed error messages
+                console.log(`\n${'='.repeat(70)}`);
+                console.log(`🔍 PDF GENERATION START`);
+                console.log(`Analysis ID: ${analysisId}`);
+                console.log(`Timestamp: ${new Date().toISOString()}`);
+                console.log(`File Path: ${filePath}`);
+                console.log(`${'='.repeat(70)}\n`);
+                
+                console.log(`🔍 PDF Generation: Starting validation for analysis ID: ${analysisId}`);
+                
+                if (!analysisData) {
+                    const error = new Error('analysisData is null or undefined');
+                    console.error('❌ PDF Generation Error - analysisData:', error.message);
+                    console.error('Stack:', error.stack);
+                    throw error;
+                }
+
                 if (!analysis) {
-                    console.error('❌ Analysis data is missing:', analysisData);
-                    throw new Error('Analysis data is missing from analysisData');
+                    const error = new Error(`Analysis data is missing. Received: ${JSON.stringify(analysisData).substring(0, 200)}`);
+                    console.error('❌ PDF Generation Error - Missing analysis:', error.message);
+                    console.error('Received data:', analysisData);
+                    throw error;
                 }
 
-                if (!analysis.overallScore) {
-                    console.error('❌ Missing overallScore in analysis:', analysis);
-                    throw new Error('Missing overallScore in analysis');
+                // Validate each required field with specific error messages
+                const validationErrors = [];
+                const fieldChecks = [];
+
+                // Check overallScore
+                if (analysis.overallScore === undefined || analysis.overallScore === null) {
+                    fieldChecks.push(`❌ overallScore: MISSING (undefined/null)`);
+                    validationErrors.push('Missing overallScore');
+                } else {
+                    fieldChecks.push(`✅ overallScore: ${analysis.overallScore}`);
                 }
 
-                if (!analysis.uniqueness || !analysis.uniqueness.summary) {
-                    console.error('❌ Missing uniqueness data:', analysis.uniqueness);
-                    throw new Error('Missing or invalid uniqueness analysis');
+// Check uniqueness
+if (!analysis.uniqueness?.summary) {
+    fieldChecks.push(`❌ uniqueness.summary: MISSING`);
+    const uniquenessSafe = JSON.stringify(analysis.uniqueness ?? "undefined");
+    validationErrors.push(`Missing uniqueness summary. Got: ${uniquenessSafe.substring(0, 100)}`);
+} else {
+    const summaryPreview = String(analysis.uniqueness.summary).substring(0, 50);
+    fieldChecks.push(`✅ uniqueness.summary: ${summaryPreview}...`);
+}
+
+                // Check marketViability
+                if (!analysis.marketViability?.summary) {
+                    fieldChecks.push(`❌ marketViability.summary: MISSING`);
+                    validationErrors.push(`Missing marketViability summary. Got: ${JSON.stringify(analysis.marketViability).substring(0, 100)}`);
+                } else {
+                    const summaryPreview = String(analysis.marketViability.summary).substring(0, 50);
+                    fieldChecks.push(`✅ marketViability.summary: ${summaryPreview}...`);
                 }
 
-                if (!analysis.marketViability || !analysis.marketViability.summary) {
-                    console.error('❌ Missing marketViability data:', analysis.marketViability);
-                    throw new Error('Missing or invalid market viability analysis');
+                // Check competition
+                if (!analysis.competition?.summary) {
+                    fieldChecks.push(`❌ competition.summary: MISSING`);
+                    validationErrors.push(`Missing competition summary. Got: ${JSON.stringify(analysis.competition).substring(0, 100)}`);
+                } else {
+                    const summaryPreview = String(analysis.competition.summary).substring(0, 50);
+                    fieldChecks.push(`✅ competition.summary: ${summaryPreview}...`);
                 }
 
-                if (!analysis.competition || !analysis.competition.summary) {
-                    console.error('❌ Missing competition data:', analysis.competition);
-                    throw new Error('Missing or invalid competition analysis');
-                }
-
+                // Check keyMetrics
                 if (!analysis.keyMetrics) {
-                    console.error('❌ Missing keyMetrics:', analysis.keyMetrics);
-                    throw new Error('Missing key metrics');
+                    fieldChecks.push(`❌ keyMetrics: MISSING (not an object)`);
+                    validationErrors.push('Missing keyMetrics object');
+                } else {
+                    fieldChecks.push(`✅ keyMetrics: ${Object.keys(analysis.keyMetrics).length} properties`);
                 }
 
-                if (!analysis.recommendations || !Array.isArray(analysis.recommendations)) {
-                    console.error('❌ Invalid recommendations:', analysis.recommendations);
-                    throw new Error('Missing or invalid recommendations array');
+                // Check recommendations
+                if (!Array.isArray(analysis.recommendations)) {
+                    fieldChecks.push(`❌ recommendations: NOT AN ARRAY (got ${typeof analysis.recommendations})`);
+                    validationErrors.push(`recommendations is not an array. Got: ${typeof analysis.recommendations}`);
+                } else {
+                    fieldChecks.push(`✅ recommendations: ${analysis.recommendations.length} items`);
                 }
 
-                if (!analysis.risks || !Array.isArray(analysis.risks)) {
-                    console.error('❌ Invalid risks:', analysis.risks);
-                    throw new Error('Missing or invalid risks array');
+                // Check risks
+                if (!Array.isArray(analysis.risks)) {
+                    fieldChecks.push(`❌ risks: NOT AN ARRAY (got ${typeof analysis.risks})`);
+                    validationErrors.push(`risks is not an array. Got: ${typeof analysis.risks}`);
+                } else {
+                    fieldChecks.push(`✅ risks: ${analysis.risks.length} items`);
                 }
 
-                if (!analysis.opportunities || !Array.isArray(analysis.opportunities)) {
-                    console.error('❌ Invalid opportunities:', analysis.opportunities);
-                    throw new Error('Missing or invalid opportunities array');
+                // Check opportunities
+                if (!Array.isArray(analysis.opportunities)) {
+                    fieldChecks.push(`❌ opportunities: NOT AN ARRAY (got ${typeof analysis.opportunities})`);
+                    validationErrors.push(`opportunities is not an array. Got: ${typeof analysis.opportunities}`);
+                } else {
+                    fieldChecks.push(`✅ opportunities: ${analysis.opportunities.length} items`);
                 }
+
+                // Log all field checks
+                console.log('📋 Field Validation Results:');
+                fieldChecks.forEach(check => console.log(`   ${check}`));
+
+                if (validationErrors.length > 0) {
+                    const error = new Error(`PDF Validation Failed:\n${validationErrors.join('\n')}`);
+                    console.error('\n❌ VALIDATION FAILED');
+                    console.error('Error Message:', error.message);
+                    console.error('\nFull Analysis Data:');
+                    console.error(JSON.stringify(analysis, null, 2));
+                    throw error;
+                }
+
+                console.log('\n✅ PDF Generation: All validations passed. Creating document...');
 
                 // Create PDF document
                 const doc = new PDFDocument({
@@ -72,64 +137,109 @@ class PDFService {
 
                 // Pipe to file
                 const stream = fs.createWriteStream(filePath);
+                
                 doc.pipe(stream);
 
+                console.log(`📝 PDF Generation: Adding content sections...`);
+                console.log(`   - Adding header...`);
+
                 // Header
-                this.addHeader(doc, input.ideaTitle || 'Startup Analysis');
+                this.addHeader(doc, input?.ideaTitle || 'Startup Analysis');
 
                 // Executive Summary
                 this.addExecutiveSummary(doc, analysis);
+                console.log(`   ✅ Executive Summary added`);
 
                 // Detailed Analysis Sections
                 this.addDetailedAnalysis(doc, analysis);
+                console.log(`   ✅ Detailed Analysis added`);
 
                 // Charts and Metrics
                 this.addMetricsSection(doc, analysis);
+                console.log(`   ✅ Metrics Section added`);
 
                 // Recommendations
                 this.addRecommendations(doc, analysis);
+                console.log(`   ✅ Recommendations added`);
 
                 // Risks and Opportunities
                 this.addRisksAndOpportunities(doc, analysis);
+                console.log(`   ✅ Risks and Opportunities added`);
 
                 // Footer
                 this.addFooter(doc, timestamp || new Date().toISOString(), analysisId);
+                console.log(`   ✅ Footer added`);
+
+                console.log(`\n📋 PDF Generation: Finalizing document...`);
 
                 // Finalize the PDF
                 doc.end();
 
                 stream.on('finish', () => {
                     try {
-                        // Ensure the PDF ends with the required EOF marker. Some readers
-                        // fail when it's missing. Check in latin1 to avoid multi-byte issues.
+                        console.log(`✅ PDF Generation: Stream finished. Verifying file...`);
+                        
+                        // Check file exists
+                        if (!fs.existsSync(filePath)) {
+                            throw new Error(`PDF file was not created at path: ${filePath}`);
+                        }
+
+                        const stats = fs.statSync(filePath);
+                        console.log(`📊 PDF Generation: File created successfully`);
+                        console.log(`   - Size: ${stats.size} bytes`);
+                        console.log(`   - Created: ${stats.birthtime}`);
+                        console.log(`   - Modified: ${stats.mtime}`);
+
+                        // Ensure the PDF ends with the required EOF marker
                         const content = fs.readFileSync(filePath, { encoding: 'latin1' });
                         if (!content.includes('%%EOF')) {
+                            console.log(`🔧 PDF Generation: Adding EOF marker...`);
                             fs.appendFileSync(filePath, '\n%%EOF\n', { encoding: 'latin1' });
+                            const newStats = fs.statSync(filePath);
+                            console.log(`   ✅ EOF marker added. New size: ${newStats.size} bytes`);
+                        } else {
+                            console.log(`✅ PDF Generation: EOF marker verified`);
                         }
-                    } catch (err) {
-                        // Log but don't fail the generation for this safety check
-                        console.warn('Warning: could not verify/append PDF EOF marker:', err.message);
-                    }
 
-                    resolve({
-                        success: true,
-                        fileName,
-                        filePath,
-                        fileSize: fs.statSync(filePath).size
-                    });
+                        console.log(`\n🎉 PDF GENERATION COMPLETED SUCCESSFULLY`);
+                        console.log(`${'='.repeat(70)}\n`);
+                        
+                        resolve({
+                            success: true,
+                            fileName,
+                            filePath,
+                            fileSize: fs.statSync(filePath).size
+                        });
+                    } catch (err) {
+                        console.error('\n❌ ERROR IN STREAM FINISH HANDLER');
+                        console.error('Error Message:', err.message);
+                        console.error('Stack:', err.stack);
+                        console.error(`${'='.repeat(70)}\n`);
+                        reject(err);
+                    }
                 });
 
                 stream.on('error', (error) => {
-                    console.error('Stream error during PDF generation:', error);
-                    reject(error);
+                    console.error('\n❌ PDF STREAM ERROR');
+                    console.error('Error Message:', error.message);
+                    console.error('Stack:', error.stack);
+                    console.error(`${'='.repeat(70)}\n`);
+                    reject(new Error(`Stream error during PDF generation: ${error.message}`));
                 });
 
                 doc.on('error', (error) => {
-                    console.error('PDFDocument error:', error);
-                    reject(error);
+                    console.error('\n❌ PDFDocument ERROR');
+                    console.error('Error Message:', error.message);
+                    console.error('Stack:', error.stack);
+                    console.error(`${'='.repeat(70)}\n`);
+                    reject(new Error(`PDFDocument error: ${error.message}`));
                 });
 
             } catch (error) {
+                console.error('\n❌ FATAL PDF GENERATION ERROR');
+                console.error('Error Message:', error.message);
+                console.error('Stack:', error.stack);
+                console.error(`${'='.repeat(70)}\n`);
                 reject(error);
             }
         });

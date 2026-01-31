@@ -45,7 +45,7 @@ router.post('/login', async (req, res) => {
 
         const token = jwt.sign({ id: user._id.toString(), email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-        res.json({ success: true, token, user: { id: user._id.toString(), email: user.email } });
+        res.json({ success: true, token, user: { id: user._id.toString(), name: user.name || null, email: user.email } });
     } catch (err) {
         console.error('Login failed:', err);
         res.status(500).json({ error: 'Login failed', message: err.message || String(err) });
@@ -61,13 +61,43 @@ router.get('/me', (req, res) => {
 
 // Get user's saved requests (requires auth middleware to set req.user)
 router.get('/requests', async (req, res) => {
-    if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
     try {
+        console.log('\n' + '='.repeat(60));
+        console.log('📋 FETCH USER REQUESTS');
+        console.log('User ID:', req.user?.id);
+        console.log('User Email:', req.user?.email);
+        
+        if (!req.user) {
+            console.error('❌ Not authenticated');
+            console.log('='.repeat(60) + '\n');
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+        
+        console.log(`🔍 Looking up user with ID: ${req.user.id}`);
         const user = await User.findById(req.user.id).lean();
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        
+        if (!user) {
+            console.error(`❌ User not found in database`);
+            console.log('='.repeat(60) + '\n');
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        console.log(`✅ User found. Requests count: ${user.requests?.length || 0}`);
+        if (user.requests && user.requests.length > 0) {
+            console.log('📝 Requests:');
+            user.requests.forEach((req, idx) => {
+                console.log(`   ${idx + 1}. ${req.input?.ideaTitle || 'Unknown'} - ${req.createdAt}`);
+            });
+        } else {
+            console.log('⚠️  No requests found for this user');
+        }
+        
+        console.log('='.repeat(60) + '\n');
         res.json({ success: true, requests: user.requests || [] });
     } catch (err) {
-        console.error('Failed to get user requests:', err);
+        console.error('❌ Failed to get user requests:', err);
+        console.error('Stack:', err.stack);
+        console.log('='.repeat(60) + '\n');
         res.status(500).json({ error: 'Failed to retrieve requests' });
     }
 });

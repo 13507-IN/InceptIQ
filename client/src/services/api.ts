@@ -126,9 +126,17 @@ class ApiService {
         } catch (e) {
           parsed = { message: text };
         }
-        console.error('Server-side error while generating/downloading PDF:', parsed);
+        console.error('🔴 Server-side error while generating/downloading PDF:', parsed);
+        console.error('🔴 Error details:', {
+          error: parsed.error,
+          message: parsed.message,
+          requestId: parsed.requestId,
+          stack: parsed.stack
+        });
         throw new Error(parsed.message || parsed.error || JSON.stringify(parsed));
       }
+
+      console.log(`✅ PDF response received - Content-Type: ${contentType}, Size: ${response.data.byteLength} bytes`);
 
       // Build a proper PDF Blob with correct MIME
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
@@ -145,10 +153,13 @@ class ApiService {
         }
       }
 
+      console.log(`📥 Triggering PDF download with filename: ${filename}`);
+      
       // Trigger browser download
       downloadFile(pdfBlob, filename);
+      console.log(`✅ PDF download triggered successfully`);
     } catch (error: any) {
-      console.error('PDF download failed:', error);
+      console.error('❌ PDF download failed:', error);
 
       // If server responded with arraybuffer error payload, try to decode and show message
       try {
@@ -158,21 +169,19 @@ class ApiService {
           const text = new TextDecoder().decode(resp.data);
           try {
             const parsed = JSON.parse(text);
+            console.error('🔴 Decoded server error response:', parsed);
             throw new Error(parsed.message || parsed.error || JSON.stringify(parsed));
-          } catch (e) {
-            // not JSON
-            console.warn('PDF download failed, server response:', text);
+          } catch (parseErr) {
+            console.error('🔴 Raw response text:', text);
+            throw new Error(text || 'Unknown server error');
           }
         }
-      } catch (readErr) {
-        console.warn('Could not decode server error payload for PDF download:', readErr);
+      } catch (e) {
+        // Fall through to next catch
       }
 
-      if (error.response?.status === 404) {
-        throw new Error('Report not found. Please generate the analysis first.');
-      }
-
-      throw new Error('Failed to download PDF report.');
+      // Preserve the original error for better diagnostics
+      throw error;
     }
   }
 

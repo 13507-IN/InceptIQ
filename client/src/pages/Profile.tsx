@@ -24,12 +24,36 @@ const Profile: React.FC = () => {
 
   useEffect(() => {
     const fetchResearches = async () => {
+      setLoading(true);
+      setError(null);
+      
       try {
-        setLoading(true);
+        console.log('\n' + '='.repeat(60));
+        console.log('📋 FETCHING USER RESEARCH HISTORY');
+        console.log(`User ID: ${user?.id}`);
+        console.log('='.repeat(60));
+        
         const response = await apiService.getUserResearches();
+        console.log('✅ Response received:', response);
+        console.log(`📝 Total researches: ${response.requests?.length || 0}`);
+        
+        if (response.requests && response.requests.length > 0) {
+          console.log('Research list:');
+            response.requests.forEach((r: ResearchItem, idx: number) => {
+            console.log(`   ${idx + 1}. ${r.input?.ideaTitle || 'Unknown'} (${r.id})`);
+            });
+        }
+        
         setResearches(response.requests || []);
+        console.log('='.repeat(60) + '\n');
       } catch (err: any) {
-        console.error('Failed to fetch researches:', err);
+        console.error('❌ Failed to fetch researches:', err);
+        console.error('Error details:', {
+          message: err.message,
+          status: err.response?.status,
+          data: err.response?.data
+        });
+        console.log('='.repeat(60) + '\n');
         setError(err.message || 'Failed to load your research history');
       } finally {
         setLoading(false);
@@ -38,6 +62,9 @@ const Profile: React.FC = () => {
 
     if (user?.id) {
       fetchResearches();
+    } else {
+      console.warn('⚠️  No user ID available. Skipping research fetch.');
+      setLoading(false);
     }
   }, [user?.id]);
 
@@ -205,7 +232,7 @@ const Profile: React.FC = () => {
               className="grid grid-cols-1 lg:grid-cols-2 gap-6"
               variants={containerVariants}
             >
-              {researches.map((research, index) => (
+              {researches.map((research) => (
                 <motion.div
                   key={research.id}
                   className="group bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-gray-700 hover:border-blue-500/50 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20"

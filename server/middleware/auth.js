@@ -24,7 +24,7 @@ async function authMiddleware(req, res, next) {
         if (!user) {
             req.user = null;
         } else {
-            req.user = { id: user._id.toString(), email: user.email };
+            req.user = { id: user._id.toString(), email: user.email, name: user.name || null };
         }
     } catch (err) {
         req.user = null;

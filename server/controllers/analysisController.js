@@ -27,6 +27,8 @@ const analysisController = {
             // If a user is authenticated, attach a brief request summary to their MongoDB record
             try {
                 if (req.user && req.user.id) {
+                    console.log(`\n📝 Saving request to user record (ID: ${req.user.id})`);
+                    
                     const summary = {
                         id: analysisId,
                         input: {
@@ -34,6 +36,7 @@ const analysisController = {
                             ideaDescription: ideaData.ideaDescription,
                             targetMarket: ideaData.targetMarket || null,
                         },
+                        analysis: analysisResult, // Save full analysis for persistence
                         createdAt: analysisResult.createdAt
                     };
 
@@ -41,16 +44,22 @@ const analysisController = {
                     try {
                         const user = await User.findById(req.user.id);
                         if (user) {
+                            console.log(`   ✅ User found. Adding request summary with full analysis...`);
                             await user.addRequest(summary);
+                            console.log(`   ✅ Request saved. Total requests: ${user.requests.length}`);
+                            console.log(`   📊 Saved analysis includes: overallScore, uniqueness, marketViability, competition, keyMetrics, recommendations, risks, opportunities`);
                         } else {
-                            console.warn('Authenticated user not found in DB:', req.user.id);
+                            console.warn(`❌ Authenticated user not found in DB: ${req.user.id}`);
                         }
                     } catch (dbErr) {
-                        console.warn('Failed to save request to user in DB:', dbErr.message || dbErr);
+                        console.warn('❌ Failed to save request to user in DB:', dbErr.message || dbErr);
+                        console.error('Stack:', dbErr.stack);
                     }
+                } else {
+                    console.log('⚠️  Analysis not attached to user (not authenticated or no user ID)');
                 }
             } catch (attachErr) {
-                console.warn('Failed to attach analysis to user record:', attachErr.message || attachErr);
+                console.warn('❌ Failed to attach analysis to user record:', attachErr.message || attachErr);
             }
 
             console.log(`✅ Analysis completed for ID: ${analysisId}`);
@@ -86,23 +95,59 @@ const analysisController = {
                 });
             }
 
-            const analysis = analysisStorage.get(id);
+            console.log(`\n${'='.repeat(60)}`);
+            console.log(`📊 RETRIEVING ANALYSIS`);
+            console.log(`Analysis ID: ${id}`);
+            console.log(`${'='.repeat(60)}`);
 
-            if (!analysis) {
-                return res.status(404).json({
-                    error: 'Analysis not found',
-                    message: `No analysis found with ID: ${id}`,
-                    availableIds: Array.from(analysisStorage.keys()).slice(-5) // Return last 5 IDs for debugging
+            // First check in-memory storage
+            let analysis = analysisStorage.get(id);
+            
+            if (analysis) {
+                console.log(`✅ Analysis found in memory`);
+                console.log(`${'='.repeat(60)}\n`);
+                return res.status(200).json({
+                    success: true,
+                    data: analysis,
+                    source: 'memory'
                 });
             }
 
-            res.status(200).json({
-                success: true,
-                data: analysis
+            // If not in memory, try to find in database from user's requests
+            console.log(`⚠️  Analysis not in memory. Checking database...`);
+            
+            if (req.user && req.user.id) {
+                const user = await User.findById(req.user.id).lean();
+                if (user && user.requests) {
+                    const request = user.requests.find(r => r.id === id);
+                    if (request && request.analysis) {
+                        console.log(`✅ Analysis found in user's database record`);
+                        console.log(`${'='.repeat(60)}\n`);
+                        return res.status(200).json({
+                            success: true,
+                            data: request.analysis,
+                            source: 'database',
+                            note: 'This is a stored copy of the analysis'
+                        });
+                    }
+                }
+            }
+
+            console.error(`❌ Analysis not found anywhere`);
+            console.log(`📌 Analysis ID: ${id}`);
+            console.log(`📌 User ID: ${req.user?.id || 'Not authenticated'}`);
+            console.log(`${'='.repeat(60)}\n`);
+            
+            return res.status(404).json({
+                error: 'Analysis not found',
+                message: `No analysis found with ID: ${id}. The analysis may have expired or not been saved.`,
+                availableIds: Array.from(analysisStorage.keys()).slice(-5),
+                hint: 'Try regenerating the analysis from the Analysis page'
             });
 
         } catch (error) {
-            console.error('Error retrieving analysis:', error);
+            console.error('❌ Error retrieving analysis:', error);
+            console.error(`${'='.repeat(60)}\n`);
             
             res.status(500).json({
                 error: 'Failed to retrieve analysis',

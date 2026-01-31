@@ -15,6 +15,7 @@ const Results: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
     if (analysisId) fetchAnalysisData(analysisId);
@@ -22,25 +23,148 @@ const Results: React.FC = () => {
 
   const fetchAnalysisData = async (id: string) => {
     try {
+      console.log(`📊 Fetching analysis data for ID: ${id}`);
       setLoading(true);
       const response = await apiService.getAnalysis(id);
       const resolved = response?.data?.analysis ?? response?.data ?? response ?? null;
+      
+      if (!resolved) {
+        console.error('❌ No analysis data in response:', response);
+        setError("Analysis data not found in response.");
+        return;
+      }
+      
+      console.log(`✅ Analysis data loaded successfully`);
       setAnalysisData(resolved);
     } catch (err: any) {
-      console.error("Failed to fetch analysis:", err);
-      setError("Unable to load analysis data.");
+      console.error("❌ Failed to fetch analysis:", err);
+      console.error("Error details:", {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data
+      });
+      setError(err.message || "Unable to load analysis data.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDownloadPdf = async () => {
-    if (!analysisId) return;
+    if (!analysisId) {
+      console.error('❌ No analysis ID provided');
+      setPdfError("Analysis ID is missing");
+      return;
+    }
+    
+    let startTime = 0;
+    const duration = (performance.now() - startTime).toFixed(2);
+    
     try {
+      console.log(`\n${'='.repeat(60)}`);
+      console.log(`📥 PDF DOWNLOAD REQUEST`);
+      console.log(`Analysis ID: ${analysisId}`);
+      console.log(`Timestamp: ${new Date().toISOString()}`);
+      console.log(`${'='.repeat(60)}\n`);
+      
       setDownloadingPdf(true);
+      setPdfError(null);
+      
+      startTime = performance.now();
+      console.log('🔄 Initiating PDF download...');
+      console.log(`📌 API Endpoint: /api/reports/${analysisId}/download`);
+      
       await apiService.downloadReport(analysisId);
-    } catch {
-      alert("Failed to download PDF report.");
+      
+      // const duration = (performance.now() - startTime).toFixed(2);
+      console.log(`✅ PDF download succeeded (${duration}ms)`);
+      console.log(`${'='.repeat(60)}\n`);
+      
+    } catch (error: any) {
+      const duration = (performance.now() - startTime).toFixed(2);
+      
+      console.error(`\n${'='.repeat(60)}`);
+      //console.error(`❌ PDF DOWNLOAD FAILED (${duration.toFixed(2)}ms)`);
+      console.error(`Analysis ID: ${analysisId}`);
+      console.error(`Timestamp: ${new Date().toISOString()}`);
+      console.error(`${'='.repeat(60)}`);
+      
+      // Log error details
+      console.error('📋 Error Message:', error.message);
+      console.error('📋 Error Code:', error.code);
+      console.error('📋 HTTP Status:', error.response?.status);
+      console.error('📋 HTTP Status Text:', error.response?.statusText);
+      console.error('📋 Response Data:', error.response?.data);
+      
+      // Log request context
+      if (error.config) {
+        console.error('\n📝 Request Details:');
+        console.error('   URL:', error.config.url);
+        console.error('   Method:', error.config.method);
+        console.error('   Headers:', error.config.headers);
+        console.error('   Data:', error.config.data);
+      }
+      
+      // Log response headers
+      if (error.response?.headers) {
+        console.error('\n📤 Response Headers:', error.response.headers);
+      }
+      
+      // Log stack trace for debugging
+      if (error.stack) {
+        console.error('\n🔗 Stack Trace:');
+        console.error(error.stack);
+      }
+      
+      // Log full error object for inspection
+      console.error('\n📊 Full Error Object:', JSON.stringify({
+        message: error.message,
+        code: error.code,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers
+        }
+      }, null, 2));
+      
+      console.error(`${'='.repeat(60)}\n`);
+      
+      // Determine error message for user with diagnosis
+      let userErrorMessage = "Failed to download PDF. Please try again.";
+      let diagnosis = "";
+      
+      if (error.response?.status === 404) {
+        userErrorMessage = "Analysis not found. It may have been deleted or expired.";
+        diagnosis = "Analysis doesn't exist in storage";
+      } else if (error.response?.status === 500) {
+        userErrorMessage = "Server error during PDF generation. Details: " + (error.response?.data?.error || error.response?.data?.message || "Unknown server error");
+        diagnosis = "PDF generation failed on server";
+        console.error('🔴 Server Error Details:', error.response?.data);
+      } else if (error.response?.status === 401) {
+        userErrorMessage = "Your session has expired. Please log in again.";
+        diagnosis = "Authentication failed";
+      } else if (error.response?.status === 400) {
+        userErrorMessage = `Invalid request: ${error.response?.data?.error || error.response?.data?.message || 'Unknown error'}`;
+        diagnosis = "Bad request - Invalid parameters";
+      } else if (error.code === 'ERR_NETWORK') {
+        userErrorMessage = "Network error. Please check your connection and try again.";
+        diagnosis = "Network connectivity issue";
+      } else if (error.message?.toLowerCase().includes('timeout')) {
+        userErrorMessage = "Request timed out. The file may be too large or the server is slow.";
+        diagnosis = "Timeout occurred";
+      } else if (error.message?.toLowerCase().includes('abort')) {
+        userErrorMessage = "Download was aborted. Please try again.";
+        diagnosis = "Request aborted";
+      }
+      
+      console.error(`📌 Diagnosis: ${diagnosis}`);
+      console.error(`📌 Suggested Action: ${userErrorMessage}\n`);
+      
+      setPdfError(userErrorMessage);
+      alert(`PDF Download Error:\n${userErrorMessage}\n\nOpen Developer Tools (F12 → Console) for detailed logs.`);
+      
     } finally {
       setDownloadingPdf(false);
     }
@@ -77,10 +201,35 @@ const Results: React.FC = () => {
   return (
     <motion.div 
       className="max-w-6xl mx-auto px-6 py-10"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
     >
+      {/* PDF Error Display */}
+      {pdfError && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="mb-6 bg-red-500/10 border border-red-500/30 rounded-lg p-4"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-red-300 font-semibold mb-1">PDF Download Error</h3>
+              <p className="text-red-200 text-sm">{pdfError}</p>
+              <p className="text-red-200/60 text-xs mt-2">Check the browser console for more details</p>
+            </div>
+            <button
+              onClick={() => setPdfError(null)}
+              className="text-red-400 hover:text-red-300 text-lg"
+            >
+              ✕
+            </button>
+          </div>
+        </motion.div>
+      )}
+     
       {/* Header */}
       <motion.div 
         variants={itemVariants}

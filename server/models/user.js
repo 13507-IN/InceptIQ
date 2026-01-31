@@ -3,6 +3,7 @@ const { Schema, model } = require('mongoose');
 const RequestSchema = new Schema({
   id: { type: String, required: true },
   input: { type: Object, default: {} },
+  analysis: { type: Object, default: null }, // Store full analysis data for persistence
   createdAt: { type: Date, default: Date.now }
 }, { _id: false });
 
