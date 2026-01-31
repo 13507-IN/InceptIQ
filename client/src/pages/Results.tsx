@@ -57,7 +57,6 @@ const Results: React.FC = () => {
     }
     
     let startTime = 0;
-    const duration = (performance.now() - startTime).toFixed(2);
     
     try {
       console.log(`\n${'='.repeat(60)}`);
