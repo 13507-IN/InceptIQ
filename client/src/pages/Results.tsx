@@ -75,13 +75,10 @@ const Results: React.FC = () => {
       
       await apiService.downloadReport(analysisId);
       
-      // const duration = (performance.now() - startTime).toFixed(2);
-      console.log(`✅ PDF download succeeded (${duration}ms)`);
+      console.log(`✅ PDF download succeeded`);
       console.log(`${'='.repeat(60)}\n`);
       
     } catch (error: any) {
-      const duration = (performance.now() - startTime).toFixed(2);
-      
       console.error(`\n${'='.repeat(60)}`);
       //console.error(`❌ PDF DOWNLOAD FAILED (${duration.toFixed(2)}ms)`);
       console.error(`Analysis ID: ${analysisId}`);
