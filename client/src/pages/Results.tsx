@@ -56,7 +56,7 @@ const Results: React.FC = () => {
       return;
     }
     
-    let startTime = 0;
+    // let startTime = 0;
     
     try {
       console.log(`\n${'='.repeat(60)}`);
@@ -68,7 +68,7 @@ const Results: React.FC = () => {
       setDownloadingPdf(true);
       setPdfError(null);
       
-      startTime = performance.now();
+      // startTime = performance.now();
       console.log('🔄 Initiating PDF download...');
       console.log(`📌 API Endpoint: /api/reports/${analysisId}/download`);
       
