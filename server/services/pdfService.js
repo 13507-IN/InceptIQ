@@ -11,10 +11,101 @@ class PDFService {
         }
     }
 
+    normalizeAnalysisData(analysisData) {
+        const root = analysisData?.analysis ?? analysisData ?? {};
+        const details = (root && typeof root === 'object' && root.analysis && typeof root.analysis === 'object')
+            ? root.analysis
+            : root;
+
+        const asArray = (value) => {
+            if (Array.isArray(value)) return value;
+            if (value === undefined || value === null) return [];
+            return [value];
+        };
+
+        const asObject = (value) => {
+            if (value && typeof value === 'object' && !Array.isArray(value)) return value;
+            return {};
+        };
+
+        const asText = (value, fallback) => {
+            if (value === undefined || value === null || value === '') return fallback;
+            return String(value);
+        };
+
+        const toNumber = (value) => {
+            if (value === undefined || value === null || value === '') return null;
+            const num = Number(value);
+            return Number.isFinite(num) ? num : null;
+        };
+
+        const uniqueness = details.uniqueness ?? root.uniqueness ?? {};
+        const marketViability = details.marketViability ?? root.marketViability ?? {};
+        const competition = details.competition ?? root.competition ?? {};
+
+        const uniquenessScore = toNumber(root.uniquenessScore ?? details.uniquenessScore ?? uniqueness.score);
+        const marketViabilityScore = toNumber(root.marketViabilityScore ?? details.marketViabilityScore ?? marketViability.score);
+        const competitionScore = toNumber(root.competitionScore ?? details.competitionScore ?? competition.score);
+
+        const rawOverall = toNumber(root.overallScore ?? details.overallScore);
+        const scoreValues = [uniquenessScore, marketViabilityScore, competitionScore].filter(v => typeof v === 'number');
+        const overallScore = rawOverall ?? (scoreValues.length > 0
+            ? Math.round(scoreValues.reduce((sum, v) => sum + v, 0) / scoreValues.length)
+            : null);
+
+        return {
+            overallScore,
+            uniquenessScore,
+            marketViabilityScore,
+            competitionScore,
+            uniqueness: {
+                score: uniquenessScore,
+                summary: asText(uniqueness.summary, 'No summary available'),
+                strengths: asArray(uniqueness.strengths),
+                concerns: asArray(uniqueness.concerns)
+            },
+            marketViability: {
+                score: marketViabilityScore,
+                summary: asText(marketViability.summary, 'No summary available'),
+                marketSize: asText(marketViability.marketSize, 'Not specified'),
+                targetAudience: asText(marketViability.targetAudience, 'Not specified'),
+                trends: asArray(marketViability.trends)
+            },
+            competition: {
+                score: competitionScore,
+                summary: asText(competition.summary, 'No summary available'),
+                directCompetitors: asArray(competition.directCompetitors),
+                indirectCompetitors: asArray(competition.indirectCompetitors),
+                competitiveAdvantage: asText(competition.competitiveAdvantage, 'Not specified')
+            },
+            keyMetrics: asObject(root.keyMetrics ?? details.keyMetrics),
+            recommendations: asArray(root.recommendations ?? details.recommendations),
+            risks: asArray(root.risks ?? details.risks),
+            opportunities: asArray(root.opportunities ?? details.opportunities)
+        };
+    }
+
     async generateAnalysisReport(analysisData, analysisId) {
         return new Promise((resolve, reject) => {
             try {
-                const { input, analysis, timestamp } = analysisData;
+                if (!analysisData) {
+                    const error = new Error('analysisData is null or undefined');
+                    console.error('❌ PDF Generation Error - analysisData:', error.message);
+                    console.error('Stack:', error.stack);
+                    throw error;
+                }
+
+                const { input, timestamp } = analysisData;
+                const analysisPayload = analysisData.analysis ?? analysisData;
+
+                if (!analysisPayload || typeof analysisPayload !== 'object') {
+                    const error = new Error(`Analysis data is missing or invalid. Received: ${JSON.stringify(analysisData).substring(0, 200)}`);
+                    console.error('❌ PDF Generation Error - Missing analysis:', error.message);
+                    console.error('Received data:', analysisData);
+                    throw error;
+                }
+
+                const reportAnalysis = this.normalizeAnalysisData(analysisData);
                 const fileName = `analysis-report-${analysisId}.pdf`;
                 const filePath = path.join(this.reportsDir, fileName);
 
@@ -28,90 +119,76 @@ class PDFService {
                 
                 console.log(`🔍 PDF Generation: Starting validation for analysis ID: ${analysisId}`);
                 
-                if (!analysisData) {
-                    const error = new Error('analysisData is null or undefined');
-                    console.error('❌ PDF Generation Error - analysisData:', error.message);
-                    console.error('Stack:', error.stack);
-                    throw error;
-                }
-
-                if (!analysis) {
-                    const error = new Error(`Analysis data is missing. Received: ${JSON.stringify(analysisData).substring(0, 200)}`);
-                    console.error('❌ PDF Generation Error - Missing analysis:', error.message);
-                    console.error('Received data:', analysisData);
-                    throw error;
-                }
-
                 // Validate each required field with specific error messages
                 const validationErrors = [];
                 const fieldChecks = [];
 
                 // Check overallScore
-                if (analysis.overallScore === undefined || analysis.overallScore === null) {
+                if (reportAnalysis.overallScore === undefined || reportAnalysis.overallScore === null) {
                     fieldChecks.push(`❌ overallScore: MISSING (undefined/null)`);
                     validationErrors.push('Missing overallScore');
                 } else {
-                    fieldChecks.push(`✅ overallScore: ${analysis.overallScore}`);
+                    fieldChecks.push(`✅ overallScore: ${reportAnalysis.overallScore}`);
                 }
 
 // Check uniqueness
-if (!analysis.uniqueness?.summary) {
+if (!reportAnalysis.uniqueness?.summary) {
     fieldChecks.push(`❌ uniqueness.summary: MISSING`);
-    const uniquenessSafe = JSON.stringify(analysis.uniqueness ?? "undefined");
+    const uniquenessSafe = JSON.stringify(reportAnalysis.uniqueness ?? "undefined");
     validationErrors.push(`Missing uniqueness summary. Got: ${uniquenessSafe.substring(0, 100)}`);
 } else {
-    const summaryPreview = String(analysis.uniqueness.summary).substring(0, 50);
+    const summaryPreview = String(reportAnalysis.uniqueness.summary).substring(0, 50);
     fieldChecks.push(`✅ uniqueness.summary: ${summaryPreview}...`);
 }
 
                 // Check marketViability
-                if (!analysis.marketViability?.summary) {
+                if (!reportAnalysis.marketViability?.summary) {
                     fieldChecks.push(`❌ marketViability.summary: MISSING`);
-                    validationErrors.push(`Missing marketViability summary. Got: ${JSON.stringify(analysis.marketViability).substring(0, 100)}`);
+                    validationErrors.push(`Missing marketViability summary. Got: ${JSON.stringify(reportAnalysis.marketViability).substring(0, 100)}`);
                 } else {
-                    const summaryPreview = String(analysis.marketViability.summary).substring(0, 50);
+                    const summaryPreview = String(reportAnalysis.marketViability.summary).substring(0, 50);
                     fieldChecks.push(`✅ marketViability.summary: ${summaryPreview}...`);
                 }
 
                 // Check competition
-                if (!analysis.competition?.summary) {
+                if (!reportAnalysis.competition?.summary) {
                     fieldChecks.push(`❌ competition.summary: MISSING`);
-                    validationErrors.push(`Missing competition summary. Got: ${JSON.stringify(analysis.competition).substring(0, 100)}`);
+                    validationErrors.push(`Missing competition summary. Got: ${JSON.stringify(reportAnalysis.competition).substring(0, 100)}`);
                 } else {
-                    const summaryPreview = String(analysis.competition.summary).substring(0, 50);
+                    const summaryPreview = String(reportAnalysis.competition.summary).substring(0, 50);
                     fieldChecks.push(`✅ competition.summary: ${summaryPreview}...`);
                 }
 
                 // Check keyMetrics
-                if (!analysis.keyMetrics) {
+                if (!reportAnalysis.keyMetrics) {
                     fieldChecks.push(`❌ keyMetrics: MISSING (not an object)`);
                     validationErrors.push('Missing keyMetrics object');
                 } else {
-                    fieldChecks.push(`✅ keyMetrics: ${Object.keys(analysis.keyMetrics).length} properties`);
+                    fieldChecks.push(`✅ keyMetrics: ${Object.keys(reportAnalysis.keyMetrics).length} properties`);
                 }
 
                 // Check recommendations
-                if (!Array.isArray(analysis.recommendations)) {
-                    fieldChecks.push(`❌ recommendations: NOT AN ARRAY (got ${typeof analysis.recommendations})`);
-                    validationErrors.push(`recommendations is not an array. Got: ${typeof analysis.recommendations}`);
+                if (!Array.isArray(reportAnalysis.recommendations)) {
+                    fieldChecks.push(`❌ recommendations: NOT AN ARRAY (got ${typeof reportAnalysis.recommendations})`);
+                    validationErrors.push(`recommendations is not an array. Got: ${typeof reportAnalysis.recommendations}`);
                 } else {
-                    fieldChecks.push(`✅ recommendations: ${analysis.recommendations.length} items`);
+                    fieldChecks.push(`✅ recommendations: ${reportAnalysis.recommendations.length} items`);
                 }
 
                 // Check risks
-                if (!Array.isArray(analysis.risks)) {
-                    fieldChecks.push(`❌ risks: NOT AN ARRAY (got ${typeof analysis.risks})`);
-                    validationErrors.push(`risks is not an array. Got: ${typeof analysis.risks}`);
+                if (!Array.isArray(reportAnalysis.risks)) {
+                    fieldChecks.push(`❌ risks: NOT AN ARRAY (got ${typeof reportAnalysis.risks})`);
+                    validationErrors.push(`risks is not an array. Got: ${typeof reportAnalysis.risks}`);
                 } else {
-                    fieldChecks.push(`✅ risks: ${analysis.risks.length} items`);
+                    fieldChecks.push(`✅ risks: ${reportAnalysis.risks.length} items`);
                 }
 
                 // Check opportunities
-                if (!Array.isArray(analysis.opportunities)) {
-                    fieldChecks.push(`❌ opportunities: NOT AN ARRAY (got ${typeof analysis.opportunities})`);
-                    validationErrors.push(`opportunities is not an array. Got: ${typeof analysis.opportunities}`);
+                if (!Array.isArray(reportAnalysis.opportunities)) {
+                    fieldChecks.push(`❌ opportunities: NOT AN ARRAY (got ${typeof reportAnalysis.opportunities})`);
+                    validationErrors.push(`opportunities is not an array. Got: ${typeof reportAnalysis.opportunities}`);
                 } else {
-                    fieldChecks.push(`✅ opportunities: ${analysis.opportunities.length} items`);
+                    fieldChecks.push(`✅ opportunities: ${reportAnalysis.opportunities.length} items`);
                 }
 
                 // Log all field checks
@@ -123,7 +200,7 @@ if (!analysis.uniqueness?.summary) {
                     console.error('\n❌ VALIDATION FAILED');
                     console.error('Error Message:', error.message);
                     console.error('\nFull Analysis Data:');
-                    console.error(JSON.stringify(analysis, null, 2));
+                    console.error(JSON.stringify(reportAnalysis, null, 2));
                     throw error;
                 }
 
@@ -132,7 +209,8 @@ if (!analysis.uniqueness?.summary) {
                 // Create PDF document
                 const doc = new PDFDocument({
                     size: 'A4',
-                    margins: { top: 50, bottom: 50, left: 50, right: 50 }
+                    margins: { top: 50, bottom: 50, left: 50, right: 50 },
+                    bufferPages: true
                 });
 
                 // Pipe to file
@@ -147,23 +225,23 @@ if (!analysis.uniqueness?.summary) {
                 this.addHeader(doc, input?.ideaTitle || 'Startup Analysis');
 
                 // Executive Summary
-                this.addExecutiveSummary(doc, analysis);
+                this.addExecutiveSummary(doc, reportAnalysis);
                 console.log(`   ✅ Executive Summary added`);
 
                 // Detailed Analysis Sections
-                this.addDetailedAnalysis(doc, analysis);
+                this.addDetailedAnalysis(doc, reportAnalysis);
                 console.log(`   ✅ Detailed Analysis added`);
 
                 // Charts and Metrics
-                this.addMetricsSection(doc, analysis);
+                this.addMetricsSection(doc, reportAnalysis);
                 console.log(`   ✅ Metrics Section added`);
 
                 // Recommendations
-                this.addRecommendations(doc, analysis);
+                this.addRecommendations(doc, reportAnalysis);
                 console.log(`   ✅ Recommendations added`);
 
                 // Risks and Opportunities
-                this.addRisksAndOpportunities(doc, analysis);
+                this.addRisksAndOpportunities(doc, reportAnalysis);
                 console.log(`   ✅ Risks and Opportunities added`);
 
                 // Footer
@@ -285,9 +363,13 @@ if (!analysis.uniqueness?.summary) {
            .fillColor('#374151')
            .text('Overall Viability Score', 70, scoreBoxY + 15);
 
+        const overallDisplay = (analysis.overallScore === undefined || analysis.overallScore === null || analysis.overallScore === '')
+            ? 'N/A'
+            : `${analysis.overallScore}/100`;
+
         doc.fontSize(32)
            .fillColor('#059669')
-           .text(`${analysis.overallScore}/100`, 70, scoreBoxY + 35);
+           .text(overallDisplay, 70, scoreBoxY + 35);
 
         // Score breakdown
         const scores = [
@@ -302,9 +384,13 @@ if (!analysis.uniqueness?.summary) {
                .fillColor('#6b7280')
                .text(score.label, xPos, scoreBoxY + 15);
             
+            const scoreDisplay = (score.value === undefined || score.value === null || score.value === '')
+                ? 'N/A'
+                : `${score.value}`;
+
             doc.fontSize(18)
                .fillColor('#374151')
-               .text(`${score.value}`, xPos, scoreBoxY + 30);
+               .text(scoreDisplay, xPos, scoreBoxY + 30);
 
             xPos += 80;
         });
