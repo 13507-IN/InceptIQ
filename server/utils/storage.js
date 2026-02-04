@@ -81,8 +81,29 @@ class AnalysisStorage {
     }
 }
 
+// Simple in-memory community post storage (for demo/dev only)
+class CommunityStorage {
+    constructor() {
+        this.posts = [];
+    }
+
+    add(post) {
+        this.posts.unshift(post);
+        return post;
+    }
+
+    list() {
+        return this.posts;
+    }
+
+    get(id) {
+        return this.posts.find(post => post.id === id) || null;
+    }
+}
+
 // Create a singleton instance
 const analysisStorage = new AnalysisStorage();
+const communityStorage = new CommunityStorage();
 
 // Periodic cleanup (run every hour)
 setInterval(() => {
@@ -132,6 +153,8 @@ const userStorage = new UserStorage();
 module.exports = {
     analysisStorage,
     AnalysisStorage,
+    communityStorage,
+    CommunityStorage,
     userStorage,
     UserStorage
 };

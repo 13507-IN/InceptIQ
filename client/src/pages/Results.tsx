@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Download, AlertCircle, ArrowLeft } from "lucide-react";
+import { Download, AlertCircle, ArrowLeft, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../services/api";
@@ -16,6 +16,8 @@ const Results: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [publishingCommunity, setPublishingCommunity] = useState(false);
+  const [publishMessage, setPublishMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (analysisId) fetchAnalysisData(analysisId);
@@ -166,6 +168,24 @@ const Results: React.FC = () => {
     }
   };
 
+  const handlePublishCommunity = async () => {
+    if (!analysisId) {
+      setPublishMessage('Analysis ID is missing');
+      return;
+    }
+
+    try {
+      setPublishingCommunity(true);
+      setPublishMessage(null);
+      await apiService.publishCommunityPost(analysisId);
+      setPublishMessage('Your idea was published to the community.');
+    } catch (error: any) {
+      setPublishMessage(error.message || 'Failed to publish to community.');
+    } finally {
+      setPublishingCommunity(false);
+    }
+  };
+
   if (loading) return <LoadingSpinner fullScreen message="Loading analysis results..." />;
 
   if (error || !analysisData)
@@ -225,11 +245,34 @@ const Results: React.FC = () => {
           </div>
         </motion.div>
       )}
+
+      {publishMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="mb-6 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-blue-300 font-semibold mb-1">Community Publish</h3>
+              <p className="text-blue-200 text-sm">{publishMessage}</p>
+            </div>
+            <button
+              onClick={() => setPublishMessage(null)}
+              className="text-blue-300 hover:text-blue-200 text-lg"
+            >
+              âœ•
+            </button>
+          </div>
+        </motion.div>
+      )}
      
       {/* Header */}
       <motion.div 
         variants={itemVariants}
-        className="flex justify-between items-center mb-8"
+        className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8"
       >
         <div>
           <div className="flex items-center gap-4 mb-2">
@@ -245,16 +288,28 @@ const Results: React.FC = () => {
           </div>
           <p className="text-gray-400 ml-14">Analysis ID: {analysisId}</p>
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleDownloadPdf}
-          disabled={downloadingPdf}
-          className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
-        >
-          <Download className="h-5 w-5" />
-          {downloadingPdf ? "Downloading..." : "Download PDF"}
-        </motion.button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handlePublishCommunity}
+            disabled={publishingCommunity}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
+          >
+            <Send className="h-5 w-5" />
+            {publishingCommunity ? "Publishing..." : "Publish to Community"}
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
+            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
+          >
+            <Download className="h-5 w-5" />
+            {downloadingPdf ? "Downloading..." : "Download PDF"}
+          </motion.button>
+        </div>
       </motion.div>
 
       {/* Overall Score */}

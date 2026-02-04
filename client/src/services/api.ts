@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { StartupIdea, AnalysisResponse } from '../types';
+import { StartupIdea, AnalysisResponse, CommunityPost } from '../types';
 
 // Base API configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -231,6 +231,31 @@ class ApiService {
       }
       
       throw new Error('Failed to retrieve your research history.');
+    }
+  }
+
+  // Community: list posts
+  async listCommunityPosts(): Promise<CommunityPost[]> {
+    try {
+      const response = await api.get('/community');
+      return response.data?.data || [];
+    } catch (error: any) {
+      console.error('Failed to fetch community posts:', error);
+      throw new Error('Failed to load community posts.');
+    }
+  }
+
+  // Community: publish from analysis ID
+  async publishCommunityPost(analysisId: string): Promise<CommunityPost> {
+    try {
+      const response = await api.post(`/community/publish/${analysisId}`);
+      return response.data?.data;
+    } catch (error: any) {
+      console.error('Failed to publish community post:', error);
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Failed to publish to community.');
     }
   }
 }

@@ -117,6 +117,31 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
+// Community types
+export interface CommunityIdea {
+  ideaTitle: string;
+  ideaDescription: string;
+  targetMarket?: string;
+  businessModel?: string;
+  industry?: string;
+  budget?: string;
+  timeline?: string;
+}
+
+export interface CommunityAuthor {
+  id?: string | null;
+  email?: string | null;
+  name?: string | null;
+}
+
+export interface CommunityPost {
+  id: string;
+  analysisId: string;
+  createdAt: string;
+  idea: CommunityIdea;
+  author?: CommunityAuthor | null;
+}
+
 // Form types
 export interface FormErrors {
   [key: string]: string;

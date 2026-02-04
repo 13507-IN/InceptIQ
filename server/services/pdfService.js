@@ -324,10 +324,25 @@ if (!reportAnalysis.uniqueness?.summary) {
     }
 
     addHeader(doc, ideaTitle) {
+        const logoCandidates = [
+            path.join(__dirname, '../../client/public/Untitled design (1).png'),
+            path.join(__dirname, '../../client/build/untitled design (1).png')
+        ];
+
+        const logoPath = logoCandidates.find(candidate => fs.existsSync(candidate));
+
+        if (logoPath) {
+            try {
+                doc.image(logoPath, 50, 40, { width: 36, height: 36 });
+            } catch (error) {
+                console.warn('⚠️  PDF logo rendering failed:', error.message);
+            }
+        }
+
         // Title
         doc.fontSize(24)
            .fillColor('#1e40af')
-           .text('AI STARTUP VALIDATOR', 50, 50, { align: 'center' });
+           .text('inceptIQ', 50, 50, { align: 'center' });
 
         doc.fontSize(18)
            .fillColor('#374151')
@@ -405,7 +420,7 @@ if (!reportAnalysis.uniqueness?.summary) {
               .fillColor('#374151')
               .text(analysis.uniqueness?.summary || 'No summary available', 50, doc.y, { width: 495 });
 
-          doc.y += 20;
+          doc.moveDown(0.6);
           this.addBulletPoints(doc, 'Strengths:', analysis.uniqueness?.strengths || []);
           this.addBulletPoints(doc, 'Concerns:', analysis.uniqueness?.concerns || []);
 
@@ -414,14 +429,14 @@ if (!reportAnalysis.uniqueness?.summary) {
           doc.fontSize(11)
               .text(analysis.marketViability?.summary || 'No summary available', 50, doc.y, { width: 495 });
 
-          doc.y += 15;
+          doc.moveDown(0.4);
           doc.fontSize(10)
               .fillColor('#6b7280')
               .text('Market Size: ', 50, doc.y)
               .fillColor('#374151')
               .text(analysis.marketViability?.marketSize || 'Not specified', 120, doc.y);
 
-          doc.y += 15;
+          doc.moveDown(0.4);
           doc.fillColor('#6b7280')
               .text('Target Audience: ', 50, doc.y)
               .fillColor('#374151')
@@ -433,7 +448,7 @@ if (!reportAnalysis.uniqueness?.summary) {
               .fillColor('#374151')
               .text(analysis.competition?.summary || 'No summary available', 50, doc.y, { width: 495 });
 
-          doc.y += 20;
+          doc.moveDown(0.6);
           this.addBulletPoints(doc, 'Direct Competitors:', analysis.competition?.directCompetitors || []);
           this.addBulletPoints(doc, 'Competitive Advantage:', [analysis.competition?.competitiveAdvantage || 'Not specified']);
     }
@@ -455,10 +470,10 @@ if (!reportAnalysis.uniqueness?.summary) {
                .text(`${metric.label}: `, 50, doc.y)
                .fillColor('#374151')
                .text(String(metric.value), 150, doc.y);
-            doc.y += 15;
+            doc.moveDown(0.3);
         });
 
-        doc.y += 10;
+        doc.moveDown(0.4);
     }
 
     addRecommendations(doc, analysis) {
@@ -477,16 +492,16 @@ if (!reportAnalysis.uniqueness?.summary) {
                .fillColor('#1f2937')
                .text(`${index + 1}. ${rec.category || 'Recommendation'}`, 50, doc.y);
 
-            doc.y += 15;
+            doc.moveDown(0.4);
             doc.fontSize(10)
                .fillColor('#374151')
                .text(rec.action || 'No action specified', 70, doc.y, { width: 475 });
 
-            doc.y += 12;
+            doc.moveDown(0.2);
             doc.fillColor('#6b7280')
                .text(`Priority: ${rec.priority || 'N/A'} | Timeline: ${rec.timeline || 'N/A'}`, 70, doc.y);
 
-            doc.y += 20;
+            doc.moveDown(0.6);
         });
     }
 
@@ -498,23 +513,23 @@ if (!reportAnalysis.uniqueness?.summary) {
             doc.fontSize(10)
                .fillColor('#6b7280')
                .text('No risks identified');
-            doc.y += 15;
+            doc.moveDown(0.4);
         } else {
             risks.forEach(risk => {
                 doc.fontSize(10)
                    .fillColor('#dc2626')
                    .text(`• ${risk.category || 'Risk'} (${risk.severity || 'N/A'}):`, 50, doc.y);
                 
-                doc.y += 12;
+                doc.moveDown(0.2);
                 doc.fontSize(9)
                    .fillColor('#374151')
                    .text(risk.description || 'No description', 70, doc.y, { width: 475 });
 
-                doc.y += 12;
+                doc.moveDown(0.2);
                 doc.fillColor('#6b7280')
                    .text(`Mitigation: ${risk.mitigation || 'Not specified'}`, 70, doc.y, { width: 475 });
 
-                doc.y += 20;
+                doc.moveDown(0.6);
             });
         }
 
@@ -525,34 +540,39 @@ if (!reportAnalysis.uniqueness?.summary) {
             doc.fontSize(10)
                .fillColor('#6b7280')
                .text('No opportunities identified');
-            doc.y += 15;
+            doc.moveDown(0.4);
         } else {
             opportunities.forEach(opp => {
                 doc.fontSize(10)
                    .fillColor('#059669')
                    .text(`• ${opp.category || 'Opportunity'} (${opp.impact || 'N/A'} Impact):`, 50, doc.y);
                 
-                doc.y += 12;
+                doc.moveDown(0.2);
                 doc.fontSize(9)
                    .fillColor('#374151')
                    .text(opp.description || 'No description', 70, doc.y, { width: 475 });
 
-                doc.y += 20;
+                doc.moveDown(0.6);
             });
+        }
+    }
+
+    ensureSpace(doc, height = 0) {
+        const bottom = doc.page.height - doc.page.margins.bottom;
+        if (doc.y + height > bottom) {
+            doc.addPage();
         }
     }
 
     addSectionHeader(doc, title) {
         // Check if we need a new page
-        if (doc.y > 720) {
-            doc.addPage();
-        }
+        this.ensureSpace(doc, 60);
 
         doc.fontSize(14)
            .fillColor('#1f2937')
            .text(title, 50, doc.y);
 
-        doc.y += 25;
+        doc.moveDown(0.6);
     }
 
     addBulletPoints(doc, title, items) {
@@ -560,15 +580,16 @@ if (!reportAnalysis.uniqueness?.summary) {
            .fillColor('#6b7280')
            .text(title, 50, doc.y);
 
-        doc.y += 12;
+        doc.moveDown(0.4);
         items.forEach(item => {
+            this.ensureSpace(doc, 18);
             doc.fontSize(9)
                .fillColor('#374151')
                .text(`• ${item}`, 70, doc.y, { width: 475 });
-            doc.y += 12;
+            doc.moveDown(0.2);
         });
 
-        doc.y += 10;
+        doc.moveDown(0.4);
     }
 
     addFooter(doc, timestamp, analysisId) {
@@ -586,7 +607,7 @@ if (!reportAnalysis.uniqueness?.summary) {
             // Footer text
             doc.fontSize(8)
                .fillColor('#6b7280')
-               .text('Generated by AI Startup Validator', 50, 780)
+               .text('Generated by inceptIQ', 50, 780)
                .text(`Report ID: ${analysisId}`, 50, 792)
                .text(`Generated: ${new Date(timestamp).toLocaleDateString()}`, 400, 780, { align: 'right' })
                .text(`Page ${i + 1} of ${pageCount}`, 400, 792, { align: 'right' });
