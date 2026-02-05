@@ -332,12 +332,12 @@ const Analysis: React.FC = () => {
               <label htmlFor="budget" className="block text-sm font-medium text-gray-300 mb-2">Initial Budget Range</label>
               <select id="budget" name="budget" value={formData.budget} onChange={handleInputChange} disabled={isSubmitting} className="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
                 <option value="">Select budget range</option>
-                <option value="under-10k">Under $10,000</option>
-                <option value="10k-50k">$10,000 - $50,000</option>
-                <option value="50k-100k">$50,000 - $100,000</option>
-                <option value="100k-500k">$100,000 - $500,000</option>
-                <option value="500k-1m">$500,000 - $1,000,000</option>
-                <option value="over-1m">Over $1,000,000</option>
+                <option value="under-10k">Under ₹10,000</option>
+                <option value="10k-50k">₹10,000 - ₹50,000</option>
+                <option value="50k-100k">₹50,000 - ₹100,000</option>
+                <option value="100k-500k">₹100,000 - ₹500,000</option>
+                <option value="500k-1m">₹500,000 - ₹1,000,000</option>
+                <option value="over-1m">Over ₹1,000,000</option>
               </select>
             </motion.div>
 

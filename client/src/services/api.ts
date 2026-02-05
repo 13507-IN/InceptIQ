@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { StartupIdea, AnalysisResponse, CommunityPost } from '../types';
+import { StartupIdea, AnalysisResponse, CommunityPost, CommunityIdea } from '../types';
 
 // Base API configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -245,7 +245,21 @@ class ApiService {
     }
   }
 
-  // Community: publish from analysis ID
+  // Community: create post from form data
+  async createCommunityPost(payload: { idea: CommunityIdea; analysisId?: string | null }): Promise<CommunityPost> {
+    try {
+      const response = await api.post('/community', payload);
+      return response.data?.data;
+    } catch (error: any) {
+      console.error('Failed to create community post:', error);
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Failed to publish to community.');
+    }
+  }
+
+  // Community: publish directly from analysis ID (legacy)
   async publishCommunityPost(analysisId: string): Promise<CommunityPost> {
     try {
       const response = await api.post(`/community/publish/${analysisId}`);

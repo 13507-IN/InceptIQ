@@ -12,12 +12,11 @@ const Results: React.FC = () => {
   const navigate = useNavigate();
   const { analysisId } = useParams<{ analysisId: string }>();
   const [analysisData, setAnalysisData] = useState<any>(null);
+  const [analysisInput, setAnalysisInput] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
-  const [publishingCommunity, setPublishingCommunity] = useState(false);
-  const [publishMessage, setPublishMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (analysisId) fetchAnalysisData(analysisId);
@@ -28,7 +27,8 @@ const Results: React.FC = () => {
       console.log(`📊 Fetching analysis data for ID: ${id}`);
       setLoading(true);
       const response = await apiService.getAnalysis(id);
-      const resolved = response?.data?.analysis ?? response?.data ?? response ?? null;
+      const full = response?.data ?? response ?? null;
+      const resolved = full?.analysis ?? full ?? null;
       
       if (!resolved) {
         console.error('❌ No analysis data in response:', response);
@@ -38,6 +38,7 @@ const Results: React.FC = () => {
       
       console.log(`✅ Analysis data loaded successfully`);
       setAnalysisData(resolved);
+      setAnalysisInput(full?.input || null);
     } catch (err: any) {
       console.error("❌ Failed to fetch analysis:", err);
       console.error("Error details:", {
@@ -168,22 +169,18 @@ const Results: React.FC = () => {
     }
   };
 
-  const handlePublishCommunity = async () => {
+  const handlePublishCommunity = () => {
     if (!analysisId) {
-      setPublishMessage('Analysis ID is missing');
+      setPdfError('Analysis ID is missing');
       return;
     }
 
-    try {
-      setPublishingCommunity(true);
-      setPublishMessage(null);
-      await apiService.publishCommunityPost(analysisId);
-      setPublishMessage('Your idea was published to the community.');
-    } catch (error: any) {
-      setPublishMessage(error.message || 'Failed to publish to community.');
-    } finally {
-      setPublishingCommunity(false);
-    }
+    navigate(`/community/publish?analysisId=${analysisId}`, {
+      state: {
+        analysisId,
+        prefillIdea: analysisInput || null
+      }
+    });
   };
 
   if (loading) return <LoadingSpinner fullScreen message="Loading analysis results..." />;
@@ -246,29 +243,6 @@ const Results: React.FC = () => {
         </motion.div>
       )}
 
-      {publishMessage && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="mb-6 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4"
-        >
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="text-blue-300 font-semibold mb-1">Community Publish</h3>
-              <p className="text-blue-200 text-sm">{publishMessage}</p>
-            </div>
-            <button
-              onClick={() => setPublishMessage(null)}
-              className="text-blue-300 hover:text-blue-200 text-lg"
-            >
-              âœ•
-            </button>
-          </div>
-        </motion.div>
-      )}
-     
       {/* Header */}
       <motion.div 
         variants={itemVariants}
@@ -293,11 +267,10 @@ const Results: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handlePublishCommunity}
-            disabled={publishingCommunity}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all"
           >
             <Send className="h-5 w-5" />
-            {publishingCommunity ? "Publishing..." : "Publish to Community"}
+            Publish to Community
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}

@@ -63,7 +63,7 @@ const Community: React.FC = () => {
           </p>
         </div>
         <Link
-          to="/analysis"
+          to="/community/publish"
           className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium hover:from-blue-700 hover:to-purple-700 transition-all"
         >
           <Sparkles className="h-4 w-4" />
@@ -115,6 +115,11 @@ const Community: React.FC = () => {
               </p>
 
               <div className="flex flex-wrap gap-2 mb-4">
+                {post.idea.ideaType && (
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-500/10 text-gray-200 border border-gray-500/30 uppercase">
+                    {post.idea.ideaType}
+                  </span>
+                )}
                 {post.idea.targetMarket && (
                   <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/30">
                     Target: {post.idea.targetMarket}

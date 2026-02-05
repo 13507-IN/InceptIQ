@@ -126,6 +126,7 @@ export interface CommunityIdea {
   industry?: string;
   budget?: string;
   timeline?: string;
+  ideaType: 'startup' | 'hackathon' | '';
 }
 
 export interface CommunityAuthor {
@@ -136,7 +137,7 @@ export interface CommunityAuthor {
 
 export interface CommunityPost {
   id: string;
-  analysisId: string;
+  analysisId: string | null;
   createdAt: string;
   idea: CommunityIdea;
   author?: CommunityAuthor | null;

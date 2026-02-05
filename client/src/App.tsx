@@ -11,6 +11,7 @@ import Analysis from './pages/Analysis';
 import Results from './pages/Results';
 import Profile from './pages/Profile';
 import Community from './pages/Community';
+import CommunityPublish from './pages/CommunityPublish';
 import Documentation from './pages/Documentation';
 import FAQ from './pages/FAQ';
 import Support from './pages/Support';
@@ -41,6 +42,7 @@ function App() {
                   }
                 />
                 <Route path="/community" element={<Community />} />
+                <Route path="/community/publish" element={<CommunityPublish />} />
                 <Route path="/documentation" element={<Documentation />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/support" element={<Support />} />
