@@ -1,5 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const { analysisStorage, communityStorage } = require('../utils/storage');
+const CommunityPost = require('../models/communityPost');
+const { mongoose } = require('../db');
 
 const normalizeIdeaType = (value) => {
     if (!value) return '';
@@ -35,16 +37,36 @@ const createPostRecord = ({ idea, analysisId, req }) => ({
     }
 });
 
+const isDbConnected = () => mongoose?.connection?.readyState === 1;
+
 const communityController = {
-    listPosts(req, res) {
-        const posts = communityStorage.list();
-        res.status(200).json({
-            success: true,
-            data: posts
-        });
+    async listPosts(req, res) {
+        try {
+            if (isDbConnected()) {
+                const posts = await CommunityPost.find().sort({ createdAt: -1 }).lean();
+                return res.status(200).json({
+                    success: true,
+                    data: posts
+                });
+            }
+
+            const posts = communityStorage.list();
+            return res.status(200).json({
+                success: true,
+                data: posts,
+                note: 'Using in-memory storage (MongoDB not connected)'
+            });
+        } catch (error) {
+            console.error('Community list posts failed:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to load community posts',
+                message: error.message
+            });
+        }
     },
 
-    createPost(req, res) {
+    async createPost(req, res) {
         try {
             const { idea = {}, analysisId = null } = req.body || {};
             const normalizedIdea = pickIdeaFields(idea);
@@ -67,7 +89,11 @@ const communityController = {
 
             const post = createPostRecord({ idea: normalizedIdea, analysisId, req });
 
-            communityStorage.add(post);
+            if (isDbConnected()) {
+                await CommunityPost.create(post);
+            } else {
+                communityStorage.add(post);
+            }
 
             res.status(201).json({
                 success: true,
@@ -84,7 +110,7 @@ const communityController = {
         }
     },
 
-    publishFromAnalysis(req, res) {
+    async publishFromAnalysis(req, res) {
         try {
             const { id } = req.params;
 
@@ -117,7 +143,11 @@ const communityController = {
 
             const post = createPostRecord({ idea, analysisId: id, req });
 
-            communityStorage.add(post);
+            if (isDbConnected()) {
+                await CommunityPost.create(post);
+            } else {
+                communityStorage.add(post);
+            }
 
             res.status(201).json({
                 success: true,
