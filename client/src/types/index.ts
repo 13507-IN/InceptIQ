@@ -117,6 +117,26 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
+// Collaboration types
+export interface CollaborationUser {
+  id: string;
+  email: string;
+  name?: string | null;
+}
+
+export interface Collaborator extends CollaborationUser {
+  role?: 'viewer' | 'editor';
+  addedAt?: string;
+}
+
+export interface CollaborationInfo {
+  analysisId: string;
+  role: 'owner' | 'collaborator';
+  collaborators?: Collaborator[];
+  sharedBy?: CollaborationUser | null;
+  sharedAt?: string | null;
+}
+
 // Community types
 export interface CommunityIdea {
   ideaTitle: string;

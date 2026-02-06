@@ -1,10 +1,28 @@
 const { Schema, model } = require('mongoose');
 
+const SharedBySchema = new Schema({
+  id: { type: String, required: true },
+  email: { type: String, required: true, lowercase: true, trim: true },
+  name: { type: String, default: null }
+}, { _id: false });
+
+const CollaboratorSchema = new Schema({
+  id: { type: String, required: true },
+  email: { type: String, required: true, lowercase: true, trim: true },
+  name: { type: String, default: null },
+  role: { type: String, default: 'viewer' },
+  addedAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const RequestSchema = new Schema({
   id: { type: String, required: true },
   input: { type: Object, default: {} },
   analysis: { type: Object, default: null }, // Store full analysis data for persistence
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  shared: { type: Boolean, default: false },
+  sharedBy: { type: SharedBySchema, default: null },
+  sharedAt: { type: Date, default: null },
+  collaborators: { type: [CollaboratorSchema], default: [] }
 }, { _id: false });
 
 const UserSchema = new Schema({

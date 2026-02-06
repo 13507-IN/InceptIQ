@@ -6,12 +6,14 @@ const analysisRoutes = require('./analysis');
 const reportRoutes = require('./reports');
 const authRoutes = require('./auth');
 const communityRoutes = require('./community');
+const collaborationRoutes = require('./collaboration');
 
 // Route definitions
 router.use('/analyze', analysisRoutes);
 router.use('/reports', reportRoutes);
 router.use('/auth', authRoutes);
 router.use('/community', communityRoutes);
+router.use('/collaboration', collaborationRoutes);
 
 // API info endpoint
 router.get('/', (req, res) => {
@@ -23,6 +25,7 @@ router.get('/', (req, res) => {
             analysis: '/api/analyze',
             reports: '/api/reports',
             community: '/api/community',
+            collaboration: '/api/collaboration',
             health: '/health'
         },
         status: 'active'

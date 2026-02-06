@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import { Download, AlertCircle, ArrowLeft, Send } from "lucide-react";
+import { Download, AlertCircle, ArrowLeft, Send, Users, UserPlus } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../services/api";
 import ScoreChart from "../components/ScoreChart";
 import ScoreBadge from "../components/ScoreBadge";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { AuthContext } from "../contexts/AuthContext";
 
 const Results: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const { analysisId } = useParams<{ analysisId: string }>();
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [analysisInput, setAnalysisInput] = useState<any>(null);
@@ -17,10 +19,23 @@ const Results: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [collabInfo, setCollabInfo] = useState<any>(null);
+  const [collabLoading, setCollabLoading] = useState(false);
+  const [collabError, setCollabError] = useState<string | null>(null);
+  const [inviteEmails, setInviteEmails] = useState('');
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
+  const [inviteSummary, setInviteSummary] = useState<{ invited?: number; skipped?: number; errors?: number } | null>(null);
+  const [inviteDetails, setInviteDetails] = useState<{ errors?: any[]; skipped?: any[] } | null>(null);
 
   useEffect(() => {
     if (analysisId) fetchAnalysisData(analysisId);
   }, [analysisId]);
+
+  useEffect(() => {
+    if (analysisId && user) loadCollaboration(analysisId);
+  }, [analysisId, user?.id]);
 
   const fetchAnalysisData = async (id: string) => {
     try {
@@ -49,6 +64,65 @@ const Results: React.FC = () => {
       setError(err.message || "Unable to load analysis data.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCollaboration = async (id: string) => {
+    try {
+      setCollabLoading(true);
+      setCollabError(null);
+      const response = await apiService.getCollaboration(id);
+      setCollabInfo(response || null);
+    } catch (err: any) {
+      setCollabError(err.message || 'Failed to load collaboration info.');
+    } finally {
+      setCollabLoading(false);
+    }
+  };
+
+  const parseEmailList = (value: string) =>
+    value
+      .split(/[,\s]+/)
+      .map((email) => email.trim())
+      .filter(Boolean);
+
+  const getInitial = (value?: string | null) =>
+    (value || '?').trim().charAt(0).toUpperCase();
+
+  const handleInvite = async () => {
+    if (!analysisId) return;
+    const emails = parseEmailList(inviteEmails);
+    if (emails.length === 0) {
+      setInviteError('Please enter at least one email address.');
+      return;
+    }
+
+    try {
+      setInviteBusy(true);
+      setInviteError(null);
+      setInviteSuccess(null);
+      setInviteSummary(null);
+      setInviteDetails(null);
+      const response = await apiService.inviteCollaborators(analysisId, emails);
+      const invitedCount = response?.invited?.length || 0;
+      const skippedCount = response?.skipped?.length || 0;
+      const errorCount = response?.errors?.length || 0;
+      setInviteSuccess(`Invited ${invitedCount} collaborator${invitedCount === 1 ? '' : 's'}.`);
+      setInviteSummary({
+        invited: invitedCount,
+        skipped: skippedCount,
+        errors: errorCount
+      });
+      setInviteDetails({
+        errors: response?.errors || [],
+        skipped: response?.skipped || []
+      });
+      setInviteEmails('');
+      await loadCollaboration(analysisId);
+    } catch (err: any) {
+      setInviteError(err.message || 'Failed to invite collaborators.');
+    } finally {
+      setInviteBusy(false);
     }
   };
 
@@ -284,6 +358,130 @@ const Results: React.FC = () => {
           </motion.button>
         </div>
       </motion.div>
+
+      {/* Team Collaboration */}
+      <motion.section
+        variants={itemVariants}
+        className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg p-6 mb-10"
+      >
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
+              <Users className="h-5 w-5 text-blue-300" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-100">Team Collaboration</h2>
+              <p className="text-sm text-gray-400">Invite teammates to view and discuss this analysis.</p>
+            </div>
+          </div>
+          {collabInfo?.role === 'owner' && (
+            <span className="text-xs text-green-300 bg-green-500/10 border border-green-500/30 px-2 py-1 rounded-full">
+              Owner
+            </span>
+          )}
+          {collabInfo?.role === 'collaborator' && (
+            <span className="text-xs text-blue-300 bg-blue-500/10 border border-blue-500/30 px-2 py-1 rounded-full">
+              Collaborator
+            </span>
+          )}
+        </div>
+
+        {!user ? (
+          <p className="mt-4 text-sm text-gray-400">
+            Sign in to invite teammates and manage collaborators.
+          </p>
+        ) : collabLoading ? (
+          <p className="mt-4 text-sm text-gray-400">Loading collaboration info...</p>
+        ) : collabError ? (
+          <p className="mt-4 text-sm text-red-300">{collabError}</p>
+        ) : collabInfo?.role === 'collaborator' ? (
+          <p className="mt-4 text-sm text-gray-300">
+            Shared by{' '}
+            <span className="text-gray-100 font-semibold">
+              {collabInfo.sharedBy?.name || collabInfo.sharedBy?.email || 'a teammate'}
+            </span>
+          </p>
+        ) : (
+          <div className="mt-4">
+            <div className="flex flex-col md:flex-row gap-3">
+              <input
+                type="text"
+                value={inviteEmails}
+                onChange={(e) => setInviteEmails(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleInvite();
+                  }
+                }}
+                placeholder="Add emails (comma or space separated)"
+                className="flex-1 bg-gray-900/60 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              />
+              <button
+                onClick={handleInvite}
+                disabled={inviteBusy || !inviteEmails.trim()}
+                className="inline-flex items-center justify-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 font-semibold px-4 py-2 rounded-lg transition-all border border-blue-500/30 hover:border-blue-500/50 disabled:opacity-50"
+              >
+                <UserPlus className="h-4 w-4" />
+                {inviteBusy ? 'Inviting...' : 'Invite'}
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Invites are available for existing accounts. Ask teammates to sign up first.
+            </p>
+            {inviteError && <p className="mt-2 text-sm text-red-300">{inviteError}</p>}
+            {inviteSuccess && <p className="mt-2 text-sm text-green-300">{inviteSuccess}</p>}
+            {inviteSummary && (
+              <p className="mt-2 text-xs text-gray-400">
+                Invited: {inviteSummary.invited || 0} · Skipped: {inviteSummary.skipped || 0} · Errors:{' '}
+                {inviteSummary.errors || 0}
+              </p>
+            )}
+            {inviteDetails?.errors?.length ? (
+              <div className="mt-2 text-xs text-red-300">
+                {inviteDetails.errors.map((entry: any) => (
+                  <div key={entry.email}>{entry.email}: {entry.reason}</div>
+                ))}
+              </div>
+            ) : null}
+            {inviteDetails?.skipped?.length ? (
+              <div className="mt-2 text-xs text-yellow-300">
+                {inviteDetails.skipped.map((entry: any) => (
+                  <div key={entry.email}>{entry.email}: {entry.reason}</div>
+                ))}
+              </div>
+            ) : null}
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {collabInfo?.collaborators?.length ? (
+                collabInfo.collaborators.map((collaborator: any) => (
+                  <div
+                    key={collaborator.email}
+                    className="flex items-center justify-between bg-gray-900/50 border border-gray-700 rounded-lg p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                        {getInitial(collaborator.name || collaborator.email)}
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-200">
+                          {collaborator.name || collaborator.email}
+                        </div>
+                        <div className="text-xs text-gray-500">{collaborator.email}</div>
+                      </div>
+                    </div>
+                    <span className="text-xs text-blue-300 bg-blue-500/10 border border-blue-500/30 px-2 py-1 rounded-full">
+                      {collaborator.role || 'viewer'}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No collaborators yet.</p>
+              )}
+            </div>
+          </div>
+        )}
+      </motion.section>
 
       {/* Overall Score */}
       <motion.div 

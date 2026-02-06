@@ -13,6 +13,11 @@ interface ResearchItem {
     targetMarket?: string;
   };
   createdAt: string;
+  shared?: boolean;
+  sharedBy?: {
+    email?: string | null;
+    name?: string | null;
+  };
 }
 
 const Profile: React.FC = () => {
@@ -247,6 +252,11 @@ const Profile: React.FC = () => {
                     <p className="text-gray-400 text-sm line-clamp-3">
                       {research.input.ideaDescription}
                     </p>
+                    {research.shared && (
+                      <div className="mt-3 inline-flex items-center gap-2 text-xs text-blue-300 bg-blue-500/10 border border-blue-500/30 px-2 py-1 rounded-full">
+                        Shared by {research.sharedBy?.name || research.sharedBy?.email || 'a teammate'}
+                      </div>
+                    )}
                   </div>
 
                   {/* Metadata */}

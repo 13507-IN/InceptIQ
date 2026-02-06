@@ -54,7 +54,7 @@ const FAQ: React.FC = () => {
     {
       question: 'Can I share my analysis with others?',
       answer:
-        'You can download the PDF report and share it manually. Currently, we don\'t have built-in sharing features, but this is on our roadmap for future releases.',
+        'Yes. From the results page you can invite teammates by email to collaborate. Teammates need an account to access the shared analysis. You can also download the PDF and share it manually.',
     },
   ];
 

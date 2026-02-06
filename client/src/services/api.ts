@@ -94,6 +94,34 @@ class ApiService {
     }
   }
 
+  // Collaboration: get collaboration info for an analysis
+  async getCollaboration(analysisId: string): Promise<any> {
+    try {
+      const response = await api.get(`/collaboration/${analysisId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to load collaboration info:', error);
+      if (error.response?.status === 401) {
+        throw new Error('Please log in to manage collaborators.');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to load collaboration info.');
+    }
+  }
+
+  // Collaboration: invite collaborators by email
+  async inviteCollaborators(analysisId: string, emails: string[]): Promise<any> {
+    try {
+      const response = await api.post(`/collaboration/${analysisId}/invite`, { emails });
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to invite collaborators:', error);
+      if (error.response?.status === 401) {
+        throw new Error('Please log in to invite collaborators.');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to invite collaborators.');
+    }
+  }
+
   // Extract form fields from PDF text using Gemini AI
   async extractFormFieldsFromPdf(pdfText: string): Promise<any> {
     try {

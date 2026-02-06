@@ -1,10 +1,28 @@
 const pdfService = require('../services/pdfService');
 const fs = require('fs');
 const path = require('path');
+const User = require('../models/user');
 
 // Import analysis storage - will be shared between controllers
 // In production, this should be replaced with a proper database
 const analysisStorage = require('../utils/storage').analysisStorage;
+
+const getAnalysisRecord = async (id, req) => {
+    let analysis = analysisStorage.get(id);
+    if (analysis) return { analysis, source: 'memory' };
+
+    if (req?.user?.id) {
+        const user = await User.findById(req.user.id).lean();
+        if (user?.requests) {
+            const request = user.requests.find(r => r.id === id);
+            if (request?.analysis) {
+                return { analysis: request.analysis, source: 'database' };
+            }
+        }
+    }
+
+    return { analysis: null, source: 'none' };
+};
 
 const reportsController = {
     async downloadReport(req, res) {
@@ -27,10 +45,10 @@ const reportsController = {
                 });
             }
 
-            console.log(`🔍 [${requestId}] Checking if analysis exists in storage...`);
+            console.log(`🔍 [${requestId}] Checking if analysis exists in storage/database...`);
 
-            // Check if analysis exists in storage
-            const analysis = analysisStorage.get(id);
+            // Check if analysis exists in storage or database (if authenticated)
+            const { analysis, source } = await getAnalysisRecord(id, req);
             
             // If analysis is missing but a PDF file already exists on disk, allow download
             if (!analysis) {
@@ -87,7 +105,7 @@ const reportsController = {
                     return fileStream.pipe(res);
                 }
 
-                console.error(`❌ [${requestId}] Analysis not found in storage and no PDF exists on disk`);
+                console.error(`❌ [${requestId}] Analysis not found in storage/database and no PDF exists on disk`);
                 console.log(`${'='.repeat(60)}\n`);
                 
                 return res.status(404).json({
@@ -97,7 +115,7 @@ const reportsController = {
                 });
             }
 
-            console.log(`✅ [${requestId}] Analysis found in storage. Starting PDF process...`);
+            console.log(`✅ [${requestId}] Analysis found in ${source}. Starting PDF process...`);
             console.log(`   Input: ${analysis.input?.ideaTitle || 'N/A'}`);
             console.log(`   Created: ${analysis.createdAt}`);
 
@@ -201,7 +219,7 @@ const reportsController = {
                 });
             }
 
-            const analysis = analysisStorage.get(id);
+            const { analysis } = await getAnalysisRecord(id, req);
             if (!analysis) {
                 return res.status(404).json({
                     error: 'Analysis not found',
@@ -244,7 +262,7 @@ const reportsController = {
                 });
             }
 
-            const analysis = analysisStorage.get(id);
+            const { analysis } = await getAnalysisRecord(id, req);
             if (!analysis) {
                 return res.status(404).json({
                     error: 'Analysis not found'
