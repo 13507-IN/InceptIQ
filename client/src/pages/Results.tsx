@@ -12,6 +12,7 @@ import { AuthContext } from "../contexts/AuthContext";
 const Results: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const userId = user?.id;
   const { analysisId } = useParams<{ analysisId: string }>();
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [analysisInput, setAnalysisInput] = useState<any>(null);
@@ -34,8 +35,8 @@ const Results: React.FC = () => {
   }, [analysisId]);
 
   useEffect(() => {
-    if (analysisId && user) loadCollaboration(analysisId);
-  }, [analysisId, user?.id]);
+    if (analysisId && userId) loadCollaboration(analysisId);
+  }, [analysisId, userId]);
 
   const fetchAnalysisData = async (id: string) => {
     try {
