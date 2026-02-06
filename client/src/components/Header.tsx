@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
-import { Brain, Home, FileText, Menu, X, User, Users } from 'lucide-react';
+import { Brain, Home, FileText, Menu, X, User, Users, BadgeDollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Header: React.FC = () => {
@@ -67,6 +67,17 @@ const Header: React.FC = () => {
             >
               <Users className="h-4 w-4" />
               <span>Community</span>
+            </Link>
+            <Link
+              to="/pricing"
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                isActive('/pricing')
+                  ? 'text-blue-400 bg-blue-500/10 border border-blue-500/30'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              <BadgeDollarSign className="h-4 w-4" />
+              <span>Pricing</span>
             </Link>
           </nav>
           {/* Right side: auth */}
@@ -137,6 +148,20 @@ const Header: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Users className="h-4 w-4" />
                 <span>Community</span>
+              </div>
+            </Link>
+            <Link
+              to="/pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/pricing')
+                  ? 'text-blue-400 bg-blue-500/10'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <BadgeDollarSign className="h-4 w-4" />
+                <span>Pricing</span>
               </div>
             </Link>
 

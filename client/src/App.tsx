@@ -12,6 +12,7 @@ import Results from './pages/Results';
 import Profile from './pages/Profile';
 import Community from './pages/Community';
 import CommunityPublish from './pages/CommunityPublish';
+import Pricing from './pages/Pricing';
 import Documentation from './pages/Documentation';
 import FAQ from './pages/FAQ';
 import Support from './pages/Support';
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/analysis" element={<Analysis />} />
                 <Route path="/results/:analysisId" element={<Results />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/pricing" element={<Pricing />} />
                 <Route
                   path="/profile"
                   element={
