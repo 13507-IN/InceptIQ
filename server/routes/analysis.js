@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const analysisController = require('../controllers/analysisController');
-const authMiddleware = require('../middleware/authMiddleware');
+const authMiddleware = require('../middleware/auth');
 
 // Middleware for request validation
 const validateAnalysisRequest = require('../middleware/validateAnalysisRequest');

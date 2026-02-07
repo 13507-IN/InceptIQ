@@ -13,6 +13,7 @@ import Profile from './pages/Profile';
 import Community from './pages/Community';
 import CommunityPublish from './pages/CommunityPublish';
 import Pricing from './pages/Pricing';
+import InvestorDirectory from './pages/InvestorDirectory';
 import Documentation from './pages/Documentation';
 import FAQ from './pages/FAQ';
 import Support from './pages/Support';
@@ -35,6 +36,7 @@ function App() {
                 <Route path="/results/:analysisId" element={<Results />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/pricing" element={<Pricing />} />
+                <Route path="/investors" element={<InvestorDirectory />} />
                 <Route
                   path="/profile"
                   element={

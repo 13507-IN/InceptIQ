@@ -163,6 +163,39 @@ export interface CommunityPost {
   author?: CommunityAuthor | null;
 }
 
+// Investor Directory types
+export interface Investor {
+  id: string;
+  name: string;
+  type: string;
+  stages: string[];
+  industries: string[];
+  geography: string[];
+  ticketMin: number;
+  ticketMax: number;
+  checkRange?: string;
+  thesis: string;
+  thesisKeywords?: string[];
+  valueAdd: string[];
+  notableInvestments: string[];
+  preferredModels?: string[];
+}
+
+export interface InvestorMatch extends Investor {
+  matchScore: number;
+  matchReasons: string[];
+}
+
+export interface InvestorMatchRequest {
+  industry?: string;
+  stage?: string;
+  geography?: string;
+  model?: string;
+  ticketSize?: number;
+  keywords?: string;
+  minScore?: number;
+}
+
 // Form types
 export interface FormErrors {
   [key: string]: string;

@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { StartupIdea, AnalysisResponse, CommunityPost, CommunityIdea } from '../types';
+import { StartupIdea, AnalysisResponse, CommunityPost, CommunityIdea, Investor, InvestorMatch, InvestorMatchRequest } from '../types';
 
 // Base API configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -243,6 +243,36 @@ class ApiService {
     } catch (error) {
       console.error('Failed to get API info:', error);
       return null;
+    }
+  }
+
+  // Investor Directory: list investors
+  async listInvestors(params?: {
+    q?: string;
+    industry?: string;
+    stage?: string;
+    geography?: string;
+    type?: string;
+    minCheck?: number;
+    maxCheck?: number;
+  }): Promise<Investor[]> {
+    try {
+      const response = await api.get('/investors', { params });
+      return response.data?.data || [];
+    } catch (error: any) {
+      console.error('Failed to fetch investors:', error);
+      throw new Error('Failed to load investors.');
+    }
+  }
+
+  // Investor Directory: match investors
+  async matchInvestors(criteria: InvestorMatchRequest): Promise<InvestorMatch[]> {
+    try {
+      const response = await api.post('/investors/match', criteria);
+      return response.data?.data || [];
+    } catch (error: any) {
+      console.error('Failed to match investors:', error);
+      throw new Error(error.response?.data?.message || 'Failed to match investors.');
     }
   }
 
