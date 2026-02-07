@@ -69,6 +69,19 @@ const scoreTone = (score: number) => {
   return 'border-rose-400/40 bg-rose-500/20 text-rose-200';
 };
 
+const uniqueList = (items: string[]) => Array.from(new Set(items.filter(Boolean)));
+
+const getInitials = (name: string) =>
+  name
+    .split(' ')
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+const buildFocusTags = (investor: Investor) =>
+  uniqueList([...(investor.industries || []), ...(investor.preferredModels || [])]);
+
 const InvestorDirectory: React.FC = () => {
   const pageStyle = {
     backgroundColor: '#05070c',
@@ -416,9 +429,11 @@ const InvestorDirectory: React.FC = () => {
                 No investors match this view yet. Try adjusting your criteria or search terms.
               </div>
             ) : (
-              <div className="grid gap-6">
+              <div className="grid gap-6 lg:grid-cols-2">
                 {filteredInvestors.map((investor) => {
                   const matchScore = hasMatchScore(investor) ? investor.matchScore : null;
+                  const focusTags = buildFocusTags(investor);
+                  const initials = getInitials(investor.name);
                   return (
                     <motion.div
                       key={investor.id}
@@ -426,46 +441,66 @@ const InvestorDirectory: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.35 }}
                     >
-                      <Card className="bg-white/5 border border-white/10 rounded-3xl">
+                      <Card className="group relative overflow-hidden bg-gradient-to-br from-white/5 via-white/[0.03] to-transparent border border-white/10 rounded-3xl">
+                        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-sky-400/70 via-emerald-400/40 to-transparent" />
+                        <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-sky-500/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         <CardContent className="p-6">
-                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                            <div className="space-y-3">
-                              <div className="flex flex-wrap items-center gap-3">
-                                <h3 className="text-2xl font-semibold">{investor.name}</h3>
-                                <span className="text-xs uppercase tracking-wide border border-white/10 rounded-full px-3 py-1 text-gray-300">
-                                  {investor.type}
-                                </span>
+                          <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-6">
+                            <div className="flex items-start gap-4">
+                              <div className="h-12 w-12 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center text-sm font-semibold text-sky-200">
+                                {initials}
                               </div>
-                              <p className="text-gray-300">{investor.thesis}</p>
-                              <div className="flex flex-wrap gap-2 text-xs text-gray-300">
-                                <span className="inline-flex items-center gap-2 border border-white/10 rounded-full px-3 py-1">
-                                  <Layers className="h-3 w-3 text-sky-300" />
-                                  {investor.stages.join(', ')}
-                                </span>
-                                <span className="inline-flex items-center gap-2 border border-white/10 rounded-full px-3 py-1">
-                                  <MapPin className="h-3 w-3 text-emerald-300" />
-                                  {investor.geography.join(', ')}
-                                </span>
-                                <span className="inline-flex items-center gap-2 border border-white/10 rounded-full px-3 py-1">
-                                  <Coins className="h-3 w-3 text-amber-300" />
-                                  {investor.checkRange || fallbackCheckRange(investor.ticketMin, investor.ticketMax)}
-                                </span>
+                              <div className="space-y-3">
+                                <div className="flex flex-wrap items-center gap-3">
+                                  <h3 className="text-2xl font-semibold">{investor.name}</h3>
+                                  <span className="text-xs uppercase tracking-wide border border-white/10 rounded-full px-3 py-1 text-gray-300">
+                                    {investor.type}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-300 max-w-2xl">{investor.thesis}</p>
+                                <div className="flex flex-wrap gap-2 text-xs text-gray-300">
+                                  <span className="inline-flex items-center gap-2 border border-white/10 rounded-full px-3 py-1">
+                                    <Layers className="h-3 w-3 text-sky-300" />
+                                    {investor.stages.join(', ')}
+                                  </span>
+                                  <span className="inline-flex items-center gap-2 border border-white/10 rounded-full px-3 py-1">
+                                    <MapPin className="h-3 w-3 text-emerald-300" />
+                                    {investor.geography.join(', ')}
+                                  </span>
+                                  <span className="inline-flex items-center gap-2 border border-white/10 rounded-full px-3 py-1">
+                                    <Coins className="h-3 w-3 text-amber-300" />
+                                    {investor.checkRange || fallbackCheckRange(investor.ticketMin, investor.ticketMax)}
+                                  </span>
+                                </div>
+                                {investor.thesisKeywords && investor.thesisKeywords.length > 0 && (
+                                  <div className="flex flex-wrap gap-2 text-xs text-gray-300">
+                                    {investor.thesisKeywords.slice(0, 6).map((keyword) => (
+                                      <span
+                                        key={keyword}
+                                        className="border border-sky-500/30 bg-sky-500/10 text-sky-200 rounded-full px-3 py-1"
+                                      >
+                                        {keyword}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             </div>
                             {matchScore !== null && (
-                              <div className="flex items-center gap-4">
-                                <div
-                                  className={`flex flex-col items-center justify-center h-20 w-20 rounded-full border text-lg font-semibold ${scoreTone(matchScore)}`}
-                                >
-                                  {matchScore}
-                                  <span className="text-[10px] uppercase tracking-wide">Match</span>
+                              <div className="flex flex-col gap-4">
+                                <div className={`rounded-2xl border px-5 py-4 text-center ${scoreTone(matchScore)}`}>
+                                  <div className="text-3xl font-semibold">{matchScore}</div>
+                                  <div className="text-[10px] uppercase tracking-[0.3em]">Match</div>
                                 </div>
-                                <div className="space-y-2 text-sm text-gray-300">
-                                  {(investor as InvestorMatch).matchReasons?.slice(0, 3).map((reason) => (
-                                    <div key={reason} className="flex items-start gap-2">
-                                      <Briefcase className="h-4 w-4 text-emerald-300 mt-0.5" />
-                                      <span>{reason}</span>
-                                    </div>
+                                <div className="flex flex-wrap gap-2 text-xs text-gray-300">
+                                  {(investor as InvestorMatch).matchReasons?.slice(0, 4).map((reason) => (
+                                    <span
+                                      key={reason}
+                                      className="inline-flex items-center gap-2 border border-white/10 rounded-full px-3 py-1"
+                                    >
+                                      <Briefcase className="h-3 w-3 text-emerald-300" />
+                                      {reason}
+                                    </span>
                                   ))}
                                 </div>
                               </div>
@@ -473,11 +508,11 @@ const InvestorDirectory: React.FC = () => {
                           </div>
                           <div className="mt-6 grid md:grid-cols-3 gap-4 text-sm text-gray-300">
                             <div>
-                              <div className="text-xs uppercase tracking-wide text-gray-500">Industries</div>
+                              <div className="text-xs uppercase tracking-wide text-gray-500">Focus</div>
                               <div className="mt-2 flex flex-wrap gap-2">
-                                {investor.industries.map((industry) => (
-                                  <span key={industry} className="border border-white/10 rounded-full px-3 py-1">
-                                    {industry}
+                                {focusTags.slice(0, 8).map((tag) => (
+                                  <span key={tag} className="border border-white/10 rounded-full px-3 py-1">
+                                    {tag}
                                   </span>
                                 ))}
                               </div>
