@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const analysisController = require('../controllers/analysisController');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Middleware for request validation
 const validateAnalysisRequest = require('../middleware/validateAnalysisRequest');
 
 // POST /api/analyze - Submit startup idea for analysis
-router.post('/', validateAnalysisRequest, analysisController.analyzeIdea);
+router.post('/', authMiddleware, validateAnalysisRequest, analysisController.analyzeIdea);
 
 // POST /api/analyze/extract-pdf-fields - Extract form fields from PDF text using AI
 // MUST be before /:id route to avoid being caught by wildcard
