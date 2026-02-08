@@ -18,6 +18,22 @@ const Login: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const getErrorMessage = (err: any) => {
+    if (!err) return 'Authentication failed';
+    const candidate =
+      err?.response?.data?.error ??
+      err?.response?.data?.message ??
+      err?.message ??
+      err;
+    if (typeof candidate === 'string') return candidate;
+    if (typeof candidate?.message === 'string') return candidate.message;
+    try {
+      return JSON.stringify(candidate);
+    } catch {
+      return 'Authentication failed';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -45,7 +61,7 @@ const Login: React.FC = () => {
         navigate('/analysis');
       }
     } catch (err: any) {
-      setError(err?.response?.data?.error || err?.message || 'Authentication failed');
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

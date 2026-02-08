@@ -20,6 +20,8 @@ const Results: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [downloadingDeck, setDownloadingDeck] = useState(false);
+  const [deckError, setDeckError] = useState<string | null>(null);
   const [collabInfo, setCollabInfo] = useState<any>(null);
   const [collabLoading, setCollabLoading] = useState(false);
   const [collabError, setCollabError] = useState<string | null>(null);
@@ -248,6 +250,28 @@ const Results: React.FC = () => {
     }
   };
 
+  const handleDownloadPitchDeck = async () => {
+    if (!analysisId) {
+      setDeckError('Analysis ID is missing');
+      return;
+    }
+
+    try {
+      setDownloadingDeck(true);
+      setDeckError(null);
+      await apiService.downloadPitchDeck(analysisId);
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to generate pitch deck. Please try again.';
+      setDeckError(message);
+      alert(`Pitch Deck Download Error:\n${message}\n\nOpen Developer Tools (F12 → Console) for details.`);
+    } finally {
+      setDownloadingDeck(false);
+    }
+  };
+
   const handlePublishCommunity = () => {
     if (!analysisId) {
       setPdfError('Analysis ID is missing');
@@ -332,6 +356,30 @@ const Results: React.FC = () => {
         </motion.div>
       )}
 
+      {deckError && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="mb-6 bg-amber-500/10 border border-amber-500/30 rounded-lg p-4"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-amber-300 font-semibold mb-1">Pitch Deck Download Error</h3>
+              <p className="text-amber-200 text-sm">{deckError}</p>
+              <p className="text-amber-200/60 text-xs mt-2">Check the browser console for more details</p>
+            </div>
+            <button
+              onClick={() => setDeckError(null)}
+              className="text-amber-400 hover:text-amber-300 text-lg"
+            >
+              ✕
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* Header */}
       <motion.div 
         variants={itemVariants}
@@ -370,6 +418,16 @@ const Results: React.FC = () => {
           >
             <Download className="h-5 w-5" />
             {downloadingPdf ? "Downloading..." : "Download PDF"}
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleDownloadPitchDeck}
+            disabled={downloadingDeck}
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
+          >
+            <Download className="h-5 w-5" />
+            {downloadingDeck ? "Generating..." : "Pitch Deck"}
           </motion.button>
         </div>
       </motion.div>

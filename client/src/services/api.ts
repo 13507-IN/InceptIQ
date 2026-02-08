@@ -246,6 +246,51 @@ class ApiService {
     }
   }
 
+  // Download Pitch Deck (PPTX)
+  async downloadPitchDeck(analysisId: string): Promise<void> {
+    try {
+      const response = await api.get(`/pitch-decks/${analysisId}`, {
+        responseType: 'arraybuffer',
+        headers: {
+          'Accept': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        },
+      });
+
+      const contentType = (response.headers && (response.headers['content-type'] || response.headers['Content-Type'])) || '';
+
+      if (contentType.includes('application/json')) {
+        const text = new TextDecoder().decode(response.data);
+        let parsed = null;
+        try {
+          parsed = JSON.parse(text);
+        } catch (e) {
+          parsed = { message: text };
+        }
+        throw new Error(parsed.message || parsed.error || JSON.stringify(parsed));
+      }
+
+      const deckBlob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      });
+
+      const cd = (response.headers && (response.headers['content-disposition'] || response.headers['Content-Disposition'])) || '';
+      let filename = `pitch-deck-${analysisId}.pptx`;
+      const match = /filename\*?=(?:UTF-8'')?"?([^;"']+)"?/i.exec(cd);
+      if (match && match[1]) {
+        try {
+          filename = decodeURIComponent(match[1]);
+        } catch {
+          filename = match[1];
+        }
+      }
+
+      downloadFile(deckBlob, filename);
+    } catch (error: any) {
+      console.error('❌ Pitch deck download failed:', error);
+      throw error;
+    }
+  }
+
   // Investor Directory: list investors
   async listInvestors(params?: {
     q?: string;

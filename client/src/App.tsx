@@ -24,8 +24,8 @@ import './App.css';
 
 function App() {
   return (
-    <ErrorBoundary>
-      <Router>
+    <Router>
+      <ErrorBoundary>
         <AuthProvider>
           <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 flex flex-col">
             <Header />
@@ -58,8 +58,8 @@ function App() {
             <Footer />
           </div>
         </AuthProvider>
-      </Router>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </Router>
   );
 }
 

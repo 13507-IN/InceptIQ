@@ -8,6 +8,7 @@ const authRoutes = require('./auth');
 const communityRoutes = require('./community');
 const collaborationRoutes = require('./collaboration');
 const investorRoutes = require('./investors');
+const pitchDeckRoutes = require('./pitchDecks');
 
 // Route definitions
 router.use('/analyze', analysisRoutes);
@@ -16,6 +17,7 @@ router.use('/auth', authRoutes);
 router.use('/community', communityRoutes);
 router.use('/collaboration', collaborationRoutes);
 router.use('/investors', investorRoutes);
+router.use('/pitch-decks', pitchDeckRoutes);
 
 // API info endpoint
 router.get('/', (req, res) => {
@@ -29,6 +31,7 @@ router.get('/', (req, res) => {
             community: '/api/community',
             collaboration: '/api/collaboration',
             investors: '/api/investors',
+            pitchDecks: '/api/pitch-decks',
             health: '/health'
         },
         status: 'active'
