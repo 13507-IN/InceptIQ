@@ -104,4 +104,6 @@ app.listen(PORT, () => {
   console.log(`🔗 CORS enabled for: ${process.env.CLIENT_URL || 'http://localhost:3000'}`);
 });
 
+
+
 module.exports = app;
