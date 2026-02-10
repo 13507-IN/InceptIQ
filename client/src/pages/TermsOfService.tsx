@@ -10,7 +10,7 @@ const TermsOfService: React.FC = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 py-12"
+      className="min-h-screen bg-[#0b0f1a] py-12"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -157,3 +157,4 @@ const TermsOfService: React.FC = () => {
 };
 
 export default TermsOfService;
+

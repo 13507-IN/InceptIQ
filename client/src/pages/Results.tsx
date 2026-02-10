@@ -46,23 +46,23 @@ const Results: React.FC = () => {
 
   const fetchAnalysisData = async (id: string) => {
     try {
-      console.log(`📊 Fetching analysis data for ID: ${id}`);
+      console.log(` Fetching analysis data for ID: ${id}`);
       setLoading(true);
       const response = await apiService.getAnalysis(id);
       const full = response?.data ?? response ?? null;
       const resolved = full?.analysis ?? full ?? null;
       
       if (!resolved) {
-        console.error('❌ No analysis data in response:', response);
+        console.error(' No analysis data in response:', response);
         setError("Analysis data not found in response.");
         return;
       }
       
-      console.log(`✅ Analysis data loaded successfully`);
+      console.log(` Analysis data loaded successfully`);
       setAnalysisData(resolved);
       setAnalysisInput(full?.input || null);
     } catch (err: any) {
-      console.error("❌ Failed to fetch analysis:", err);
+      console.error(" Failed to fetch analysis:", err);
       console.error("Error details:", {
         message: err.message,
         status: err.response?.status,
@@ -135,7 +135,7 @@ const Results: React.FC = () => {
 
   const handleDownloadPdf = async () => {
     if (!analysisId) {
-      console.error('❌ No analysis ID provided');
+      console.error(' No analysis ID provided');
       setPdfError("Analysis ID is missing");
       return;
     }
@@ -144,7 +144,7 @@ const Results: React.FC = () => {
     
     try {
       console.log(`\n${'='.repeat(60)}`);
-      console.log(`📥 PDF DOWNLOAD REQUEST`);
+      console.log(` PDF DOWNLOAD REQUEST`);
       console.log(`Analysis ID: ${analysisId}`);
       console.log(`Timestamp: ${new Date().toISOString()}`);
       console.log(`${'='.repeat(60)}\n`);
@@ -153,31 +153,31 @@ const Results: React.FC = () => {
       setPdfError(null);
       
       // startTime = performance.now();
-      console.log('🔄 Initiating PDF download...');
-      console.log(`📌 API Endpoint: /api/reports/${analysisId}/download`);
+      console.log(' Initiating PDF download...');
+      console.log(` API Endpoint: /api/reports/${analysisId}/download`);
       
       await apiService.downloadReport(analysisId);
       
-      console.log(`✅ PDF download succeeded`);
+      console.log(` PDF download succeeded`);
       console.log(`${'='.repeat(60)}\n`);
       
     } catch (error: any) {
       console.error(`\n${'='.repeat(60)}`);
-      //console.error(`❌ PDF DOWNLOAD FAILED (${duration.toFixed(2)}ms)`);
+      //console.error(` PDF DOWNLOAD FAILED (${duration.toFixed(2)}ms)`);
       console.error(`Analysis ID: ${analysisId}`);
       console.error(`Timestamp: ${new Date().toISOString()}`);
       console.error(`${'='.repeat(60)}`);
       
       // Log error details
-      console.error('📋 Error Message:', error.message);
-      console.error('📋 Error Code:', error.code);
-      console.error('📋 HTTP Status:', error.response?.status);
-      console.error('📋 HTTP Status Text:', error.response?.statusText);
-      console.error('📋 Response Data:', error.response?.data);
+      console.error(' Error Message:', error.message);
+      console.error(' Error Code:', error.code);
+      console.error(' HTTP Status:', error.response?.status);
+      console.error(' HTTP Status Text:', error.response?.statusText);
+      console.error(' Response Data:', error.response?.data);
       
       // Log request context
       if (error.config) {
-        console.error('\n📝 Request Details:');
+        console.error('\n Request Details:');
         console.error('   URL:', error.config.url);
         console.error('   Method:', error.config.method);
         console.error('   Headers:', error.config.headers);
@@ -186,17 +186,17 @@ const Results: React.FC = () => {
       
       // Log response headers
       if (error.response?.headers) {
-        console.error('\n📤 Response Headers:', error.response.headers);
+        console.error('\n Response Headers:', error.response.headers);
       }
       
       // Log stack trace for debugging
       if (error.stack) {
-        console.error('\n🔗 Stack Trace:');
+        console.error('\n Stack Trace:');
         console.error(error.stack);
       }
       
       // Log full error object for inspection
-      console.error('\n📊 Full Error Object:', JSON.stringify({
+      console.error('\n Full Error Object:', JSON.stringify({
         message: error.message,
         code: error.code,
         status: error.response?.status,
@@ -221,7 +221,7 @@ const Results: React.FC = () => {
       } else if (error.response?.status === 500) {
         userErrorMessage = "Server error during PDF generation. Details: " + (error.response?.data?.error || error.response?.data?.message || "Unknown server error");
         diagnosis = "PDF generation failed on server";
-        console.error('🔴 Server Error Details:', error.response?.data);
+        console.error(' Server Error Details:', error.response?.data);
       } else if (error.response?.status === 401) {
         userErrorMessage = "Your session has expired. Please log in again.";
         diagnosis = "Authentication failed";
@@ -239,11 +239,11 @@ const Results: React.FC = () => {
         diagnosis = "Request aborted";
       }
       
-      console.error(`📌 Diagnosis: ${diagnosis}`);
-      console.error(`📌 Suggested Action: ${userErrorMessage}\n`);
+      console.error(` Diagnosis: ${diagnosis}`);
+      console.error(` Suggested Action: ${userErrorMessage}\n`);
       
       setPdfError(userErrorMessage);
-      alert(`PDF Download Error:\n${userErrorMessage}\n\nOpen Developer Tools (F12 → Console) for detailed logs.`);
+      alert(`PDF Download Error:\n${userErrorMessage}\n\nOpen Developer Tools (F12 -> Console) for detailed logs.`);
       
     } finally {
       setDownloadingPdf(false);
@@ -266,7 +266,7 @@ const Results: React.FC = () => {
         error?.message ||
         'Failed to generate pitch deck. Please try again.';
       setDeckError(message);
-      alert(`Pitch Deck Download Error:\n${message}\n\nOpen Developer Tools (F12 → Console) for details.`);
+      alert(`Pitch Deck Download Error:\n${message}\n\nOpen Developer Tools (F12 -> Console) for details.`);
     } finally {
       setDownloadingDeck(false);
     }
@@ -350,7 +350,7 @@ const Results: React.FC = () => {
               onClick={() => setPdfError(null)}
               className="text-red-400 hover:text-red-300 text-lg"
             >
-              ✕
+              
             </button>
           </div>
         </motion.div>
@@ -374,7 +374,7 @@ const Results: React.FC = () => {
               onClick={() => setDeckError(null)}
               className="text-amber-400 hover:text-amber-300 text-lg"
             >
-              ✕
+              
             </button>
           </div>
         </motion.div>
@@ -404,7 +404,7 @@ const Results: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handlePublishCommunity}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all"
+            className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all"
           >
             <Send className="h-5 w-5" />
             Publish to Community
@@ -545,7 +545,7 @@ const Results: React.FC = () => {
                         className="flex items-center justify-between bg-gray-900/50 border border-gray-700 rounded-lg p-3"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-sm">
                             {getInitial(collaborator.name || collaborator.email)}
                           </div>
                           <div>
@@ -849,3 +849,6 @@ const Results: React.FC = () => {
 };
 
 export default Results;
+
+
+

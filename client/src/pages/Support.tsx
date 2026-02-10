@@ -43,7 +43,7 @@ const Support: React.FC = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 py-12"
+      className="min-h-screen bg-[#0b0f1a] py-12"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -96,7 +96,7 @@ const Support: React.FC = () => {
               variants={itemVariants}
             >
               <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 bg-purple-500/20 rounded-lg text-purple-400">
+                <div className="p-3 bg-emerald-500/20 rounded-lg text-emerald-400">
                   <MessageSquare className="h-6 w-6" />
                 </div>
                 <div>
@@ -110,7 +110,7 @@ const Support: React.FC = () => {
             </motion.div>
 
             <motion.div
-              className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-xl border border-blue-500/30 rounded-lg p-6"
+              className="bg-gradient-to-r from-blue-500/10 to-emerald-500/10 backdrop-blur-xl border border-blue-500/30 rounded-lg p-6"
               variants={itemVariants}
             >
               <h3 className="text-lg font-semibold text-white mb-3">Common Issues</h3>
@@ -218,7 +218,7 @@ const Support: React.FC = () => {
                 <motion.button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -244,3 +244,5 @@ const Support: React.FC = () => {
 };
 
 export default Support;
+
+

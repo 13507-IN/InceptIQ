@@ -158,7 +158,7 @@ const Analysis: React.FC = () => {
             <Lightbulb className="h-8 w-8 text-white" />
           </div>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
+        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-300 to-emerald-300 bg-clip-text text-transparent mb-4">
           Analyze Your Startup Idea
         </h1>
         <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
@@ -176,7 +176,7 @@ const Analysis: React.FC = () => {
       >
         {/* PDF Upload */}
         <motion.div 
-          className="mb-10 p-8 bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-xl border-2 border-dashed border-blue-500/50 hover:border-blue-400/75 transition-all"
+          className="mb-10 p-8 bg-gradient-to-r from-blue-900/30 to-emerald-900/20 rounded-xl border-2 border-dashed border-blue-500/50 hover:border-blue-400/75 transition-all"
         >
           <div className="flex items-center justify-center mb-4">
             <FileUp className="h-8 w-8 text-blue-400 mr-3" />
@@ -189,7 +189,7 @@ const Analysis: React.FC = () => {
             <div className="flex flex-col items-center justify-center pt-3 pb-3">
               <FileUp className="h-6 w-6 text-blue-400 mb-2" />
               <span className="text-sm text-blue-300 font-medium text-center">
-                {isProcessingPdf ? '⏳ Processing PDF...' : pdfFileName ? `✓ ${pdfFileName}` : '📄 Click to upload PDF'}
+                {isProcessingPdf ? 'Processing PDF...' : pdfFileName ? `Uploaded: ${pdfFileName}` : 'Click to upload PDF'}
               </span>
             </div>
             <input
@@ -232,7 +232,7 @@ const Analysis: React.FC = () => {
           transition={{ delay: 0.3 }}
         >
           <div className="flex items-center gap-2 mb-6">
-            <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+            <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-emerald-400 rounded-full"></div>
             <h2 className="text-2xl font-bold text-white">Basic Information</h2>
           </div>
           
@@ -286,7 +286,7 @@ const Analysis: React.FC = () => {
         {/* Additional Details */}
         <motion.div className="mb-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}>
           <div className="flex items-center gap-2 mb-6">
-            <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
+            <div className="w-1 h-6 bg-gradient-to-b from-emerald-500 to-teal-400 rounded-full"></div>
             <h2 className="text-2xl font-bold text-white">Additional Details</h2>
           </div>
           <p className="text-gray-400 mb-6">Provide more context for better analysis results (optional)</p>
@@ -332,12 +332,12 @@ const Analysis: React.FC = () => {
               <label htmlFor="budget" className="block text-sm font-medium text-gray-300 mb-2">Initial Budget Range</label>
               <select id="budget" name="budget" value={formData.budget} onChange={handleInputChange} disabled={isSubmitting} className="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
                 <option value="">Select budget range</option>
-                <option value="under-10k">Under ₹10,000</option>
-                <option value="10k-50k">₹10,000 - ₹50,000</option>
-                <option value="50k-100k">₹50,000 - ₹100,000</option>
-                <option value="100k-500k">₹100,000 - ₹500,000</option>
-                <option value="500k-1m">₹500,000 - ₹1,000,000</option>
-                <option value="over-1m">Over ₹1,000,000</option>
+                <option value="under-10k">Under INR 10,000</option>
+                <option value="10k-50k">INR 10,000 - INR 50,000</option>
+                <option value="50k-100k">INR 50,000 - INR 100,000</option>
+                <option value="100k-500k">INR 100,000 - INR 500,000</option>
+                <option value="500k-1m">INR 500,000 - INR 1,000,000</option>
+                <option value="over-1m">Over INR 1,000,000</option>
               </select>
             </motion.div>
 
@@ -368,7 +368,7 @@ const Analysis: React.FC = () => {
             disabled={isSubmitting}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg shadow-lg hover:shadow-xl"
+            className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-emerald-500 hover:from-blue-700 hover:to-emerald-600 text-white font-semibold py-4 px-8 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg shadow-lg hover:shadow-xl"
           >
             {isSubmitting ? (
               <>
@@ -383,7 +383,7 @@ const Analysis: React.FC = () => {
             )}
           </motion.button>
           <p className="text-gray-400 text-sm mt-4 text-center max-w-md">
-            ⏱️ Analysis typically takes 30-60 seconds. Please be patient while our AI processes your idea.
+            Analysis typically takes 30-60 seconds. Please be patient while our AI processes your idea.
           </p>
         </motion.div>
       </motion.form>
@@ -392,3 +392,4 @@ const Analysis: React.FC = () => {
 };
 
 export default Analysis;
+

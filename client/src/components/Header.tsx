@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
-import { Brain, Home, FileText, Menu, X, User, Users, BadgeDollarSign, Briefcase } from 'lucide-react';
+import { Home, FileText, Menu, X, User, Users, BadgeDollarSign, Briefcase } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Header: React.FC = () => {
@@ -13,33 +13,33 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 shadow-lg border-b border-gray-700/50 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 bg-[#0b0f1a]/90 shadow-lg border-b border-slate-800/70 backdrop-blur-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <motion.div 
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg group-hover:shadow-lg group-hover:shadow-blue-500/50 transition-all"
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: 2 }}
+              className="p-2 rounded-xl bg-white/10 border border-white/10 group-hover:border-blue-400/40 group-hover:shadow-lg group-hover:shadow-blue-500/30 transition-all"
             >
-              <Brain className="h-6 w-6 text-white" />
+              <img src="/logo-main.png" alt="InceptIQ" className="h-7 w-7 object-contain" />
             </motion.div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                inceptIQ
+              <h1 className="text-xl font-semibold tracking-tight text-white">
+                InceptIQ
               </h1>
-              <p className="text-xs text-gray-400">AI-Powered Analysis</p>
+              <p className="text-xs text-slate-400">AI-Powered Analysis</p>
             </div>
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex space-x-6">
             <Link
               to="/"
               className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 isActive('/')
-                  ? 'text-blue-400 bg-blue-500/10 border border-blue-500/30'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <Home className="h-4 w-4" />
@@ -50,8 +50,8 @@ const Header: React.FC = () => {
               to="/analysis"
               className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 isActive('/analysis')
-                  ? 'text-blue-400 bg-blue-500/10 border border-blue-500/30'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <FileText className="h-4 w-4" />
@@ -61,8 +61,8 @@ const Header: React.FC = () => {
               to="/community"
               className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 isActive('/community')
-                  ? 'text-blue-400 bg-blue-500/10 border border-blue-500/30'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <Users className="h-4 w-4" />
@@ -72,8 +72,8 @@ const Header: React.FC = () => {
               to="/pricing"
               className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 isActive('/pricing')
-                  ? 'text-blue-400 bg-blue-500/10 border border-blue-500/30'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <BadgeDollarSign className="h-4 w-4" />
@@ -83,8 +83,8 @@ const Header: React.FC = () => {
               to="/investors"
               className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 isActive('/investors')
-                  ? 'text-blue-400 bg-blue-500/10 border border-blue-500/30'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <Briefcase className="h-4 w-4" />
@@ -98,10 +98,10 @@ const Header: React.FC = () => {
             <div className="md:hidden">
               <button 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="text-gray-300 hover:text-white p-2 transition-colors"
-              >
-                {mobileMenuOpen ? (
-                  <X className="h-6 w-6" />
+              className="text-slate-300 hover:text-white p-2 transition-colors"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
                 ) : (
                   <Menu className="h-6 w-6" />
                 )}
@@ -116,15 +116,15 @@ const Header: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="md:hidden pb-4 border-t border-gray-700/50"
+            className="md:hidden pb-4 border-t border-slate-800/70"
           >
             <Link
               to="/"
               onClick={() => setMobileMenuOpen(false)}
               className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/')
-                  ? 'text-blue-400 bg-blue-500/10'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ? 'text-blue-200 bg-blue-500/10'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center space-x-2">
@@ -138,8 +138,8 @@ const Header: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/analysis')
-                  ? 'text-blue-400 bg-blue-500/10'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ? 'text-blue-200 bg-blue-500/10'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center space-x-2">
@@ -152,8 +152,8 @@ const Header: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/community')
-                  ? 'text-blue-400 bg-blue-500/10'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ? 'text-blue-200 bg-blue-500/10'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center space-x-2">
@@ -166,8 +166,8 @@ const Header: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/pricing')
-                  ? 'text-blue-400 bg-blue-500/10'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ? 'text-blue-200 bg-blue-500/10'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center space-x-2">
@@ -180,8 +180,8 @@ const Header: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/investors')
-                  ? 'text-blue-400 bg-blue-500/10'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  ? 'text-blue-200 bg-blue-500/10'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center space-x-2">
@@ -216,10 +216,10 @@ const AuthStatus: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <div className="text-sm text-gray-300">{user.email}</div>
+        <div className="text-sm text-slate-300">{user.email}</div>
         <Link
           to="/profile"
-          className="text-sm px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 rounded border border-blue-600/30 hover:border-blue-600/50 transition-all flex items-center gap-2"
+          className="text-sm px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-200 rounded border border-blue-400/30 hover:border-blue-400/50 transition-all flex items-center gap-2"
         >
           <User className="h-4 w-4" />
           Profile
@@ -227,7 +227,7 @@ const AuthStatus: React.FC = () => {
         <motion.button 
           whileHover={{ scale: 1.05 }}
           onClick={logout} 
-          className="text-sm px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+          className="text-sm px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded transition-colors"
         >
           Logout
         </motion.button>
@@ -269,19 +269,19 @@ const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, set
 
   if (user) {
     return (
-      <div className="mt-4 pt-4 border-t border-gray-700/50 space-y-2">
-        <div className="text-sm text-gray-400 px-3">{user.email}</div>
+      <div className="mt-4 pt-4 border-t border-slate-800/70 space-y-2">
+        <div className="text-sm text-slate-400 px-3">{user.email}</div>
         <Link
           to="/profile"
           onClick={() => setMobileMenuOpen(false)}
-          className="block px-3 py-2 bg-blue-600/20 text-blue-300 rounded border border-blue-600/30 transition-colors flex items-center gap-2"
+          className="block px-3 py-2 bg-blue-500/10 text-blue-200 rounded border border-blue-400/30 transition-colors flex items-center gap-2"
         >
           <User className="h-4 w-4" />
           Profile
         </Link>
         <button
           onClick={logout}
-          className="w-full text-left px-3 py-2 bg-red-600/20 text-red-300 rounded border border-red-600/30 transition-colors"
+          className="w-full text-left px-3 py-2 bg-rose-600/20 text-rose-200 rounded border border-rose-600/30 transition-colors"
         >
           Logout
         </button>
@@ -290,7 +290,7 @@ const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, set
   }
 
   return (
-    <div className="mt-4 pt-4 border-t border-gray-700/50">
+    <div className="mt-4 pt-4 border-t border-slate-800/70">
       <Link
         to="/login"
         onClick={() => setMobileMenuOpen(false)}

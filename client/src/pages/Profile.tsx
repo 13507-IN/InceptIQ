@@ -34,13 +34,13 @@ const Profile: React.FC = () => {
       
       try {
         console.log('\n' + '='.repeat(60));
-        console.log('📋 FETCHING USER RESEARCH HISTORY');
+        console.log('FETCHING USER RESEARCH HISTORY');
         console.log(`User ID: ${user?.id}`);
         console.log('='.repeat(60));
         
         const response = await apiService.getUserResearches();
-        console.log('✅ Response received:', response);
-        console.log(`📝 Total researches: ${response.requests?.length || 0}`);
+        console.log('Response received:', response);
+        console.log(`Total researches: ${response.requests?.length || 0}`);
         
         if (response.requests && response.requests.length > 0) {
           console.log('Research list:');
@@ -52,7 +52,7 @@ const Profile: React.FC = () => {
         setResearches(response.requests || []);
         console.log('='.repeat(60) + '\n');
       } catch (err: any) {
-        console.error('❌ Failed to fetch researches:', err);
+        console.error('Failed to fetch researches:', err);
         console.error('Error details:', {
           message: err.message,
           status: err.response?.status,
@@ -68,7 +68,7 @@ const Profile: React.FC = () => {
     if (user?.id) {
       fetchResearches();
     } else {
-      console.warn('⚠️  No user ID available. Skipping research fetch.');
+      console.warn('No user ID available. Skipping research fetch.');
       setLoading(false);
     }
   }, [user?.id]);
@@ -106,7 +106,7 @@ const Profile: React.FC = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 py-12"
+      className="min-h-screen bg-[#0b0f1a] py-12"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -120,11 +120,11 @@ const Profile: React.FC = () => {
           animate="visible"
         >
           <motion.div
-            className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-8 mb-8"
+            className="bg-gradient-to-r from-blue-500/10 to-emerald-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-8 mb-8"
             variants={itemVariants}
           >
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-emerald-600 flex items-center justify-center">
                 <span className="text-3xl font-bold text-white">
                   {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
                 </span>
@@ -157,7 +157,7 @@ const Profile: React.FC = () => {
                 variants={itemVariants}
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <Calendar className="h-5 w-5 text-purple-400" />
+                  <Calendar className="h-5 w-5 text-emerald-400" />
                   <span className="text-sm text-gray-400">Total Researches</span>
                 </div>
                 <p className="text-lg font-semibold text-white">{researches.length}</p>
@@ -188,7 +188,7 @@ const Profile: React.FC = () => {
               <div className="inline-flex flex-col items-center gap-3">
                 <div className="relative w-12 h-12">
                   <motion.div
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
+                    className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-emerald-600"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                     style={{
@@ -227,7 +227,7 @@ const Profile: React.FC = () => {
               </p>
               <button
                 onClick={() => navigate('/analysis')}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 transform hover:scale-105 inline-block"
+                className="bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 transform hover:scale-105 inline-block"
               >
                 Start New Analysis
               </button>
@@ -291,7 +291,7 @@ const Profile: React.FC = () => {
                         // Download functionality can be added here
                         alert('Download feature coming soon!');
                       }}
-                      className="flex items-center justify-center gap-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-semibold py-2 px-4 rounded-lg transition-all duration-200 border border-purple-500/30 hover:border-purple-500/50"
+                      className="flex items-center justify-center gap-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-semibold py-2 px-4 rounded-lg transition-all duration-200 border border-emerald-500/30 hover:border-emerald-500/50"
                     >
                       <Download className="h-4 w-4" />
                       Download
@@ -314,7 +314,7 @@ const Profile: React.FC = () => {
           >
             <button
               onClick={() => navigate('/analysis')}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-lg transition-all duration-200 transform hover:scale-105 inline-block text-lg"
+              className="bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-lg transition-all duration-200 transform hover:scale-105 inline-block text-lg"
             >
               Start New Analysis
             </button>
@@ -326,3 +326,8 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
+
+
+
+
+

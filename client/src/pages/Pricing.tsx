@@ -51,7 +51,7 @@ const Pricing: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#05060a] text-white">
+    <div className="min-h-screen bg-[#0b0f1a] text-white">
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.2),transparent_55%)]" />
@@ -131,7 +131,7 @@ const Pricing: React.FC = () => {
       </section>
 
       {/* Value highlights */}
-      <section className="py-16 bg-gradient-to-b from-[#05060a] via-[#0b1220] to-[#05060a]">
+      <section className="py-16 bg-gradient-to-b from-[#0b0f1a] via-[#0f172a] to-[#0b0f1a]">
         <div className="container mx-auto px-6 grid md:grid-cols-3 gap-6">
           <Card className="bg-white/5 border border-white/10">
             <CardContent className="p-6">
@@ -177,7 +177,7 @@ const Pricing: React.FC = () => {
       {/* CTA */}
       <section className="py-16">
         <div className="container mx-auto px-6">
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-blue-500/20 via-indigo-500/10 to-emerald-400/10 p-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-blue-500/20 via-sky-500/10 to-emerald-400/10 p-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
               <h2 className="text-3xl font-semibold">Ready to validate your next big move?</h2>
               <p className="mt-3 text-gray-300 max-w-xl">

@@ -303,12 +303,12 @@ const CommunityPublish: React.FC = () => {
                 className="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
               >
                 <option value="">Select budget range</option>
-                <option value="under-10k">Under ₹10,000</option>
-                <option value="10k-50k">₹10,000 - ₹50,000</option>
-                <option value="50k-100k">₹50,000 - ₹100,000</option>
-                <option value="100k-500k">₹100,000 - ₹500,000</option>
-                <option value="500k-1m">₹500,000 - ₹1,000,000</option>
-                <option value="over-1m">Over ₹1,000,000</option>
+                <option value="under-10k">Under INR 10,000</option>
+                <option value="10k-50k">INR 10,000 - INR 50,000</option>
+                <option value="50k-100k">INR 50,000 - INR 100,000</option>
+                <option value="100k-500k">INR 100,000 - INR 500,000</option>
+                <option value="500k-1m">INR 500,000 - INR 1,000,000</option>
+                <option value="over-1m">Over INR 1,000,000</option>
               </select>
             </div>
 
@@ -336,7 +336,7 @@ const CommunityPublish: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
+            className="bg-gradient-to-r from-blue-600 to-emerald-500 hover:from-blue-700 hover:to-emerald-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
           >
             <Send className="h-5 w-5" />
             {isSubmitting ? 'Publishing...' : 'Publish to Community'}

@@ -73,7 +73,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0b0f1a] flex items-center justify-center px-4">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -82,7 +82,7 @@ const Login: React.FC = () => {
       >
         <div className="relative">
           {/* Background glow effect */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-20 group-hover:opacity-100 transition duration-1000"></div>
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-2xl blur opacity-20 group-hover:opacity-100 transition duration-1000"></div>
           
           {/* Form container */}
           <div className="relative bg-gray-800/50 backdrop-blur-xl p-8 rounded-2xl border border-gray-700/50 shadow-2xl">
@@ -93,7 +93,7 @@ const Login: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-300 to-emerald-300 bg-clip-text text-transparent mb-2">
                 {mode === 'login' ? 'Welcome Back' : 'Create Account'}
               </h2>
               <p className="text-gray-400 text-sm">
@@ -170,7 +170,7 @@ const Login: React.FC = () => {
                   <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
                   <input 
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    placeholder="Enter your password"
                     value={password} 
                     onChange={e => setPassword(e.target.value)}
                     disabled={isLoading}
@@ -204,7 +204,7 @@ const Login: React.FC = () => {
                     <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
                     <input 
                       type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
+                      placeholder="Confirm your password"
                       value={confirmPassword} 
                       onChange={e => setConfirmPassword(e.target.value)}
                       disabled={isLoading}
@@ -233,7 +233,7 @@ const Login: React.FC = () => {
                 disabled={isLoading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-emerald-500 hover:from-blue-700 hover:to-emerald-600 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>

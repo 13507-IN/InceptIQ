@@ -8,6 +8,16 @@ import { ArrowRight, Rocket, Sparkles, ShieldCheck, LineChart, Users, CheckCircl
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+const metricFormatter = new Intl.NumberFormat('en-US');
+
+const formatMetricValue = (value: number, decimals: number, suffix: string) => {
+  const fixed = decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
+  const [intPart, decimalPart] = fixed.split('.');
+  const formattedInt = metricFormatter.format(Number(intPart || 0));
+  const formatted = decimalPart ? `${formattedInt}.${decimalPart}` : formattedInt;
+  return `${formatted}${suffix}`;
+};
+
 const Home: React.FC = () => {
   const { token } = useContext<AuthContextValue>(AuthContext);
   const [requests, setRequests] = useState<any[]>([]);
@@ -94,6 +104,27 @@ const Home: React.FC = () => {
           }
         );
       });
+
+      gsap.utils.toArray<HTMLElement>('.metric-value').forEach((el) => {
+        const endValue = Number(el.dataset.value || '0');
+        const decimals = Number(el.dataset.decimals || '0');
+        const suffix = el.dataset.suffix || '';
+        const counter = { value: 0 };
+
+        gsap.to(counter, {
+          value: endValue,
+          duration: 1.6,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+          },
+          onUpdate: () => {
+            el.textContent = formatMetricValue(counter.value, decimals, suffix);
+          }
+        });
+      });
     }, rootRef);
 
     return () => ctx.revert();
@@ -133,13 +164,13 @@ const Home: React.FC = () => {
   ];
 
   const metrics = [
-    { label: 'Ideas analyzed', value: '18K+' },
-    { label: 'Avg. report time', value: '45 sec' },
-    { label: 'Founder satisfaction', value: '4.9/5' }
+    { label: 'Ideas analyzed', value: 18000, suffix: '+', decimals: 0 },
+    { label: 'Avg. report time', value: 45, suffix: ' sec', decimals: 0 },
+    { label: 'Founder satisfaction', value: 4.9, suffix: '/5', decimals: 1 }
   ];
 
   return (
-    <div ref={rootRef} className="min-h-screen bg-[#05060a] text-white">
+    <div ref={rootRef} className="min-h-screen bg-[#0b0f1a] text-white">
       {/* Hero */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.25),transparent_55%)]" />
@@ -193,7 +224,14 @@ const Home: React.FC = () => {
             <div className="mt-10 flex flex-wrap gap-6 text-sm text-gray-400">
               {metrics.map((metric) => (
                 <div key={metric.label}>
-                  <div className="text-xl font-semibold text-white">{metric.value}</div>
+                  <div
+                    className="metric-value text-xl font-semibold text-white"
+                    data-value={metric.value}
+                    data-decimals={metric.decimals}
+                    data-suffix={metric.suffix}
+                  >
+                    {formatMetricValue(0, metric.decimals, metric.suffix)}
+                  </div>
                   <div>{metric.label}</div>
                 </div>
               ))}
@@ -277,7 +315,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Feature Highlights */}
-      <section className="reveal py-24 bg-gradient-to-b from-[#05060a] via-[#0b1220] to-[#05060a]">
+      <section className="reveal py-24 bg-gradient-to-b from-[#0b0f1a] via-[#0f172a] to-[#0b0f1a]">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-semibold">Deep intelligence, not generic advice</h2>
@@ -319,9 +357,9 @@ const Home: React.FC = () => {
           <div className="relative">
             <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-blue-500/20 blur-3xl" />
             <img
-              src="/logo512.png"
-              alt="Brand mark"
-              className="w-40 h-40 rounded-3xl border border-white/10 bg-white/5 p-6"
+              src="/logo-main.png"
+              alt="InceptIQ logo"
+              className="w-40 h-40 rounded-3xl border border-white/10 bg-white/5 p-6 object-contain"
             />
             <div className="mt-8 grid gap-4">
               <Card className="bg-white/5 border border-white/10">
@@ -386,7 +424,7 @@ const Home: React.FC = () => {
       {/* Final CTA */}
       <section className="reveal py-24">
         <div className="container mx-auto px-6">
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-blue-500/20 via-indigo-500/10 to-emerald-400/10 p-12">
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-blue-500/20 via-sky-500/10 to-emerald-400/10 p-12">
             <div className="absolute inset-0 opacity-30">
               <svg width="100%" height="100%" viewBox="0 0 600 220" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M0 180C120 140 240 220 360 180C480 140 600 200 720 160" stroke="#38BDF8" strokeWidth="2" />

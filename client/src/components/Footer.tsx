@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Brain, Mail, Github, Linkedin, Twitter } from 'lucide-react';
+import { Mail, Github, Linkedin, Twitter } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Footer: React.FC = () => {
@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700/50 mt-16">
+    <footer className="bg-[#0b0f1a] border-t border-slate-800/70 mt-16">
       <motion.div
         className="container mx-auto px-4 py-12"
         variants={footerVariants}
@@ -38,19 +38,17 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand Section */}
           <motion.div variants={itemVariants} className="md:col-span-1">
-            <Link to="/" className="flex items-center space-x-2 mb-4">
-              <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-                <Brain className="h-5 w-5 text-white" />
+            <Link to="/" className="flex items-center space-x-3 mb-4">
+              <div className="p-2 rounded-xl bg-white/10 border border-white/10">
+                <img src="/logo-main.png" alt="InceptIQ" className="h-6 w-6 object-contain" />
               </div>
               <div>
-                <h3 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  inceptIQ
-                </h3>
-                <p className="text-xs text-gray-500">AI-Powered Analysis</p>
+                <h3 className="text-lg font-semibold text-white">InceptIQ</h3>
+                <p className="text-xs text-slate-400">AI-Powered Analysis</p>
               </div>
             </Link>
-            <p className="text-sm text-gray-400">
-              Validate your startup ideas with AI-powered analysis and insights.
+            <p className="text-sm text-slate-400">
+              Validate your startup ideas with AI-powered analysis, risk mapping, and next-step guidance.
             </p>
           </motion.div>
 
@@ -61,7 +59,7 @@ const Footer: React.FC = () => {
               <li>
                 <Link
                   to="/"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                  className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
                 >
                   Home
                 </Link>
@@ -69,7 +67,7 @@ const Footer: React.FC = () => {
               <li>
                 <Link
                   to="/analysis"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                  className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
                 >
                   New Analysis
                 </Link>
@@ -77,7 +75,7 @@ const Footer: React.FC = () => {
               <li>
                 <Link
                   to="/community"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                  className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
                 >
                   Community
                 </Link>
@@ -85,7 +83,7 @@ const Footer: React.FC = () => {
               <li>
                 <Link
                   to="/pricing"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                  className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
                 >
                   Pricing
                 </Link>
@@ -93,7 +91,7 @@ const Footer: React.FC = () => {
               <li>
                 <Link
                   to="/investors"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                  className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
                 >
                   Investor Directory
                 </Link>
@@ -101,7 +99,7 @@ const Footer: React.FC = () => {
               <li>
                 <Link
                   to="/profile"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                  className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
                 >
                   My Profile
                 </Link>
@@ -116,7 +114,7 @@ const Footer: React.FC = () => {
               <li>
                 <Link
                   to="/documentation"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                  className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
                 >
                   Documentation
                 </Link>
@@ -124,7 +122,7 @@ const Footer: React.FC = () => {
               <li>
                 <Link
                   to="/faq"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                  className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
                 >
                   FAQ
                 </Link>
@@ -132,7 +130,7 @@ const Footer: React.FC = () => {
               <li>
                 <Link
                   to="/support"
-                  className="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+                  className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
                 >
                   Support
                 </Link>
@@ -146,61 +144,58 @@ const Footer: React.FC = () => {
             <div className="flex gap-4 mb-4">
               <a
                 href="#twitter"
-                className="p-2 bg-gray-800 hover:bg-blue-600 rounded-lg transition-colors"
+                className="p-2 bg-white/5 hover:bg-blue-600 rounded-lg transition-colors"
                 title="Twitter"
               >
-                <Twitter className="h-4 w-4 text-gray-400 hover:text-white" />
+                <Twitter className="h-4 w-4 text-slate-400 hover:text-white" />
               </a>
               <a
                 href="#github"
-                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 bg-white/5 hover:bg-slate-700 rounded-lg transition-colors"
                 title="GitHub"
               >
-                <Github className="h-4 w-4 text-gray-400 hover:text-white" />
+                <Github className="h-4 w-4 text-slate-400 hover:text-white" />
               </a>
               <a
                 href="#linkedin"
-                className="p-2 bg-gray-800 hover:bg-blue-600 rounded-lg transition-colors"
+                className="p-2 bg-white/5 hover:bg-blue-600 rounded-lg transition-colors"
                 title="LinkedIn"
               >
-                <Linkedin className="h-4 w-4 text-gray-400 hover:text-white" />
+                <Linkedin className="h-4 w-4 text-slate-400 hover:text-white" />
               </a>
               <a
                 href="mailto:support@inceptiq.com"
-                className="p-2 bg-gray-800 hover:bg-purple-600 rounded-lg transition-colors"
+                className="p-2 bg-white/5 hover:bg-emerald-600 rounded-lg transition-colors"
                 title="Email"
               >
-                <Mail className="h-4 w-4 text-gray-400 hover:text-white" />
+                <Mail className="h-4 w-4 text-slate-400 hover:text-white" />
               </a>
             </div>
-            <p className="text-xs text-gray-500">support@inceptiq.com</p>
+            <p className="text-xs text-slate-500">support@inceptiq.com</p>
           </motion.div>
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-700/50 my-8"></div>
+        <div className="border-t border-slate-800/70 my-8"></div>
 
         {/* Bottom Footer */}
         <motion.div
           variants={itemVariants}
           className="flex flex-col md:flex-row items-center justify-between"
         >
-          <div className="text-sm text-gray-400 mb-4 md:mb-0">
-            <p>
-              © {currentYear} inceptIQ. All rights reserved. | Made with{' '}
-              <span className="text-red-500">❤️</span> for entrepreneurs
-            </p>
+          <div className="text-sm text-slate-400 mb-4 md:mb-0">
+            <p>&copy; {currentYear} InceptIQ. All rights reserved.</p>
           </div>
 
           {/* Legal Links */}
           <div className="flex gap-6 text-sm">
-            <Link to="/privacy" className="text-gray-400 hover:text-blue-400 transition-colors">
+            <Link to="/privacy" className="text-slate-400 hover:text-blue-300 transition-colors">
               Privacy Policy
             </Link>
-            <Link to="/terms" className="text-gray-400 hover:text-blue-400 transition-colors">
+            <Link to="/terms" className="text-slate-400 hover:text-blue-300 transition-colors">
               Terms of Service
             </Link>
-            <Link to="/cookies" className="text-gray-400 hover:text-blue-400 transition-colors">
+            <Link to="/cookies" className="text-slate-400 hover:text-blue-300 transition-colors">
               Cookie Policy
             </Link>
           </div>
@@ -211,3 +206,5 @@ const Footer: React.FC = () => {
 };
 
 export default Footer;
+
+

@@ -64,7 +64,7 @@ const Community: React.FC = () => {
         </div>
         <Link
           to="/community/publish"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium hover:from-blue-700 hover:to-purple-700 transition-all"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-500 text-white font-medium hover:from-blue-700 hover:to-emerald-600 transition-all"
         >
           <Sparkles className="h-4 w-4" />
           Publish New Idea
@@ -126,7 +126,7 @@ const Community: React.FC = () => {
                   </span>
                 )}
                 {post.idea.businessModel && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30">
+                  <span className="text-xs px-2 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/30">
                     Model: {post.idea.businessModel}
                   </span>
                 )}

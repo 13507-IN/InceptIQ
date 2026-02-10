@@ -25,11 +25,11 @@ api.interceptors.request.use(
     } catch (e) {
       // ignore
     }
-    console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
   (error) => {
-    console.error('❌ API Request Error:', error);
+    console.error('API Request Error:', error);
     return Promise.reject(error);
   }
 );
@@ -37,11 +37,11 @@ api.interceptors.request.use(
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
-    console.log(`✅ API Response: ${response.status} ${response.config.url}`);
+    console.log(`API Response: ${response.status} ${response.config.url}`);
     return response;
   },
   (error) => {
-    console.error('❌ API Response Error:', error.response?.data || error.message);
+    console.error('API Response Error:', error.response?.data || error.message);
     
     // Handle specific error cases
     if (error.code === 'ECONNABORTED') {
@@ -154,8 +154,8 @@ class ApiService {
         } catch (e) {
           parsed = { message: text };
         }
-        console.error('🔴 Server-side error while generating/downloading PDF:', parsed);
-        console.error('🔴 Error details:', {
+        console.error('Server-side error while generating/downloading PDF:', parsed);
+        console.error('Error details:', {
           error: parsed.error,
           message: parsed.message,
           requestId: parsed.requestId,
@@ -164,7 +164,7 @@ class ApiService {
         throw new Error(parsed.message || parsed.error || JSON.stringify(parsed));
       }
 
-      console.log(`✅ PDF response received - Content-Type: ${contentType}, Size: ${response.data.byteLength} bytes`);
+      console.log(`PDF response received - Content-Type: ${contentType}, Size: ${response.data.byteLength} bytes`);
 
       // Build a proper PDF Blob with correct MIME
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
@@ -181,13 +181,13 @@ class ApiService {
         }
       }
 
-      console.log(`📥 Triggering PDF download with filename: ${filename}`);
+      console.log(`Triggering PDF download with filename: ${filename}`);
       
       // Trigger browser download
       downloadFile(pdfBlob, filename);
-      console.log(`✅ PDF download triggered successfully`);
+      console.log(`PDF download triggered successfully`);
     } catch (error: any) {
-      console.error('❌ PDF download failed:', error);
+      console.error('PDF download failed:', error);
 
       // If server responded with arraybuffer error payload, try to decode and show message
       try {
@@ -197,10 +197,10 @@ class ApiService {
           const text = new TextDecoder().decode(resp.data);
           try {
             const parsed = JSON.parse(text);
-            console.error('🔴 Decoded server error response:', parsed);
+            console.error('Decoded server error response:', parsed);
             throw new Error(parsed.message || parsed.error || JSON.stringify(parsed));
           } catch (parseErr) {
-            console.error('🔴 Raw response text:', text);
+            console.error('Raw response text:', text);
             throw new Error(text || 'Unknown server error');
           }
         }
@@ -286,7 +286,7 @@ class ApiService {
 
       downloadFile(deckBlob, filename);
     } catch (error: any) {
-      console.error('❌ Pitch deck download failed:', error);
+      console.error('Pitch deck download failed:', error);
       throw error;
     }
   }
@@ -401,3 +401,6 @@ export const formatFileSize = (bytes: number): string => {
   
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
+
+
+

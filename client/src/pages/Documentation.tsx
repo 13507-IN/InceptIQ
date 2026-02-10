@@ -66,7 +66,7 @@ const Documentation: React.FC = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 py-12"
+      className="min-h-screen bg-[#0b0f1a] py-12"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -127,7 +127,7 @@ const Documentation: React.FC = () => {
 
         {/* Tips Section */}
         <motion.div
-          className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-8"
+          className="bg-gradient-to-r from-blue-500/10 to-emerald-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-8"
           variants={itemVariants}
           initial="hidden"
           animate="visible"
@@ -184,7 +184,7 @@ const Documentation: React.FC = () => {
         >
           <Link
             to="/analysis"
-            className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-lg transition-all duration-200 transform hover:scale-105"
+            className="inline-block bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-lg transition-all duration-200 transform hover:scale-105"
           >
             Start Your First Analysis
           </Link>
@@ -195,3 +195,5 @@ const Documentation: React.FC = () => {
 };
 
 export default Documentation;
+
+

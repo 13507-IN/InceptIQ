@@ -73,7 +73,7 @@ const FAQ: React.FC = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 py-12"
+      className="min-h-screen bg-[#0b0f1a] py-12"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -140,7 +140,7 @@ const FAQ: React.FC = () => {
 
         {/* Contact CTA */}
         <motion.div
-          className="mt-12 bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-8 text-center"
+          className="mt-12 bg-gradient-to-r from-blue-500/10 to-emerald-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-8 text-center"
           variants={itemVariants}
           initial="hidden"
           animate="visible"
@@ -152,7 +152,7 @@ const FAQ: React.FC = () => {
           </p>
           <a
             href="/support"
-            className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 transform hover:scale-105"
+            className="inline-block bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 transform hover:scale-105"
           >
             Contact Support
           </a>
@@ -163,3 +163,5 @@ const FAQ: React.FC = () => {
 };
 
 export default FAQ;
+
+

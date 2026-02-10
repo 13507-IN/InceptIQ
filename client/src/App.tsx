@@ -27,9 +27,9 @@ function App() {
     <Router>
       <ErrorBoundary>
         <AuthProvider>
-          <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 flex flex-col">
+          <div className="min-h-screen bg-gradient-to-b from-[#0b0f1a] via-[#0f172a] to-[#0b0f1a] flex flex-col">
             <Header />
-            <main className="container mx-auto px-4 py-8 flex-1">
+            <main className="flex-1">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/analysis" element={<Analysis />} />
