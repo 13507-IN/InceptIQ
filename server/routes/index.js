@@ -9,6 +9,7 @@ const communityRoutes = require('./community');
 const collaborationRoutes = require('./collaboration');
 const investorRoutes = require('./investors');
 const pitchDeckRoutes = require('./pitchDecks');
+const uploadRoutes = require('./uploads');
 
 // Route definitions
 router.use('/analyze', analysisRoutes);
@@ -18,6 +19,7 @@ router.use('/community', communityRoutes);
 router.use('/collaboration', collaborationRoutes);
 router.use('/investors', investorRoutes);
 router.use('/pitch-decks', pitchDeckRoutes);
+router.use('/uploads', uploadRoutes);
 
 // API info endpoint
 router.get('/', (req, res) => {
@@ -32,6 +34,7 @@ router.get('/', (req, res) => {
             collaboration: '/api/collaboration',
             investors: '/api/investors',
             pitchDecks: '/api/pitch-decks',
+            uploads: '/api/uploads',
             health: '/health'
         },
         status: 'active'
