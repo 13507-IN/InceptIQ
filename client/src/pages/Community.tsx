@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { Users, Loader2, AlertCircle, Sparkles, ThumbsUp, ThumbsDown, Heart, TrendingUp } from 'lucide-react';
 import { apiService } from '../services/api';
 import { CommunityPost } from '../types';
 
 const Community: React.FC = () => {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
+  const [voting, setVoting] = useState<Record<string, boolean>>({});
+
+  const DESCRIPTION_LIMIT = 220;
 
   useEffect(() => {
     const loadPosts = async () => {
@@ -17,7 +22,7 @@ const Community: React.FC = () => {
         const data = await apiService.listCommunityPosts();
         setPosts(data);
       } catch (err: any) {
-        setError(err.message || 'Failed to load community posts.');
+        setLoadError(err.message || 'Failed to load community posts.');
       } finally {
         setLoading(false);
       }
@@ -36,6 +41,46 @@ const Community: React.FC = () => {
   const itemVariants = {
     hidden: { opacity: 0, y: 16 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.45 } }
+  };
+
+  const truncateText = (value: string, limit: number) => (
+    value.length > limit ? `${value.slice(0, limit).trim()}...` : value
+  );
+
+  const getVoteScore = (post: CommunityPost) => (
+    (post.upvotes ?? 0) + Math.round((post.likes ?? 0) * 0.5) - (post.downvotes ?? 0)
+  );
+
+  const topPosts = [...posts]
+    .sort((a, b) => {
+      const scoreDiff = getVoteScore(b) - getVoteScore(a);
+      if (scoreDiff !== 0) return scoreDiff;
+      const likeDiff = (b.likes ?? 0) - (a.likes ?? 0);
+      if (likeDiff !== 0) return likeDiff;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    })
+    .slice(0, 5);
+
+  const toggleExpanded = (postId: string) => {
+    setExpandedPosts(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
+
+  const handleVote = async (postId: string, type: 'up' | 'down' | 'like') => {
+    try {
+      setActionError(null);
+      setVoting(prev => ({ ...prev, [postId]: true }));
+      const updated = await apiService.voteCommunityPost(postId, type);
+      setPosts(prev => prev.map(post => (
+        post.id === postId ? { ...post, ...updated } : post
+      )));
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to register vote.');
+    } finally {
+      setVoting(prev => ({ ...prev, [postId]: false }));
+    }
   };
 
   return (
@@ -78,81 +123,193 @@ const Community: React.FC = () => {
         </div>
       )}
 
-      {error && !loading && (
+      {loadError && !loading && (
         <div className="flex items-center gap-3 text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg p-4">
           <AlertCircle className="h-5 w-5" />
-          <span>{error}</span>
+          <span>{loadError}</span>
         </div>
       )}
 
-      {!loading && !error && posts.length === 0 && (
+      {actionError && !loading && (
+        <div className="flex items-center gap-3 text-amber-200 bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-6">
+          <AlertCircle className="h-5 w-5" />
+          <span>{actionError}</span>
+        </div>
+      )}
+
+      {!loading && !loadError && posts.length === 0 && (
         <div className="text-gray-400 bg-gray-800/40 border border-gray-700/60 rounded-lg p-6">
           No community posts yet. Be the first to publish your idea.
         </div>
       )}
 
-      {!loading && !error && posts.length > 0 && (
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {posts.map(post => (
-            <motion.div
-              key={post.id}
-              variants={itemVariants}
-              className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-700/50 rounded-2xl p-6 shadow-xl"
-            >
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <h3 className="text-xl font-semibold text-white">{post.idea.ideaTitle}</h3>
-                <span className="text-xs text-gray-400">
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                {post.idea.ideaDescription}
-              </p>
+      {!loading && !loadError && posts.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8 items-start">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {posts.map(post => {
+              const description = post.idea.ideaDescription || '';
+              const isLong = description.length > DESCRIPTION_LIMIT;
+              const isExpanded = expandedPosts[post.id];
+              const displayDescription = isLong && !isExpanded
+                ? truncateText(description, DESCRIPTION_LIMIT)
+                : description;
+              const isVoting = voting[post.id];
 
-              <div className="flex flex-wrap gap-2 mb-4">
-                {post.idea.ideaType && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-500/10 text-gray-200 border border-gray-500/30 uppercase">
-                    {post.idea.ideaType}
-                  </span>
-                )}
-                {post.idea.targetMarket && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/30">
-                    Target: {post.idea.targetMarket}
-                  </span>
-                )}
-                {post.idea.businessModel && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/30">
-                    Model: {post.idea.businessModel}
-                  </span>
-                )}
-                {post.idea.industry && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-                    Industry: {post.idea.industry}
-                  </span>
-                )}
-                {post.idea.budget && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                    Budget: {post.idea.budget}
-                  </span>
-                )}
-                {post.idea.timeline && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/30">
-                    Timeline: {post.idea.timeline}
-                  </span>
-                )}
+              return (
+                <motion.div
+                  key={post.id}
+                  variants={itemVariants}
+                  className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-700/50 rounded-2xl p-6 shadow-xl"
+                >
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <h3 className="text-xl font-semibold text-white">{post.idea.ideaTitle}</h3>
+                    <span className="text-xs text-gray-400">
+                      {new Date(post.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    {displayDescription}
+                  </p>
+                  {isLong && (
+                    <button
+                      type="button"
+                      onClick={() => toggleExpanded(post.id)}
+                      className="mt-2 text-xs font-semibold text-emerald-300 hover:text-emerald-200 transition"
+                    >
+                      {isExpanded ? 'See less' : 'See more'}
+                    </button>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2 mt-4 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => handleVote(post.id, 'up')}
+                      disabled={isVoting}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-200 text-xs font-medium hover:bg-emerald-500/20 transition disabled:opacity-50"
+                    >
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                      <span>{post.upvotes ?? 0}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleVote(post.id, 'down')}
+                      disabled={isVoting}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-200 text-xs font-medium hover:bg-amber-500/20 transition disabled:opacity-50"
+                    >
+                      <ThumbsDown className="h-3.5 w-3.5" />
+                      <span>{post.downvotes ?? 0}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleVote(post.id, 'like')}
+                      disabled={isVoting}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-500/40 bg-rose-500/10 text-rose-200 text-xs font-medium hover:bg-rose-500/20 transition disabled:opacity-50"
+                    >
+                      <Heart className="h-3.5 w-3.5" />
+                      <span>{post.likes ?? 0}</span>
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {post.idea.ideaType && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-gray-500/10 text-gray-200 border border-gray-500/30 uppercase">
+                        {post.idea.ideaType}
+                      </span>
+                    )}
+                    {post.idea.targetMarket && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/30">
+                        Target: {post.idea.targetMarket}
+                      </span>
+                    )}
+                    {post.idea.businessModel && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/30">
+                        Model: {post.idea.businessModel}
+                      </span>
+                    )}
+                    {post.idea.industry && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                        Industry: {post.idea.industry}
+                      </span>
+                    )}
+                    {post.idea.budget && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                        Budget: {post.idea.budget}
+                      </span>
+                    )}
+                    {post.idea.timeline && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/30">
+                        Timeline: {post.idea.timeline}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="text-xs text-gray-400">
+                    Posted by {post.author?.name || post.author?.email || 'Anonymous'}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+
+          <div className="space-y-4 lg:sticky lg:top-24">
+            <div className="bg-gradient-to-br from-gray-900/70 to-gray-800/50 border border-gray-700/60 rounded-2xl p-5 shadow-lg">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-2 rounded-lg bg-emerald-500/15">
+                  <TrendingUp className="h-4 w-4 text-emerald-300" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-white uppercase tracking-wide">Top Voted</h2>
+                  <p className="text-xs text-gray-400">Community favorites right now</p>
+                </div>
               </div>
 
-              <div className="text-xs text-gray-400">
-                Posted by {post.author?.name || post.author?.email || 'Anonymous'}
+              <div className="space-y-3">
+                {topPosts.map(post => (
+                  <div
+                    key={post.id}
+                    className="p-3 rounded-xl border border-gray-700/50 bg-gray-900/40"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="text-sm font-semibold text-white">
+                        {truncateText(post.idea.ideaTitle || 'Untitled idea', 52)}
+                      </div>
+                      <div className="text-xs font-semibold text-emerald-300">
+                        {getVoteScore(post)}
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                      {truncateText(post.idea.ideaDescription || '', 90)}
+                    </p>
+                    <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
+                      <span className="inline-flex items-center gap-1">
+                        <ThumbsUp className="h-3 w-3" />
+                        {post.upvotes ?? 0}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <ThumbsDown className="h-3 w-3" />
+                        {post.downvotes ?? 0}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Heart className="h-3 w-3" />
+                        {post.likes ?? 0}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {topPosts.length === 0 && (
+                  <div className="text-xs text-gray-400">
+                    Votes will appear once ideas start getting feedback.
+                  </div>
+                )}
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
+            </div>
+          </div>
+        </div>
       )}
     </motion.div>
   );
