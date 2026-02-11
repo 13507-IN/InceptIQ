@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const fetch = require('node-fetch');
 
 class PDFService {
     constructor() {
@@ -8,6 +9,18 @@ class PDFService {
         this.reportsDir = path.join(__dirname, '../reports');
         if (!fs.existsSync(this.reportsDir)) {
             fs.mkdirSync(this.reportsDir, { recursive: true });
+        }
+    }
+
+    async fetchImageBuffer(url) {
+        if (!url) return null;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            return await response.buffer();
+        } catch (error) {
+            console.warn('PDF image fetch failed:', error.message || error);
+            return null;
         }
     }
 
@@ -86,7 +99,7 @@ class PDFService {
     }
 
     async generateAnalysisReport(analysisData, analysisId) {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             try {
                 if (!analysisData) {
                     const error = new Error('analysisData is null or undefined');
@@ -221,11 +234,16 @@ if (!reportAnalysis.uniqueness?.summary) {
                 console.log(`📝 PDF Generation: Adding content sections...`);
                 console.log(`   - Adding header...`);
 
+                const [logoBuffer, coverBuffer] = await Promise.all([
+                    this.fetchImageBuffer(input?.logoUrl),
+                    this.fetchImageBuffer(input?.coverImageUrl)
+                ]);
+
                 // Header
-                this.addHeader(doc, input?.ideaTitle || 'Startup Analysis');
+                this.addHeader(doc, input?.ideaTitle || 'Startup Analysis', { logoBuffer });
 
                 // Executive Summary
-                this.addExecutiveSummary(doc, reportAnalysis);
+                this.addExecutiveSummary(doc, reportAnalysis, { coverBuffer });
                 console.log(`   ✅ Executive Summary added`);
 
                 // Detailed Analysis Sections
@@ -323,7 +341,7 @@ if (!reportAnalysis.uniqueness?.summary) {
         });
     }
 
-    addHeader(doc, ideaTitle) {
+    addHeader(doc, ideaTitle, assets = {}) {
         const logoCandidates = [
             path.join(__dirname, '../../client/public/Untitled design (1).png'),
             path.join(__dirname, '../../client/build/untitled design (1).png')
@@ -331,7 +349,13 @@ if (!reportAnalysis.uniqueness?.summary) {
 
         const logoPath = logoCandidates.find(candidate => fs.existsSync(candidate));
 
-        if (logoPath) {
+        if (assets.logoBuffer) {
+            try {
+                doc.image(assets.logoBuffer, 50, 40, { width: 36, height: 36 });
+            } catch (error) {
+                console.warn('⚠️  PDF logo rendering failed:', error.message);
+            }
+        } else if (logoPath) {
             try {
                 doc.image(logoPath, 50, 40, { width: 36, height: 36 });
             } catch (error) {
@@ -362,12 +386,25 @@ if (!reportAnalysis.uniqueness?.summary) {
         doc.y = 180;
     }
 
-    addExecutiveSummary(doc, analysis) {
+    addExecutiveSummary(doc, analysis, assets = {}) {
         doc.fontSize(16)
            .fillColor('#1f2937')
            .text('Executive Summary', 50, doc.y);
 
         doc.y += 25;
+
+        if (assets.coverBuffer) {
+            try {
+                doc.image(assets.coverBuffer, 50, doc.y, {
+                    fit: [495, 150],
+                    align: 'center',
+                    valign: 'center'
+                });
+                doc.y += 165;
+            } catch (error) {
+                console.warn('⚠️  PDF cover rendering failed:', error.message);
+            }
+        }
 
         // Overall Score Box
         const scoreBoxY = doc.y;
