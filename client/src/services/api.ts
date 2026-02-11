@@ -291,6 +291,29 @@ class ApiService {
     }
   }
 
+  // Upload logo/cover images for analysis
+  async uploadAnalysisImages(payload: { logo?: File; cover?: File }): Promise<{ logoUrl?: string; coverImageUrl?: string }> {
+    try {
+      const formData = new FormData();
+      if (payload.logo) formData.append('logo', payload.logo);
+      if (payload.cover) formData.append('cover', payload.cover);
+
+      const response = await api.post('/uploads/images', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      return response.data?.data || {};
+    } catch (error: any) {
+      console.error('Image upload failed:', error);
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Failed to upload image.');
+    }
+  }
+
   // Investor Directory: list investors
   async listInvestors(params?: {
     q?: string;

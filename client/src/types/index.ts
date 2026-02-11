@@ -7,6 +7,8 @@ export interface StartupIdea {
   industry?: string;
   budget?: string;
   timeline?: string;
+  logoUrl?: string;
+  coverImageUrl?: string;
 }
 
 export interface AnalysisSection {
