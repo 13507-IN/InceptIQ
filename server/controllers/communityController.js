@@ -26,6 +26,10 @@ const createPostRecord = ({ idea, analysisId, req }) => ({
     analysisId: analysisId || null,
     createdAt: new Date().toISOString(),
     idea,
+    upvotes: 0,
+    downvotes: 0,
+    likes: 0,
+    votes: { up: [], down: [], like: [] },
     author: req.user ? {
         id: req.user.id,
         email: req.user.email || null,
@@ -38,6 +42,29 @@ const createPostRecord = ({ idea, analysisId, req }) => ({
 });
 
 const isDbConnected = () => mongoose?.connection?.readyState === 1;
+const voteFields = {
+    up: 'upvotes',
+    down: 'downvotes',
+    like: 'likes'
+};
+const voteArrayFields = {
+    up: 'votes.up',
+    down: 'votes.down',
+    like: 'votes.like'
+};
+
+const normalizeVoteCounts = (post) => {
+    const upArray = Array.isArray(post?.votes?.up) ? post.votes.up.length : 0;
+    const downArray = Array.isArray(post?.votes?.down) ? post.votes.down.length : 0;
+    const likeArray = Array.isArray(post?.votes?.like) ? post.votes.like.length : 0;
+
+    return {
+        ...post,
+        upvotes: Math.max(post?.upvotes ?? 0, upArray),
+        downvotes: Math.max(post?.downvotes ?? 0, downArray),
+        likes: Math.max(post?.likes ?? 0, likeArray)
+    };
+};
 
 const communityController = {
     async listPosts(req, res) {
@@ -46,7 +73,7 @@ const communityController = {
                 const posts = await CommunityPost.find().sort({ createdAt: -1 }).lean();
                 return res.status(200).json({
                     success: true,
-                    data: posts
+                    data: posts.map(post => normalizeVoteCounts(post))
                 });
             }
 
@@ -159,6 +186,108 @@ const communityController = {
             res.status(500).json({
                 success: false,
                 error: 'Failed to publish idea',
+                message: error.message
+            });
+        }
+    },
+
+    async voteOnPost(req, res) {
+        try {
+            const { id } = req.params;
+            const { type } = req.body || {};
+            const field = voteFields[type];
+            const voteArrayField = voteArrayFields[type];
+            const userId = req.user?.id;
+
+            if (!id) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Missing post ID',
+                    message: 'Post ID is required'
+                });
+            }
+
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'Unauthorized',
+                    message: 'Please log in to vote on community posts'
+                });
+            }
+
+            if (!field) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Invalid vote type',
+                    message: 'Vote type must be up, down, or like'
+                });
+            }
+
+            if (isDbConnected()) {
+                const updated = await CommunityPost.findOneAndUpdate(
+                    { id, [voteArrayField]: { $ne: userId } },
+                    {
+                        $addToSet: { [voteArrayField]: userId },
+                        $inc: { [field]: 1 }
+                    },
+                    { new: true }
+                ).lean();
+
+                if (!updated) {
+                    const existing = await CommunityPost.findOne({ id }).lean();
+                    if (existing) {
+                        return res.status(409).json({
+                            success: false,
+                            error: 'Already voted',
+                            message: 'You have already cast this vote'
+                        });
+                    }
+
+                    return res.status(404).json({
+                        success: false,
+                        error: 'Post not found',
+                        message: `No community post found with ID: ${id}`
+                    });
+                }
+
+                return res.status(200).json({
+                    success: true,
+                    data: normalizeVoteCounts(updated)
+                });
+            }
+
+            const post = communityStorage.get(id);
+            if (!post) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Post not found',
+                    message: `No community post found with ID: ${id}`
+                });
+            }
+
+            if (!post.votes || typeof post.votes !== 'object') post.votes = { up: [], down: [], like: [] };
+            if (!Array.isArray(post.votes[type])) post.votes[type] = [];
+
+            if (post.votes[type].includes(userId)) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Already voted',
+                    message: 'You have already cast this vote'
+                });
+            }
+
+            post.votes[type].push(userId);
+            post[field] = (post[field] ?? 0) + 1;
+
+            return res.status(200).json({
+                success: true,
+                data: normalizeVoteCounts(post)
+            });
+        } catch (error) {
+            console.error('Community vote failed:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to vote',
                 message: error.message
             });
         }

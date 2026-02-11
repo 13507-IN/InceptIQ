@@ -17,12 +17,22 @@ const AuthorSchema = new Schema({
   name: { type: String, default: null }
 }, { _id: false });
 
+const VoteSchema = new Schema({
+  up: { type: [String], default: [] },
+  down: { type: [String], default: [] },
+  like: { type: [String], default: [] }
+}, { _id: false });
+
 const CommunityPostSchema = new Schema({
   id: { type: String, required: true, unique: true },
   analysisId: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
   idea: { type: IdeaSchema, required: true },
-  author: { type: AuthorSchema, default: null }
+  author: { type: AuthorSchema, default: null },
+  upvotes: { type: Number, default: 0 },
+  downvotes: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
+  votes: { type: VoteSchema, default: () => ({}) }
 }, { versionKey: false });
 
 CommunityPostSchema.index({ createdAt: -1 });

@@ -12,4 +12,7 @@ router.post('/',authMiddleware, communityController.createPost);
 // POST /api/community/publish/:id - Publish idea from analysis
 router.post('/publish/:id', communityController.publishFromAnalysis);
 
+// POST /api/community/:id/vote - Vote on a community post
+router.post('/:id/vote', authMiddleware, communityController.voteOnPost);
+
 module.exports = router;
