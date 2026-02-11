@@ -1,5 +1,5 @@
 const validateAnalysisRequest = (req, res, next) => {
-    const { ideaTitle, ideaDescription, targetMarket, businessModel } = req.body;
+    const { ideaTitle, ideaDescription, targetMarket, businessModel, logoUrl, coverImageUrl } = req.body;
 
     // Check required fields
     if (!ideaTitle || !ideaDescription) {
@@ -31,6 +31,8 @@ const validateAnalysisRequest = (req, res, next) => {
     req.body.ideaDescription = ideaDescription.trim();
     req.body.targetMarket = targetMarket ? targetMarket.trim() : '';
     req.body.businessModel = businessModel ? businessModel.trim() : '';
+    req.body.logoUrl = typeof logoUrl === 'string' ? logoUrl.trim() : '';
+    req.body.coverImageUrl = typeof coverImageUrl === 'string' ? coverImageUrl.trim() : '';
 
     next();
 };
