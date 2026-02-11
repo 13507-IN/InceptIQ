@@ -161,6 +161,9 @@ export interface CommunityPost {
   createdAt: string;
   idea: CommunityIdea;
   author?: CommunityAuthor | null;
+  upvotes?: number;
+  downvotes?: number;
+  likes?: number;
 }
 
 // Investor Directory types

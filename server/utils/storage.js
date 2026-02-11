@@ -87,17 +87,37 @@ class CommunityStorage {
         this.posts = [];
     }
 
-    add(post) {
-        this.posts.unshift(post);
+    ensureVoteFields(post) {
+        if (!post) return post;
+        if (post.upvotes === undefined || post.upvotes === null) post.upvotes = 0;
+        if (post.downvotes === undefined || post.downvotes === null) post.downvotes = 0;
+        if (post.likes === undefined || post.likes === null) post.likes = 0;
+
+        if (!post.votes || typeof post.votes !== 'object') post.votes = {};
+        if (!Array.isArray(post.votes.up)) post.votes.up = [];
+        if (!Array.isArray(post.votes.down)) post.votes.down = [];
+        if (!Array.isArray(post.votes.like)) post.votes.like = [];
+
+        post.upvotes = Math.max(post.upvotes ?? 0, post.votes.up.length);
+        post.downvotes = Math.max(post.downvotes ?? 0, post.votes.down.length);
+        post.likes = Math.max(post.likes ?? 0, post.votes.like.length);
+
         return post;
     }
 
+    add(post) {
+        const normalized = this.ensureVoteFields(post);
+        this.posts.unshift(normalized);
+        return normalized;
+    }
+
     list() {
-        return this.posts;
+        return this.posts.map(post => this.ensureVoteFields(post));
     }
 
     get(id) {
-        return this.posts.find(post => post.id === id) || null;
+        const post = this.posts.find(entry => entry.id === id) || null;
+        return this.ensureVoteFields(post);
     }
 }
 

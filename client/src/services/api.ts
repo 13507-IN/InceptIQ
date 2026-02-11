@@ -375,6 +375,20 @@ class ApiService {
       throw new Error('Failed to publish to community.');
     }
   }
+
+  // Community: vote on a post
+  async voteCommunityPost(postId: string, type: 'up' | 'down' | 'like'): Promise<CommunityPost> {
+    try {
+      const response = await api.post(`/community/${postId}/vote`, { type });
+      return response.data?.data;
+    } catch (error: any) {
+      console.error('Failed to vote on community post:', error);
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Failed to register vote.');
+    }
+  }
 }
 
 // Export singleton instance
