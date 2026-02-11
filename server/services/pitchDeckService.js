@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const pptxgen = require('pptxgenjs');
+const fetch = require('node-fetch');
 const pdfService = require('./pdfService');
 
 const SLIDE_W = 13.333;
@@ -17,6 +18,44 @@ const THEME = {
   success: '34D399',
   warning: 'FBBF24',
   danger: 'FB7185'
+};
+
+const HERO_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="520" viewBox="0 0 800 520">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+    <radialGradient id="g2" cx="0.2" cy="0.2" r="0.8">
+      <stop offset="0" stop-color="#38BDF8" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#0B1020" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="520" rx="32" fill="#0B1020"/>
+  <circle cx="150" cy="120" r="120" fill="url(#g2)"/>
+  <rect x="60" y="300" width="680" height="160" rx="24" fill="#101827" stroke="#1F2A44"/>
+  <rect x="90" y="330" width="200" height="100" rx="18" fill="#0F172A" stroke="#1F2A44"/>
+  <rect x="310" y="330" width="180" height="100" rx="18" fill="url(#g1)"/>
+  <rect x="510" y="330" width="200" height="100" rx="18" fill="#0F172A" stroke="#1F2A44"/>
+  <path d="M120 250 L220 200 L320 230 L420 160 L540 210 L660 150" stroke="#38BDF8" stroke-width="8" fill="none" stroke-linecap="round"/>
+</svg>
+`;
+
+const svgToDataUri = (svg) => `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+
+const fetchImageData = async (url) => {
+  if (!url) return null;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const buffer = await response.buffer();
+    const contentType = response.headers.get('content-type') || 'image/png';
+    return `data:${contentType};base64,${buffer.toString('base64')}`;
+  } catch (error) {
+    console.warn('Pitch deck image fetch failed:', error.message || error);
+    return null;
+  }
 };
 
 const safeText = (value, fallback = 'Not specified') => {
@@ -68,6 +107,17 @@ class PitchDeckService {
     pptx.company = 'inceptIQ';
     pptx.subject = safeText(input.ideaTitle, 'Startup Pitch Deck');
     pptx.title = safeText(input.ideaTitle, 'Startup Pitch Deck');
+
+    const heroImageData = svgToDataUri(HERO_SVG);
+    const [logoImageData, coverImageData] = await Promise.all([
+      fetchImageData(input.logoUrl),
+      fetchImageData(input.coverImageUrl)
+    ]);
+    const logoCandidates = [
+      path.join(__dirname, '../../client/public/logo-main.png'),
+      path.join(__dirname, '../../client/public/react.png')
+    ];
+    const logoPath = logoCandidates.find(candidate => fs.existsSync(candidate));
 
     const addSlideHeader = (slide, title, subtitle) => {
       slide.background = { color: THEME.background };
@@ -131,6 +181,32 @@ class PitchDeckService {
       fontSize: 18,
       color: THEME.muted
     });
+    titleSlide.addImage({
+      data: coverImageData || heroImageData,
+      x: 8.1,
+      y: 1.2,
+      w: 4.7,
+      h: 3.1,
+      sizing: {
+        type: 'cover',
+        w: 4.7,
+        h: 3.1
+      }
+    });
+    if (logoImageData || logoPath) {
+      const logoImageOptions = {
+        x: 0.9,
+        y: 0.6,
+        w: 1.3,
+        h: 1.3
+      };
+      if (logoImageData) {
+        logoImageOptions.data = logoImageData;
+      } else if (logoPath) {
+        logoImageOptions.path = logoPath;
+      }
+      titleSlide.addImage(logoImageOptions);
+    }
     titleSlide.addText(`Generated ${new Date().toLocaleDateString()}`, {
       x: 0.9,
       y: 6.4,
@@ -138,6 +214,58 @@ class PitchDeckService {
       h: 0.4,
       fontSize: 12,
       color: THEME.subtle
+    });
+
+    const scoreSlide = pptx.addSlide();
+    addSlideHeader(scoreSlide, 'Score Snapshot', 'Visual view of the analysis ratings');
+    const scoreData = [
+      {
+        name: 'Score',
+        labels: ['Uniqueness', 'Market', 'Competition'],
+        values: [
+          Number.isFinite(normalized.uniquenessScore) ? normalized.uniquenessScore : 0,
+          Number.isFinite(normalized.marketViabilityScore) ? normalized.marketViabilityScore : 0,
+          Number.isFinite(normalized.competitionScore) ? normalized.competitionScore : 0
+        ]
+      }
+    ];
+
+    scoreSlide.addChart(pptx.ChartType.bar, scoreData, {
+      x: 0.9,
+      y: 2.6,
+      w: 7.2,
+      h: 4.2,
+      chartColors: [THEME.accent, THEME.success, THEME.warning],
+      barDir: 'col',
+      dataLabelColor: THEME.text,
+      dataLabelFontSize: 11,
+      dataLabelPosition: 'outEnd',
+      showLegend: false,
+      valAxisMinVal: 0,
+      valAxisMaxVal: 100,
+      valAxisMajorUnit: 20,
+      valAxisLabelColor: THEME.subtle,
+      catAxisLabelColor: THEME.subtle
+    });
+    scoreSlide.addImage({
+      data: coverImageData || heroImageData,
+      x: 8.5,
+      y: 2.6,
+      w: 4.3,
+      h: 3.6,
+      sizing: {
+        type: 'cover',
+        w: 4.3,
+        h: 3.6
+      }
+    });
+    scoreSlide.addText(`Overall score: ${normalized.overallScore ?? 'N/A'}`, {
+      x: 8.6,
+      y: 6.4,
+      w: 4.1,
+      h: 0.4,
+      fontSize: 14,
+      color: THEME.muted
     });
 
     const problemSlide = pptx.addSlide();
