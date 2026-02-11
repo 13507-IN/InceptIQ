@@ -18,7 +18,9 @@ const Analysis: React.FC = () => {
     businessModel: '',
     industry: '',
     budget: '',
-    timeline: ''
+    timeline: '',
+    logoUrl: '',
+    coverImageUrl: ''
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
@@ -27,6 +29,10 @@ const Analysis: React.FC = () => {
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
   const [pdfFileName, setPdfFileName] = useState<string>('');
   const [pdfProcessedCount, setPdfProcessedCount] = useState(0);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const [coverError, setCoverError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -118,10 +124,68 @@ const Analysis: React.FC = () => {
     }
   };
 
+  const validateImageFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      return 'Please upload a valid image file.';
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return 'Image must be smaller than 5MB.';
+    }
+    return null;
+  };
+
+  const handleImageUpload = async (type: 'logo' | 'cover', file: File) => {
+    const errorMessage = validateImageFile(file);
+    if (errorMessage) {
+      type === 'logo' ? setLogoError(errorMessage) : setCoverError(errorMessage);
+      return;
+    }
+
+    if (type === 'logo') {
+      setLogoUploading(true);
+      setLogoError(null);
+    } else {
+      setCoverUploading(true);
+      setCoverError(null);
+    }
+
+    try {
+      const result = await apiService.uploadAnalysisImages(
+        type === 'logo' ? { logo: file } : { cover: file }
+      );
+
+      if (type === 'logo') {
+        setFormData(prev => ({ ...prev, logoUrl: result.logoUrl || '' }));
+      } else {
+        setFormData(prev => ({ ...prev, coverImageUrl: result.coverImageUrl || '' }));
+      }
+    } catch (error: any) {
+      const message = error.message || 'Failed to upload image.';
+      type === 'logo' ? setLogoError(message) : setCoverError(message);
+    } finally {
+      type === 'logo' ? setLogoUploading(false) : setCoverUploading(false);
+    }
+  };
+
+  const handleImageRemove = (type: 'logo' | 'cover') => {
+    if (type === 'logo') {
+      setFormData(prev => ({ ...prev, logoUrl: '' }));
+      setLogoError(null);
+    } else {
+      setFormData(prev => ({ ...prev, coverImageUrl: '' }));
+      setCoverError(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
+      return;
+    }
+
+    if (logoUploading || coverUploading) {
+      setSubmitError('Please wait for image uploads to finish.');
       return;
     }
 
@@ -200,6 +264,114 @@ const Analysis: React.FC = () => {
               className="hidden"
             />
           </label>
+        </motion.div>
+
+        {/* Brand Assets Upload */}
+        <motion.div
+          className="mb-10 p-8 bg-gradient-to-r from-gray-900/40 to-gray-800/40 rounded-xl border border-gray-700/60"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.25 }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-white">Brand Assets (Optional)</h2>
+              <p className="text-sm text-gray-400">Add a logo and a cover image to show up in the pitch deck & PDF.</p>
+            </div>
+            <span className="text-xs text-gray-500">Stored securely in Cloudinary</span>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="p-4 bg-gray-900/50 border border-gray-700 rounded-xl">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div className="text-sm font-semibold text-gray-200">Logo</div>
+                  <div className="text-xs text-gray-500">Square or horizontal PNG/JPG</div>
+                </div>
+                {formData.logoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => handleImageRemove('logo')}
+                    className="text-xs text-red-300 hover:text-red-200"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {formData.logoUrl ? (
+                <div className="flex items-center gap-4">
+                  <img
+                    src={formData.logoUrl}
+                    alt="Logo preview"
+                    className="h-16 w-16 rounded-lg object-cover border border-gray-700"
+                  />
+                  <div className="text-xs text-gray-400">Logo uploaded</div>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer bg-gray-950/40 hover:border-blue-400/70 transition-all">
+                  <span className="text-xs text-gray-300">
+                    {logoUploading ? 'Uploading...' : 'Click to upload logo'}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload('logo', file);
+                    }}
+                    disabled={logoUploading || isSubmitting}
+                    className="hidden"
+                  />
+                </label>
+              )}
+              {logoError && <p className="text-xs text-red-300 mt-2">{logoError}</p>}
+            </div>
+
+            <div className="p-4 bg-gray-900/50 border border-gray-700 rounded-xl">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div className="text-sm font-semibold text-gray-200">Cover Image</div>
+                  <div className="text-xs text-gray-500">Wide hero image for slides</div>
+                </div>
+                {formData.coverImageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => handleImageRemove('cover')}
+                    className="text-xs text-red-300 hover:text-red-200"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {formData.coverImageUrl ? (
+                <div className="flex items-center gap-4">
+                  <img
+                    src={formData.coverImageUrl}
+                    alt="Cover preview"
+                    className="h-16 w-28 rounded-lg object-cover border border-gray-700"
+                  />
+                  <div className="text-xs text-gray-400">Cover uploaded</div>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer bg-gray-950/40 hover:border-blue-400/70 transition-all">
+                  <span className="text-xs text-gray-300">
+                    {coverUploading ? 'Uploading...' : 'Click to upload cover image'}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload('cover', file);
+                    }}
+                    disabled={coverUploading || isSubmitting}
+                    className="hidden"
+                  />
+                </label>
+              )}
+              {coverError && <p className="text-xs text-red-300 mt-2">{coverError}</p>}
+            </div>
+          </div>
         </motion.div>
 
         {/* Divider */}
@@ -365,7 +537,7 @@ const Analysis: React.FC = () => {
         <motion.div className="flex flex-col items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75 }}>
           <motion.button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || logoUploading || coverUploading}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-emerald-500 hover:from-blue-700 hover:to-emerald-600 text-white font-semibold py-4 px-8 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg shadow-lg hover:shadow-xl"

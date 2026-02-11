@@ -306,6 +306,18 @@ const Results: React.FC = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
 
+  const getCount = (value: any) => (Array.isArray(value) ? value.length : 0);
+  const stats = [
+    { label: 'Strengths', value: getCount(analysis?.uniqueness?.strengths) },
+    { label: 'Concerns', value: getCount(analysis?.uniqueness?.concerns) },
+    { label: 'Trends', value: getCount(analysis?.marketViability?.trends) },
+    { label: 'Direct Competitors', value: getCount(analysis?.competition?.directCompetitors) },
+    { label: 'Indirect Competitors', value: getCount(analysis?.competition?.indirectCompetitors) },
+    { label: 'Recommendations', value: getCount(recommendations) },
+    { label: 'Risks', value: getCount(risks) },
+    { label: 'Opportunities', value: getCount(opportunities) }
+  ];
+
   const panelClass = "bg-gray-800/50 border border-gray-700 rounded-xl p-6";
   const tabButtonClass = (isActive: boolean) =>
     `whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all border ${
@@ -607,29 +619,43 @@ const Results: React.FC = () => {
 
         <div className="mt-6">
           {activeTab === 'overview' && (
-            <div className="grid lg:grid-cols-2 gap-6">
-              <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-6 text-center">
-                <h3 className="text-xl font-semibold text-gray-200 mb-3">Overall Viability Score</h3>
-                <div className="text-5xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-                  {overallScore ?? 0}
+            <div>
+              <div className="grid lg:grid-cols-2 gap-6">
+                <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-6 text-center">
+                  <h3 className="text-xl font-semibold text-gray-200 mb-3">Overall Viability Score</h3>
+                  <div className="text-5xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+                    {overallScore ?? 0}
+                  </div>
+                  <p className="text-gray-400 mt-2">out of 100</p>
                 </div>
-                <p className="text-gray-400 mt-2">out of 100</p>
-              </div>
-              <div className="grid md:grid-cols-3 gap-4">
-                {[
-                  { label: "Uniqueness", score: uniquenessScore },
-                  { label: "Market Viability", score: marketViabilityScore },
-                  { label: "Competition", score: competitionScore },
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="bg-gray-800/50 border border-gray-700 p-4 rounded-xl shadow-lg hover:shadow-xl hover:border-blue-500/50 transition-all"
-                  >
-                    <h4 className="text-sm font-semibold text-gray-200 mb-3">{item.label}</h4>
-                    <ScoreBadge score={item.score ?? 0} label={`${item.label} Score`} size="sm" />
-                    <div className="mt-3">
-                      <ScoreChart score={item.score ?? 0} />
+                <div className="grid md:grid-cols-3 gap-4">
+                  {[
+                    { label: "Uniqueness", score: uniquenessScore },
+                    { label: "Market Viability", score: marketViabilityScore },
+                    { label: "Competition", score: competitionScore },
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="bg-gray-800/50 border border-gray-700 p-4 rounded-xl shadow-lg hover:shadow-xl hover:border-blue-500/50 transition-all"
+                    >
+                      <h4 className="text-sm font-semibold text-gray-200 mb-3">{item.label}</h4>
+                      <ScoreBadge score={item.score ?? 0} label={`${item.label} Score`} size="sm" />
+                      <div className="mt-3">
+                        <ScoreChart score={item.score ?? 0} />
+                      </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {stats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="bg-gray-800/50 border border-gray-700 rounded-xl p-4 flex items-center justify-between"
+                  >
+                    <div className="text-sm text-gray-400">{stat.label}</div>
+                    <div className="text-2xl font-semibold text-gray-100">{stat.value}</div>
                   </div>
                 ))}
               </div>
