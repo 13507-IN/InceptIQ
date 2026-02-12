@@ -1,10 +1,10 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthContext, AuthProvider } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Analysis from './pages/Analysis';
@@ -14,6 +14,7 @@ import Community from './pages/Community';
 import CommunityPublish from './pages/CommunityPublish';
 import Pricing from './pages/Pricing';
 import InvestorDirectory from './pages/InvestorDirectory';
+import InvestorLanding from './pages/InvestorLanding';
 import Documentation from './pages/Documentation';
 import FAQ from './pages/FAQ';
 import Support from './pages/Support';
@@ -22,41 +23,70 @@ import TermsOfService from './pages/TermsOfService';
 import CookiePolicy from './pages/CookiePolicy';
 import './App.css';
 
+const InvestorGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useContext(AuthContext);
+  const location = useLocation();
+  const path = location.pathname;
+
+  if (user?.role === 'investor') {
+    if (!path.startsWith('/investor')) {
+      return <Navigate to="/investor/projects" replace />;
+    }
+    if (path === '/investor/login') {
+      return <Navigate to="/investor/projects" replace />;
+    }
+  }
+
+  return <>{children}</>;
+};
+
 function App() {
   return (
     <Router>
       <ErrorBoundary>
         <AuthProvider>
-          <div className="min-h-screen bg-gradient-to-b from-[#0b0f1a] via-[#0f172a] to-[#0b0f1a] flex flex-col">
-            <Header />
-            <main className="flex-1">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/analysis" element={<Analysis />} />
-                <Route path="/results/:analysisId" element={<Results />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/investors" element={<InvestorDirectory />} />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/community" element={<Community />} />
-                <Route path="/community/publish" element={<CommunityPublish />} />
-                <Route path="/documentation" element={<Documentation />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/support" element={<Support />} />
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/terms" element={<TermsOfService />} />
-                <Route path="/cookies" element={<CookiePolicy />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
+          <InvestorGuard>
+            <div className="min-h-screen bg-gradient-to-b from-[#0b0f1a] via-[#0f172a] to-[#0b0f1a] flex flex-col">
+              <Header />
+              <main className="flex-1">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/analysis" element={<Analysis />} />
+                  <Route path="/results/:analysisId" element={<Results />} />
+                  <Route path="/login" element={<Login key="user-login" />} />
+                  <Route path="/investor/login" element={<Login key="investor-login" />} />
+                  <Route path="/investor" element={<InvestorLanding />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/investors" element={<InvestorDirectory />} />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/community" element={<Community />} />
+                  <Route path="/community/publish" element={<CommunityPublish />} />
+                  <Route
+                    path="/investor/projects"
+                    element={
+                      <ProtectedRoute allowedRoles={['investor']}>
+                        <Community variant="projects" />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/documentation" element={<Documentation />} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/cookies" element={<CookiePolicy />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </InvestorGuard>
         </AuthProvider>
       </ErrorBoundary>
     </Router>
