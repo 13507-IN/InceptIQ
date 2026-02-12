@@ -1,10 +1,14 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Mail, Github, Linkedin, Twitter } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const location = useLocation();
+  const { user } = useContext<AuthContextValue>(AuthContext);
+  const isInvestorView = user?.role === 'investor' || location.pathname.startsWith('/investor');
 
   const footerVariants = {
     hidden: { opacity: 0 },
@@ -25,6 +29,107 @@ const Footer: React.FC = () => {
       transition: { duration: 0.5 },
     },
   };
+
+  if (isInvestorView) {
+    return (
+      <footer className="bg-[#0b0f1a] border-t border-emerald-500/20 mt-16">
+        <motion.div
+          className="container mx-auto px-4 py-10"
+          variants={footerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <motion.div variants={itemVariants}>
+              <Link to="/investor" className="flex items-center space-x-3 mb-3">
+                <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                  <img src="/logo-main.png" alt="InceptIQ" className="h-6 w-6 object-contain" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Investor Portal</h3>
+                  <p className="text-xs text-slate-400">Project discovery</p>
+                </div>
+              </Link>
+              <p className="text-sm text-slate-400">
+                Review community-backed projects and connect with founders directly.
+              </p>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <h4 className="text-sm font-semibold text-white mb-3">Investor Links</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    to="/investor"
+                    className="text-sm text-slate-400 hover:text-emerald-300 transition-colors"
+                  >
+                    Investor Home
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/investor/projects"
+                    className="text-sm text-slate-400 hover:text-emerald-300 transition-colors"
+                  >
+                    Projects
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/support"
+                    className="text-sm text-slate-400 hover:text-emerald-300 transition-colors"
+                  >
+                    Support
+                  </Link>
+                </li>
+              </ul>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <h4 className="text-sm font-semibold text-white mb-3">Connect</h4>
+              <div className="flex gap-4 mb-3">
+                <a
+                  href="#linkedin"
+                  className="p-2 bg-white/5 hover:bg-emerald-600 rounded-lg transition-colors"
+                  title="LinkedIn"
+                >
+                  <Linkedin className="h-4 w-4 text-slate-400 hover:text-white" />
+                </a>
+                <a
+                  href="mailto:support@inceptiq.com"
+                  className="p-2 bg-white/5 hover:bg-emerald-600 rounded-lg transition-colors"
+                  title="Email"
+                >
+                  <Mail className="h-4 w-4 text-slate-400 hover:text-white" />
+                </a>
+              </div>
+              <p className="text-xs text-slate-500">support@inceptiq.com</p>
+            </motion.div>
+          </div>
+
+          <div className="border-t border-slate-800/70 my-6"></div>
+
+          <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center justify-between">
+            <div className="text-sm text-slate-400 mb-4 md:mb-0">
+              <p>&copy; {currentYear} InceptIQ. All rights reserved.</p>
+            </div>
+            <div className="flex gap-6 text-sm">
+              <Link to="/privacy" className="text-slate-400 hover:text-emerald-300 transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/terms" className="text-slate-400 hover:text-emerald-300 transition-colors">
+                Terms of Service
+              </Link>
+              <Link to="/cookies" className="text-slate-400 hover:text-emerald-300 transition-colors">
+                Cookie Policy
+              </Link>
+            </div>
+          </motion.div>
+        </motion.div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="bg-[#0b0f1a] border-t border-slate-800/70 mt-16">
