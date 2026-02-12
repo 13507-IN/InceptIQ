@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Loader2, AlertCircle, Sparkles, ThumbsUp, ThumbsDown, Heart, TrendingUp } from 'lucide-react';
+import { Users, Loader2, AlertCircle, Sparkles, ThumbsUp, ThumbsDown, Heart, TrendingUp, Mail, Briefcase } from 'lucide-react';
 import { apiService } from '../services/api';
 import { CommunityPost } from '../types';
 
-const Community: React.FC = () => {
+interface CommunityProps {
+  variant?: 'community' | 'projects';
+}
+
+const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -13,6 +17,18 @@ const Community: React.FC = () => {
   const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
   const [voting, setVoting] = useState<Record<string, boolean>>({});
 
+  const isProjects = variant === 'projects';
+  const title = isProjects ? 'Projects' : 'Community Ideas';
+  const description = isProjects
+    ? 'Review startup projects shared by founders. Vote to surface strong ideas and connect directly with project owners.'
+    : 'Share ideas and get feedback from the public. Community posts only include the form details you entered, not the AI report.';
+  const showPublish = !isProjects;
+  const showContact = isProjects;
+  const headerIcon = isProjects ? Briefcase : Users;
+  const sidebarTitle = isProjects ? 'Top Projects' : 'Top Voted';
+  const sidebarSubtitle = isProjects ? 'Investor favorites right now' : 'Community favorites right now';
+
+  const HeaderIcon = headerIcon;
   const DESCRIPTION_LIMIT = 220;
 
   useEffect(() => {
@@ -99,27 +115,29 @@ const Community: React.FC = () => {
         <div>
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg">
-              <Users className="h-6 w-6 text-white" />
+              <HeaderIcon className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white">Community Ideas</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-white">{title}</h1>
           </div>
           <p className="text-gray-400 max-w-2xl">
-            Share ideas and get feedback from the public. Community posts only include the form details you entered, not the AI report.
+            {description}
           </p>
         </div>
-        <Link
-          to="/community/publish"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-500 text-white font-medium hover:from-blue-700 hover:to-emerald-600 transition-all"
-        >
-          <Sparkles className="h-4 w-4" />
-          Publish New Idea
-        </Link>
+        {showPublish && (
+          <Link
+            to="/community/publish"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-500 text-white font-medium hover:from-blue-700 hover:to-emerald-600 transition-all"
+          >
+            <Sparkles className="h-4 w-4" />
+            Publish New Idea
+          </Link>
+        )}
       </motion.div>
 
       {loading && (
         <div className="flex items-center gap-3 text-gray-300">
           <Loader2 className="h-5 w-5 animate-spin" />
-          Loading community posts...
+          {isProjects ? 'Loading projects...' : 'Loading community posts...'}
         </div>
       )}
 
@@ -139,7 +157,9 @@ const Community: React.FC = () => {
 
       {!loading && !loadError && posts.length === 0 && (
         <div className="text-gray-400 bg-gray-800/40 border border-gray-700/60 rounded-lg p-6">
-          No community posts yet. Be the first to publish your idea.
+          {isProjects
+            ? 'No projects available yet. Check back soon for new submissions.'
+            : 'No community posts yet. Be the first to publish your idea.'}
         </div>
       )}
 
@@ -159,6 +179,13 @@ const Community: React.FC = () => {
                 ? truncateText(description, DESCRIPTION_LIMIT)
                 : description;
               const isVoting = voting[post.id];
+              const authorLabel = showContact
+                ? (post.author?.name || post.author?.email || 'Anonymous')
+                : (post.author?.name || 'Anonymous');
+              const authorEmail = post.author?.email?.trim() || '';
+              const contactHref = authorEmail
+                ? `mailto:${authorEmail}?subject=${encodeURIComponent(`Investor inquiry: ${post.idea.ideaTitle || 'Project'}`)}`
+                : '';
 
               return (
                 <motion.div
@@ -248,8 +275,24 @@ const Community: React.FC = () => {
                     )}
                   </div>
 
+                  {showContact && (
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                      {authorEmail ? (
+                        <a
+                          href={contactHref}
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-100 text-xs font-semibold hover:bg-emerald-500/20 transition"
+                        >
+                          <Mail className="h-3.5 w-3.5" />
+                          Contact owner
+                        </a>
+                      ) : (
+                        <span className="text-xs text-gray-500">Owner email unavailable</span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="text-xs text-gray-400">
-                    Posted by {post.author?.name || post.author?.email || 'Anonymous'}
+                    {showContact ? 'Project owner' : 'Posted by'} {authorLabel}
                   </div>
                 </motion.div>
               );
@@ -263,8 +306,8 @@ const Community: React.FC = () => {
                   <TrendingUp className="h-4 w-4 text-emerald-300" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-white uppercase tracking-wide">Top Voted</h2>
-                  <p className="text-xs text-gray-400">Community favorites right now</p>
+                  <h2 className="text-sm font-semibold text-white uppercase tracking-wide">{sidebarTitle}</h2>
+                  <p className="text-xs text-gray-400">{sidebarSubtitle}</p>
                 </div>
               </div>
 

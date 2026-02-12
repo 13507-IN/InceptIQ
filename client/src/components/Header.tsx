@@ -7,6 +7,9 @@ import { motion } from 'framer-motion';
 const Header: React.FC = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useContext<AuthContextValue>(AuthContext);
+  const isInvestorView = user?.role === 'investor' || location.pathname.startsWith('/investor');
+  const logoLink = isInvestorView ? '/investor' : '/';
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -17,7 +20,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
-          <Link to="/" className="flex items-center space-x-3 group">
+          <Link to={logoLink} className="flex items-center space-x-3 group">
             <motion.div
               whileHover={{ scale: 1.05, rotate: 2 }}
               className="p-2 rounded-xl bg-white/10 border border-white/10 group-hover:border-blue-400/40 group-hover:shadow-lg group-hover:shadow-blue-500/30 transition-all"
@@ -34,67 +37,96 @@ const Header: React.FC = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-6">
-            <Link
-              to="/"
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                isActive('/')
-                  ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Home className="h-4 w-4" />
-              <span>Home</span>
-            </Link>
-            
-            <Link
-              to="/analysis"
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                isActive('/analysis')
-                  ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <FileText className="h-4 w-4" />
-              <span>New Analysis</span>
-            </Link>
-            <Link
-              to="/community"
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                isActive('/community')
-                  ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Users className="h-4 w-4" />
-              <span>Community</span>
-            </Link>
-            <Link
-              to="/pricing"
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                isActive('/pricing')
-                  ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <BadgeDollarSign className="h-4 w-4" />
-              <span>Pricing</span>
-            </Link>
-            <Link
-              to="/investors"
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                isActive('/investors')
-                  ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Briefcase className="h-4 w-4" />
-              <span>Investors</span>
-            </Link>
+            {isInvestorView ? (
+              <>
+                <Link
+                  to="/investor"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    isActive('/investor')
+                      ? 'text-emerald-200 bg-emerald-500/10 border border-emerald-400/30'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Home className="h-4 w-4" />
+                  <span>Investor Home</span>
+                </Link>
+                <Link
+                  to="/investor/projects"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    isActive('/investor/projects')
+                      ? 'text-emerald-200 bg-emerald-500/10 border border-emerald-400/30'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Projects</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    isActive('/')
+                      ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Home className="h-4 w-4" />
+                  <span>Home</span>
+                </Link>
+                
+                <Link
+                  to="/analysis"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    isActive('/analysis')
+                      ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>New Analysis</span>
+                </Link>
+                <Link
+                  to="/community"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    isActive('/community')
+                      ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Community</span>
+                </Link>
+                <Link
+                  to="/pricing"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    isActive('/pricing')
+                      ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <BadgeDollarSign className="h-4 w-4" />
+                  <span>Pricing</span>
+                </Link>
+                <Link
+                  to="/investors"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    isActive('/investors')
+                      ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Briefcase className="h-4 w-4" />
+                  <span>Investors</span>
+                </Link>
+              </>
+            )}
           </nav>
           {/* Right side: auth */}
           <div className="flex items-center space-x-4">
             {/** Auth status */}
-            <AuthStatus />
+            <AuthStatus isInvestorView={isInvestorView} />
             <div className="md:hidden">
               <button 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -118,80 +150,119 @@ const Header: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
             className="md:hidden pb-4 border-t border-slate-800/70"
           >
-            <Link
-              to="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/')
-                  ? 'text-blue-200 bg-blue-500/10'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <Home className="h-4 w-4" />
-                <span>Home</span>
-              </div>
-            </Link>
-            
-            <Link
-              to="/analysis"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/analysis')
-                  ? 'text-blue-200 bg-blue-500/10'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <FileText className="h-4 w-4" />
-                <span>New Analysis</span>
-              </div>
-            </Link>
-            <Link
-              to="/community"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/community')
-                  ? 'text-blue-200 bg-blue-500/10'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <Users className="h-4 w-4" />
-                <span>Community</span>
-              </div>
-            </Link>
-            <Link
-              to="/pricing"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/pricing')
-                  ? 'text-blue-200 bg-blue-500/10'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <BadgeDollarSign className="h-4 w-4" />
-                <span>Pricing</span>
-              </div>
-            </Link>
-            <Link
-              to="/investors"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/investors')
-                  ? 'text-blue-200 bg-blue-500/10'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <Briefcase className="h-4 w-4" />
-                <span>Investors</span>
-              </div>
-            </Link>
+            {isInvestorView ? (
+              <>
+                <Link
+                  to="/investor"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/investor')
+                      ? 'text-emerald-200 bg-emerald-500/10'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Home className="h-4 w-4" />
+                    <span>Investor Home</span>
+                  </div>
+                </Link>
+                <Link
+                  to="/investor/projects"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/investor/projects')
+                      ? 'text-emerald-200 bg-emerald-500/10'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-4 w-4" />
+                    <span>Projects</span>
+                  </div>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/')
+                      ? 'text-blue-200 bg-blue-500/10'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Home className="h-4 w-4" />
+                    <span>Home</span>
+                  </div>
+                </Link>
+                
+                <Link
+                  to="/analysis"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/analysis')
+                      ? 'text-blue-200 bg-blue-500/10'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <FileText className="h-4 w-4" />
+                    <span>New Analysis</span>
+                  </div>
+                </Link>
+                <Link
+                  to="/community"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/community')
+                      ? 'text-blue-200 bg-blue-500/10'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-4 w-4" />
+                    <span>Community</span>
+                  </div>
+                </Link>
+                <Link
+                  to="/pricing"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/pricing')
+                      ? 'text-blue-200 bg-blue-500/10'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <BadgeDollarSign className="h-4 w-4" />
+                    <span>Pricing</span>
+                  </div>
+                </Link>
+                <Link
+                  to="/investors"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/investors')
+                      ? 'text-blue-200 bg-blue-500/10'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Briefcase className="h-4 w-4" />
+                    <span>Investors</span>
+                  </div>
+                </Link>
+              </>
+            )}
 
             {/* Mobile auth section */}
-            <MobileAuthStatus mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+            <MobileAuthStatus
+              mobileMenuOpen={mobileMenuOpen}
+              setMobileMenuOpen={setMobileMenuOpen}
+              isInvestorView={isInvestorView}
+            />
           </motion.div>
         )}
       </div>
@@ -199,7 +270,7 @@ const Header: React.FC = () => {
   );
 };
 
-const AuthStatus: React.FC = () => {
+const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) => {
   const { user, setAuth } = useContext<AuthContextValue>(AuthContext);
   const navigate = useNavigate();
 
@@ -217,13 +288,15 @@ const AuthStatus: React.FC = () => {
         animate={{ opacity: 1 }}
       >
         <div className="text-sm text-slate-300">{user.email}</div>
-        <Link
-          to="/profile"
-          className="text-sm px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-200 rounded border border-blue-400/30 hover:border-blue-400/50 transition-all flex items-center gap-2"
-        >
-          <User className="h-4 w-4" />
-          Profile
-        </Link>
+        {user.role !== 'investor' && !isInvestorView && (
+          <Link
+            to="/profile"
+            className="text-sm px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-200 rounded border border-blue-400/30 hover:border-blue-400/50 transition-all flex items-center gap-2"
+          >
+            <User className="h-4 w-4" />
+            Profile
+          </Link>
+        )}
         <motion.button 
           whileHover={{ scale: 1.05 }}
           onClick={logout} 
@@ -241,12 +314,29 @@ const AuthStatus: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <Link 
-        to="/login" 
-        className="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-      >
-        Login
-      </Link>
+      {isInvestorView ? (
+        <Link
+          to="/investor/login"
+          className="text-sm px-4 py-2 bg-emerald-500 text-black rounded hover:bg-emerald-400 transition-colors"
+        >
+          Investor Login
+        </Link>
+      ) : (
+        <>
+          <Link 
+            to="/login" 
+            className="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Login
+          </Link>
+          <Link
+            to="/investor/login"
+            className="text-sm px-4 py-2 bg-emerald-600/20 text-emerald-200 rounded border border-emerald-500/40 hover:bg-emerald-600/30 transition-colors"
+          >
+            Investor Login
+          </Link>
+        </>
+      )}
     </motion.div>
   );
 };
@@ -254,9 +344,10 @@ const AuthStatus: React.FC = () => {
 interface MobileAuthStatusProps {
   mobileMenuOpen: boolean;
   setMobileMenuOpen: (open: boolean) => void;
+  isInvestorView: boolean;
 }
 
-const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, setMobileMenuOpen }) => {
+const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, setMobileMenuOpen, isInvestorView }) => {
   const { user, setAuth } = useContext<AuthContextValue>(AuthContext);
   const navigate = useNavigate();
 
@@ -271,14 +362,16 @@ const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, set
     return (
       <div className="mt-4 pt-4 border-t border-slate-800/70 space-y-2">
         <div className="text-sm text-slate-400 px-3">{user.email}</div>
-        <Link
-          to="/profile"
-          onClick={() => setMobileMenuOpen(false)}
-          className="block px-3 py-2 bg-blue-500/10 text-blue-200 rounded border border-blue-400/30 transition-colors flex items-center gap-2"
-        >
-          <User className="h-4 w-4" />
-          Profile
-        </Link>
+        {user.role !== 'investor' && !isInvestorView && (
+          <Link
+            to="/profile"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 bg-blue-500/10 text-blue-200 rounded border border-blue-400/30 transition-colors flex items-center gap-2"
+          >
+            <User className="h-4 w-4" />
+            Profile
+          </Link>
+        )}
         <button
           onClick={logout}
           className="w-full text-left px-3 py-2 bg-rose-600/20 text-rose-200 rounded border border-rose-600/30 transition-colors"
@@ -291,13 +384,32 @@ const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, set
 
   return (
     <div className="mt-4 pt-4 border-t border-slate-800/70">
-      <Link
-        to="/login"
-        onClick={() => setMobileMenuOpen(false)}
-        className="block px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-      >
-        Login
-      </Link>
+      {isInvestorView ? (
+        <Link
+          to="/investor/login"
+          onClick={() => setMobileMenuOpen(false)}
+          className="block px-3 py-2 bg-emerald-500 text-black rounded hover:bg-emerald-400 transition-colors"
+        >
+          Investor Login
+        </Link>
+      ) : (
+        <>
+          <Link
+            to="/login"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Login
+          </Link>
+          <Link
+            to="/investor/login"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block mt-2 px-3 py-2 bg-emerald-600/20 text-emerald-200 rounded border border-emerald-500/40 hover:bg-emerald-600/30 transition-colors"
+          >
+            Investor Login
+          </Link>
+        </>
+      )}
     </div>
   );
 };

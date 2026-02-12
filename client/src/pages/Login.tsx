@@ -1,12 +1,13 @@
-import React, { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { login, signup, setToken } from '../services/auth';
 import { AuthContext } from '../contexts/AuthContext';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Briefcase } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setAuth } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +18,19 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const isInvestorRoute = location.pathname.startsWith('/investor');
+  const authRole: 'user' | 'investor' = isInvestorRoute ? 'investor' : 'user';
+  const heroTitle = authRole === 'investor' ? 'Investor Portal' : 'Welcome Back';
+  const heroSubtitle = authRole === 'investor'
+    ? 'Sign in to discover promising projects'
+    : 'Sign in to your account to continue';
+
+  useEffect(() => {
+    setMode('login');
+    setError(null);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  }, [authRole]);
 
   const getErrorMessage = (err: any) => {
     if (!err) return 'Authentication failed';
@@ -53,12 +67,14 @@ const Login: React.FC = () => {
         }
       }
 
-      const fn = mode === 'login' ? login : signup;
-      const resp = mode === 'login' ? await fn(email, password) : await fn(email, password, name);
+      const resp = mode === 'login'
+        ? await login(email, password, authRole)
+        : await signup(email, password, name, authRole);
       if (resp && resp.token) {
         setToken(resp.token);
         setAuth(resp.token);
-        navigate('/analysis');
+        const destination = (resp?.user?.role || authRole) === 'investor' ? '/investor/projects' : '/analysis';
+        navigate(destination);
       }
     } catch (err: any) {
       setError(getErrorMessage(err));
@@ -93,13 +109,21 @@ const Login: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
+              {authRole === 'investor' && (
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/30 text-emerald-200 text-xs font-semibold mb-3">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  Investor Login
+                </div>
+              )}
               <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-300 to-emerald-300 bg-clip-text text-transparent mb-2">
-                {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+                {mode === 'login' ? heroTitle : 'Create Account'}
               </h2>
               <p className="text-gray-400 text-sm">
                 {mode === 'login' 
-                  ? 'Sign in to your account to continue' 
-                  : 'Join us to start validating your ideas'}
+                  ? heroSubtitle
+                  : authRole === 'investor'
+                    ? 'Create an investor account to connect with founders'
+                    : 'Join us to start validating your ideas'}
               </p>
             </motion.div>
 
@@ -267,6 +291,23 @@ const Login: React.FC = () => {
                   {mode === 'login' ? 'Sign up' : 'Sign in'}
                 </button>
               </p>
+              <div className="mt-3 text-xs text-gray-500">
+                {authRole === 'investor' ? (
+                  <span>
+                    Looking for the founder portal?{' '}
+                    <Link to="/login" className="text-emerald-300 hover:text-emerald-200 font-semibold">
+                      Sign in as user
+                    </Link>
+                  </span>
+                ) : (
+                  <span>
+                    Are you an investor?{' '}
+                    <Link to="/investor/login" className="text-emerald-300 hover:text-emerald-200 font-semibold">
+                      Investor login
+                    </Link>
+                  </span>
+                )}
+              </div>
             </motion.div>
           </div>
         </div>
