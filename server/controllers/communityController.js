@@ -95,6 +95,14 @@ const communityController = {
 
     async createPost(req, res) {
         try {
+            if (req.user?.role === 'investor') {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Forbidden',
+                    message: 'Investor accounts cannot publish community posts'
+                });
+            }
+
             const { idea = {}, analysisId = null } = req.body || {};
             const normalizedIdea = pickIdeaFields(idea);
 
@@ -139,6 +147,14 @@ const communityController = {
 
     async publishFromAnalysis(req, res) {
         try {
+            if (req.user?.role === 'investor') {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Forbidden',
+                    message: 'Investor accounts cannot publish community posts'
+                });
+            }
+
             const { id } = req.params;
 
             if (!id) {

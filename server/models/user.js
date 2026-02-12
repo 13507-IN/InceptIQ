@@ -30,6 +30,7 @@ const UserSchema = new Schema({
   name: { type: String, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String, required: true },
+  role: { type: String, enum: ['user', 'investor'], default: 'user' },
   createdAt: { type: Date, default: Date.now },
   requests: { type: [RequestSchema], default: [] }
 }, { _id: false });

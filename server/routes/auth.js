@@ -7,35 +7,69 @@ const User = require('../models/user');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const ALLOWED_ROLES = ['user', 'investor'];
+const normalizeRole = (value) => {
+    if (!value) return null;
+    const normalized = String(value).trim().toLowerCase();
+    return ALLOWED_ROLES.includes(normalized) ? normalized : null;
+};
 
-// Signup
-router.post('/signup', async (req, res) => {
+const withForcedRole = (role) => (req, _res, next) => {
+    if (!req.body || typeof req.body !== 'object') req.body = {};
+    req.body.role = role;
+    next();
+};
+
+const handleSignup = async (req, res) => {
     try {
         const { email, password, name } = req.body;
         if (!email || !password) return res.status(400).json({ error: 'Missing email or password' });
 
+        const requestedRole = normalizeRole(req.body?.role);
+        if (req.body?.role && !requestedRole) {
+            return res.status(400).json({ error: 'Invalid role', message: 'Role must be user or investor' });
+        }
+        const role = requestedRole || 'user';
+
         const existing = await User.findOne({ email });
-        if (existing) return res.status(409).json({ error: 'User already exists' });
+        if (existing) {
+            const existingRole = existing.role || 'user';
+            if (requestedRole && existingRole !== requestedRole) {
+                return res.status(409).json({
+                    error: 'User already exists',
+                    message: `Account is already registered as ${existingRole}. Please use the correct login portal.`
+                });
+            }
+            return res.status(409).json({ error: 'User already exists' });
+        }
 
         const id = uuidv4();
         const passwordHash = await bcrypt.hash(password, 10);
-        const user = new User({ _id: id, name: name || undefined, email, passwordHash, createdAt: new Date().toISOString() });
+        const user = new User({ _id: id, name: name || undefined, email, passwordHash, role, createdAt: new Date().toISOString() });
         await user.save();
 
-        const token = jwt.sign({ id: user._id.toString(), email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+        const token = jwt.sign({ id: user._id.toString(), email: user.email, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-        res.status(201).json({ success: true, token, user: { id: user._id.toString(), name: user.name || null, email: user.email } });
+        res.status(201).json({ success: true, token, user: { id: user._id.toString(), name: user.name || null, email: user.email, role: user.role } });
     } catch (err) {
         console.error('Signup failed:', err);
         res.status(500).json({ error: 'Signup failed', message: err.message || String(err) });
     }
-});
+};
 
-// Login
-router.post('/login', async (req, res) => {
+// Signup
+router.post('/signup', handleSignup);
+router.post('/investor/signup', withForcedRole('investor'), handleSignup);
+
+const handleLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) return res.status(400).json({ error: 'Missing email or password' });
+
+        const requestedRole = normalizeRole(req.body?.role);
+        if (req.body?.role && !requestedRole) {
+            return res.status(400).json({ error: 'Invalid role', message: 'Role must be user or investor' });
+        }
 
         const user = await User.findOne({ email });
         if (!user) return res.status(401).json({ error: 'Invalid credentials' });
@@ -43,14 +77,31 @@ router.post('/login', async (req, res) => {
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
-        const token = jwt.sign({ id: user._id.toString(), email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+        if (!user.role && requestedRole) {
+            user.role = requestedRole;
+            await user.save();
+        }
 
-        res.json({ success: true, token, user: { id: user._id.toString(), name: user.name || null, email: user.email } });
+        const userRole = user.role || 'user';
+        if (requestedRole && userRole !== requestedRole) {
+            return res.status(403).json({
+                error: 'Role mismatch',
+                message: `Account is registered as ${userRole}. Please use the correct login portal.`
+            });
+        }
+
+        const token = jwt.sign({ id: user._id.toString(), email: user.email, role: userRole }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+
+        res.json({ success: true, token, user: { id: user._id.toString(), name: user.name || null, email: user.email, role: userRole } });
     } catch (err) {
         console.error('Login failed:', err);
         res.status(500).json({ error: 'Login failed', message: err.message || String(err) });
     }
-});
+};
+
+// Login
+router.post('/login', handleLogin);
+router.post('/investor/login', withForcedRole('investor'), handleLogin);
 
 // Get current user
 router.get('/me', (req, res) => {

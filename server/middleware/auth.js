@@ -24,7 +24,12 @@ async function authMiddleware(req, res, next) {
         if (!user) {
             req.user = null;
         } else {
-            req.user = { id: user._id.toString(), email: user.email, name: user.name || null };
+            const roleFromToken = typeof payload?.role === 'string' ? payload.role : null;
+            const effectiveRole = user.role || roleFromToken || 'user';
+            if (!user.role && roleFromToken && roleFromToken !== 'user') {
+                User.updateOne({ _id: user._id }, { $set: { role: roleFromToken } }).catch(() => {});
+            }
+            req.user = { id: user._id.toString(), email: user.email, name: user.name || null, role: effectiveRole };
         }
     } catch (err) {
         req.user = null;
