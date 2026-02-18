@@ -8,7 +8,8 @@ const Header: React.FC = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useContext<AuthContextValue>(AuthContext);
-  const isInvestorView = user?.role === 'investor' || location.pathname.startsWith('/investor');
+  const isInvestorRoute = location.pathname === '/investor' || location.pathname.startsWith('/investor/');
+  const isInvestorView = user?.role === 'investor' || isInvestorRoute;
   const logoLink = isInvestorView ? '/investor' : '/';
 
   const isActive = (path: string) => {
@@ -110,9 +111,9 @@ const Header: React.FC = () => {
                   <span>Pricing</span>
                 </Link>
                 <Link
-                  to="/investors"
+                  to="/investor-directory"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    isActive('/investors')
+                    isActive('/investor-directory')
                       ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
                       : 'text-slate-300 hover:text-white hover:bg-white/5'
                   }`}
@@ -241,10 +242,10 @@ const Header: React.FC = () => {
                   </div>
                 </Link>
                 <Link
-                  to="/investors"
+                  to="/investor-directory"
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/investors')
+                    isActive('/investor-directory')
                       ? 'text-blue-200 bg-blue-500/10'
                       : 'text-slate-300 hover:text-white hover:bg-white/5'
                   }`}

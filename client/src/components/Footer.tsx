@@ -8,7 +8,8 @@ const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const location = useLocation();
   const { user } = useContext<AuthContextValue>(AuthContext);
-  const isInvestorView = user?.role === 'investor' || location.pathname.startsWith('/investor');
+  const isInvestorRoute = location.pathname === '/investor' || location.pathname.startsWith('/investor/');
+  const isInvestorView = user?.role === 'investor' || isInvestorRoute;
 
   const footerVariants = {
     hidden: { opacity: 0 },
@@ -195,7 +196,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  to="/investors"
+                  to="/investor-directory"
                   className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
                 >
                   Investor Directory

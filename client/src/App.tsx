@@ -23,13 +23,15 @@ import TermsOfService from './pages/TermsOfService';
 import CookiePolicy from './pages/CookiePolicy';
 import './App.css';
 
+const isInvestorPath = (path: string) => path === '/investor' || path.startsWith('/investor/');
+
 const InvestorGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useContext(AuthContext);
   const location = useLocation();
   const path = location.pathname;
 
   if (user?.role === 'investor') {
-    if (!path.startsWith('/investor')) {
+    if (!isInvestorPath(path)) {
       return <Navigate to="/investor/projects" replace />;
     }
     if (path === '/investor/login') {
@@ -57,7 +59,7 @@ function App() {
                   <Route path="/investor/login" element={<Login key="investor-login" />} />
                   <Route path="/investor" element={<InvestorLanding />} />
                   <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/investors" element={<InvestorDirectory />} />
+                  <Route path="/investor-directory" element={<InvestorDirectory />} />
                   <Route
                     path="/profile"
                     element={
