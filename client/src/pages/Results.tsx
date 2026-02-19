@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import { Download, AlertCircle, ArrowLeft, Send, Users, UserPlus, ChevronDown, ChevronUp } from "lucide-react";
+import { Download, AlertCircle, ArrowLeft, Send, Users, UserPlus, ChevronDown, ChevronUp, CheckCircle2, AlertTriangle, Sparkles, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../services/api";
@@ -22,6 +22,7 @@ const Results: React.FC = () => {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [downloadingDeck, setDownloadingDeck] = useState(false);
   const [deckError, setDeckError] = useState<string | null>(null);
+  const [deckTemplate, setDeckTemplate] = useState<string>('');
   const [collabInfo, setCollabInfo] = useState<any>(null);
   const [collabLoading, setCollabLoading] = useState(false);
   const [collabError, setCollabError] = useState<string | null>(null);
@@ -255,11 +256,15 @@ const Results: React.FC = () => {
       setDeckError('Analysis ID is missing');
       return;
     }
+    if (!deckTemplate) {
+      setDeckError('Choose a pitch deck template to continue.');
+      return;
+    }
 
     try {
       setDownloadingDeck(true);
       setDeckError(null);
-      await apiService.downloadPitchDeck(analysisId);
+      await apiService.downloadPitchDeck(analysisId, deckTemplate);
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
@@ -335,6 +340,12 @@ const Results: React.FC = () => {
     { id: 'opportunities', label: 'Opportunities' },
     { id: 'recommendations', label: 'Recommendations' }
   ] as const;
+  const deckTemplates = [
+    { id: 'aurora', name: 'Aurora', description: 'Cool blue + emerald gradient.' },
+    { id: 'noir', name: 'Noir', description: 'Minimal black + slate.' },
+    { id: 'sunrise', name: 'Sunrise', description: 'Warm orange + rose.' }
+  ];
+  const activeTemplate = deckTemplates.find((template) => template.id === deckTemplate);
 
   return (
     <motion.div 
@@ -361,8 +372,9 @@ const Results: React.FC = () => {
             <button
               onClick={() => setPdfError(null)}
               className="text-red-400 hover:text-red-300 text-lg"
+              aria-label="Dismiss PDF error"
             >
-              
+              <X className="h-4 w-4" />
             </button>
           </div>
         </motion.div>
@@ -385,8 +397,9 @@ const Results: React.FC = () => {
             <button
               onClick={() => setDeckError(null)}
               className="text-amber-400 hover:text-amber-300 text-lg"
+              aria-label="Dismiss pitch deck error"
             >
-              
+              <X className="h-4 w-4" />
             </button>
           </div>
         </motion.div>
@@ -411,7 +424,7 @@ const Results: React.FC = () => {
           </div>
           <p className="text-gray-400 ml-14">Analysis ID: {analysisId}</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -431,16 +444,42 @@ const Results: React.FC = () => {
             <Download className="h-5 w-5" />
             {downloadingPdf ? "Downloading..." : "Download PDF"}
           </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleDownloadPitchDeck}
-            disabled={downloadingDeck}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
-          >
-            <Download className="h-5 w-5" />
-            {downloadingDeck ? "Generating..." : "Pitch Deck"}
-          </motion.button>
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch">
+            <div className="flex flex-col">
+              <label htmlFor="pitchDeckTemplate" className="text-xs text-gray-400 mb-1">
+                Pitch deck template
+              </label>
+              <select
+                id="pitchDeckTemplate"
+                value={deckTemplate}
+                onChange={(e) => {
+                  setDeckTemplate(e.target.value);
+                  if (deckError) setDeckError(null);
+                }}
+                className="bg-gray-900/60 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+              >
+                <option value="">Choose template</option>
+                {deckTemplates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-gray-500 mt-1">
+                {activeTemplate ? activeTemplate.description : 'Pick a style for your deck.'}
+              </span>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleDownloadPitchDeck}
+              disabled={downloadingDeck || !deckTemplate}
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="h-5 w-5" />
+              {downloadingDeck ? "Generating..." : "Pitch Deck"}
+            </motion.button>
+          </div>
         </div>
       </motion.div>
 
@@ -678,8 +717,8 @@ const Results: React.FC = () => {
                   <ul className="space-y-2 text-gray-300">
                     {analysis?.uniqueness?.strengths?.map((s: string, i: number) => (
                       <li key={i} className="flex gap-2">
-                        <span className="text-green-400">???</span>
-                        {s}
+                        <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
+                        <span>{s}</span>
                       </li>
                     ))}
                   </ul>
@@ -692,8 +731,8 @@ const Results: React.FC = () => {
                   <ul className="space-y-2 text-gray-300">
                     {analysis?.uniqueness?.concerns?.map((c: string, i: number) => (
                       <li key={i} className="flex gap-2">
-                        <span className="text-red-400">???</span>
-                        {c}
+                        <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+                        <span>{c}</span>
                       </li>
                     ))}
                   </ul>
@@ -720,7 +759,10 @@ const Results: React.FC = () => {
                     <span className="font-semibold text-blue-400">Key Trends:</span>
                     <ul className="mt-2 space-y-1 ml-4">
                       {analysis.marketViability.trends.map((t: string, i: number) => (
-                        <li key={i} className="text-gray-300">??? {t}</li>
+                        <li key={i} className="flex gap-2 text-gray-300">
+                          <Sparkles className="h-4 w-4 text-blue-300 mt-0.5 flex-shrink-0" />
+                          <span>{t}</span>
+                        </li>
                       ))}
                     </ul>
                   </div>

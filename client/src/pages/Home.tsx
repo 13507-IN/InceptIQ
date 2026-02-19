@@ -22,6 +22,9 @@ const Home: React.FC = () => {
   const { token } = useContext<AuthContextValue>(AuthContext);
   const [requests, setRequests] = useState<any[]>([]);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const analysisCtaHref = token ? '/analysis' : '/login';
+  const analysisCtaLabel = token ? 'Start Free Analysis' : 'Sign in to start';
+  const finalCtaLabel = token ? 'Launch Analysis' : 'Sign in to start';
 
   useEffect(() => {
     const load = async () => {
@@ -210,8 +213,8 @@ const Home: React.FC = () => {
             </p>
             <div className="hero-cta mt-8 flex flex-col sm:flex-row gap-4">
               <Button className="bg-blue-500 hover:bg-blue-400 text-black font-semibold px-6 py-3 rounded-full" asChild>
-                <Link to="/analysis" className="flex items-center gap-2">
-                  Start Free Analysis
+                <Link to={analysisCtaHref} className="flex items-center gap-2">
+                  {analysisCtaLabel}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -437,8 +440,8 @@ const Home: React.FC = () => {
               </p>
               <div className="mt-6 flex flex-col sm:flex-row gap-4">
                 <Button className="bg-white text-black font-semibold px-6 py-3 rounded-full" asChild>
-                  <Link to="/analysis" className="flex items-center gap-2">
-                    Launch Analysis
+                  <Link to={analysisCtaHref} className="flex items-center gap-2">
+                    {finalCtaLabel}
                     <Rocket className="h-4 w-4" />
                   </Link>
                 </Button>

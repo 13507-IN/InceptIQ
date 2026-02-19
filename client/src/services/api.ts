@@ -70,6 +70,10 @@ class ApiService {
     } catch (error: any) {
       console.error('Analysis submission failed:', error);
       
+      if (error.response?.status === 401) {
+        throw new Error('Please sign in to run an analysis.');
+      }
+
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
@@ -129,6 +133,9 @@ class ApiService {
       return response.data;
     } catch (error: any) {
       console.error('Failed to extract form fields from PDF:', error);
+      if (error.response?.status === 401) {
+        throw new Error('Please sign in to use PDF auto-fill.');
+      }
       throw new Error(error.response?.data?.message || 'Failed to extract form fields from PDF.');
     }
   }
@@ -247,10 +254,15 @@ class ApiService {
   }
 
   // Download Pitch Deck (PPTX)
-  async downloadPitchDeck(analysisId: string): Promise<void> {
+  async downloadPitchDeck(analysisId: string, templateId: string): Promise<void> {
     try {
+      if (!templateId) {
+        throw new Error('Please choose a pitch deck template.');
+      }
       const response = await api.get(`/pitch-decks/${analysisId}`, {
         responseType: 'arraybuffer',
+        params: { template: templateId },
+        timeout: 180000,
         headers: {
           'Accept': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
         },
