@@ -33,6 +33,74 @@ const Analysis: React.FC = () => {
   const [coverUploading, setCoverUploading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [coverError, setCoverError] = useState<string | null>(null);
+  const businessModelLabels: Record<string, string> = {
+    subscription: 'Subscription/SaaS',
+    marketplace: 'Marketplace',
+    ecommerce: 'E-commerce',
+    freemium: 'Freemium',
+    advertising: 'Advertising',
+    transaction: 'Transaction-based',
+    licensing: 'Licensing',
+    other: 'Other'
+  };
+  const industryLabels: Record<string, string> = {
+    technology: 'Technology',
+    healthcare: 'Healthcare',
+    finance: 'Finance',
+    education: 'Education',
+    retail: 'Retail',
+    manufacturing: 'Manufacturing',
+    services: 'Services',
+    entertainment: 'Entertainment',
+    other: 'Other'
+  };
+  const budgetLabels: Record<string, string> = {
+    'under-10k': 'Under INR 10,000',
+    '10k-50k': 'INR 10,000 - INR 50,000',
+    '50k-100k': 'INR 50,000 - INR 100,000',
+    '100k-500k': 'INR 100,000 - INR 500,000',
+    '500k-1m': 'INR 500,000 - INR 1,000,000',
+    'over-1m': 'Over INR 1,000,000'
+  };
+  const timelineLabels: Record<string, string> = {
+    '3-months': 'Within 3 months',
+    '6-months': '3-6 months',
+    '1-year': '6-12 months',
+    'over-1-year': 'Over 1 year'
+  };
+  const getLabel = (value: string | undefined, map: Record<string, string>) => {
+    if (!value) return 'Not set';
+    return map[value] || value;
+  };
+  const requiredFields = [
+    { key: 'ideaTitle', label: 'Idea title', value: formData.ideaTitle.trim(), minLength: 3 },
+    { key: 'ideaDescription', label: 'Description', value: formData.ideaDescription.trim(), minLength: 10 }
+  ];
+  const completedRequired = requiredFields.filter((field) => field.value.length >= field.minLength).length;
+  const completionPct = Math.round((completedRequired / requiredFields.length) * 100);
+  const trimmedDescription = formData.ideaDescription.trim();
+  const descriptionPreview = trimmedDescription
+    ? `${trimmedDescription.slice(0, 160)}${trimmedDescription.length > 160 ? '...' : ''}`
+    : 'Not set';
+  const summaryRows = [
+    { label: 'Idea title', value: formData.ideaTitle.trim() || 'Not set' },
+    { label: 'Idea description', value: descriptionPreview },
+    { label: 'Target market', value: formData.targetMarket?.trim() || 'Not set' },
+    { label: 'Business model', value: getLabel(formData.businessModel, businessModelLabels) },
+    { label: 'Industry', value: getLabel(formData.industry, industryLabels) },
+    { label: 'Budget range', value: getLabel(formData.budget, budgetLabels) },
+    { label: 'Timeline', value: getLabel(formData.timeline, timelineLabels) },
+    {
+      label: 'Brand assets',
+      value: formData.logoUrl || formData.coverImageUrl ? 'Uploaded' : 'Not added'
+    }
+  ];
+  const steps = [
+    { title: 'Upload (optional)', description: 'Add a PDF to auto-fill fields.' },
+    { title: 'Describe', description: 'Explain the idea and core value.' },
+    { title: 'Enrich', description: 'Add market, model, and timeline.' },
+    { title: 'Submit', description: 'Run AI analysis and get results.' }
+  ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -205,7 +273,7 @@ const Analysis: React.FC = () => {
 
   return (
     <motion.div 
-      className="max-w-5xl mx-auto px-4 py-10"
+      className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 py-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
@@ -230,14 +298,37 @@ const Analysis: React.FC = () => {
         </p>
       </motion.div>
 
-      {/* Form */}
-      <motion.form 
-        onSubmit={handleSubmit} 
-        className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 md:p-10 border border-gray-700/50"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
+      <div className="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,420px)] gap-8 items-start">
+        <div>
+          <motion.div
+            className="mb-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            {steps.map((step, index) => (
+              <div key={step.title} className="bg-gray-900/50 border border-gray-700/60 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-200 flex items-center justify-center text-sm font-semibold">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-gray-100">{step.title}</div>
+                    <div className="text-xs text-gray-400">{step.description}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Form */}
+          <motion.form 
+            onSubmit={handleSubmit} 
+            className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 md:p-10 border border-gray-700/50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
         {/* PDF Upload */}
         <motion.div 
           className="mb-10 p-8 bg-gradient-to-r from-blue-900/30 to-emerald-900/20 rounded-xl border-2 border-dashed border-blue-500/50 hover:border-blue-400/75 transition-all"
@@ -558,7 +649,88 @@ const Analysis: React.FC = () => {
             Analysis typically takes 30-60 seconds. Please be patient while our AI processes your idea.
           </p>
         </motion.div>
-      </motion.form>
+          </motion.form>
+        </div>
+
+        <aside className="space-y-6 lg:sticky lg:top-24">
+          <div className="bg-gray-900/60 border border-gray-700 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-200">Submission readiness</h3>
+                <p className="text-xs text-gray-500">Complete the required fields to unlock analysis.</p>
+              </div>
+              <span
+                className={`text-xs px-2 py-1 rounded-full border ${
+                  completionPct === 100
+                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                    : 'bg-blue-500/10 text-blue-200 border-blue-500/30'
+                }`}
+              >
+                {completionPct}% complete
+              </span>
+            </div>
+            <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-emerald-400"
+                style={{ width: `${completionPct}%` }}
+              />
+            </div>
+            <div className="mt-3 text-xs text-gray-500">
+              {completedRequired} of {requiredFields.length} required fields ready
+            </div>
+            <div className="mt-4 space-y-2">
+              {requiredFields.map((field) => {
+                const complete = field.value.length >= field.minLength;
+                return (
+                  <div key={field.key} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-gray-300">
+                      {complete ? (
+                        <CheckCircle className="h-4 w-4 text-emerald-300" />
+                      ) : (
+                        <span className="h-4 w-4 rounded-full border border-gray-600" />
+                      )}
+                      <span>{field.label}</span>
+                    </div>
+                    <span className={`text-xs ${complete ? 'text-emerald-300' : 'text-gray-500'}`}>
+                      {complete ? 'Ready' : 'Required'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-gray-900/60 border border-gray-700 rounded-2xl p-5">
+            <h3 className="text-sm font-semibold text-gray-200">Submission snapshot</h3>
+            <div className="mt-3 space-y-3 text-sm">
+              {summaryRows.map((row) => (
+                <div key={row.label}>
+                  <div className="text-xs uppercase tracking-wide text-gray-500">{row.label}</div>
+                  <div className="text-gray-200 break-words">{row.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-900/20 via-gray-900/60 to-emerald-900/20 border border-gray-700 rounded-2xl p-5">
+            <h3 className="text-sm font-semibold text-gray-200">Tips for stronger results</h3>
+            <ul className="mt-3 space-y-3 text-sm text-gray-300">
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-emerald-300 mt-0.5" />
+                <span>Explain the customer pain and why now is the right time.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-emerald-300 mt-0.5" />
+                <span>Be specific about your first target market and go-to-market path.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-emerald-300 mt-0.5" />
+                <span>Add realistic budget and timeline details to improve scoring.</span>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
     </motion.div>
   );
 };

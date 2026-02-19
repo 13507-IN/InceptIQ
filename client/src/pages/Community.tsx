@@ -101,7 +101,7 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
 
   return (
     <motion.div
-      className="max-w-6xl mx-auto px-4 py-10"
+      className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 py-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -164,7 +164,7 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
       )}
 
       {!loading && !loadError && posts.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] gap-8 items-start">
           <motion.div
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
             variants={containerVariants}
