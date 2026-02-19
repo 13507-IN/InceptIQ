@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { AlertTriangle } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,10 +9,14 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
-  const { user, token } = useContext(AuthContext);
+  const { user, token, loading } = useContext(AuthContext);
   const effectiveRole = user?.role || 'user';
   const roleAllowed = !allowedRoles || allowedRoles.length === 0 || allowedRoles.includes(effectiveRole);
   const loginPath = allowedRoles && allowedRoles.length === 1 && allowedRoles[0] === 'investor' ? '/investor/login' : '/login';
+
+  if (loading) {
+    return <LoadingSpinner fullScreen message="Checking your session..." />;
+  }
 
   // If no token or user, show sign in message
   if (!token || !user) {

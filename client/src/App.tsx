@@ -53,7 +53,14 @@ function App() {
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Home />} />
-                  <Route path="/analysis" element={<Analysis />} />
+                  <Route
+                    path="/analysis"
+                    element={
+                      <ProtectedRoute>
+                        <Analysis />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route path="/results/:analysisId" element={<Results />} />
                   <Route path="/login" element={<Login key="user-login" />} />
                   <Route path="/investor/login" element={<Login key="investor-login" />} />
