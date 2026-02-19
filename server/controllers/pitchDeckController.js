@@ -24,6 +24,7 @@ const pitchDeckController = {
   async downloadDeck(req, res) {
     try {
       const { id } = req.params;
+      const templateId = pitchDeckService.resolveTemplateId(req.query?.template);
 
       if (!id) {
         return res.status(400).json({
@@ -32,11 +33,32 @@ const pitchDeckController = {
         });
       }
 
+      if (!templateId) {
+        return res.status(400).json({
+          error: 'Missing template',
+          message: 'Please choose a pitch deck template before downloading.',
+          templates: pitchDeckService.getTemplateOptions()
+        });
+      }
+
       const { analysis } = await getAnalysisRecord(id, req);
 
       if (!analysis) {
-        if (pitchDeckService.pitchDeckExists(id)) {
-          const filePath = pitchDeckService.getPitchDeckPath(id);
+        if (pitchDeckService.pitchDeckExists(id, templateId)) {
+          const filePath = pitchDeckService.getPitchDeckPath(id, templateId);
+          const fileStats = fs.statSync(filePath);
+          res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+          );
+          res.setHeader('Content-Disposition', `attachment; filename="pitch-deck-${id}-${templateId}.pptx"`);
+          res.setHeader('Cache-Control', 'no-cache');
+          res.setHeader('Content-Length', fileStats.size);
+          return fs.createReadStream(filePath).pipe(res);
+        }
+
+        if (pitchDeckService.pitchDeckExistsLegacy(id)) {
+          const filePath = pitchDeckService.getLegacyPitchDeckPath(id);
           const fileStats = fs.statSync(filePath);
           res.setHeader(
             'Content-Type',
@@ -54,11 +76,11 @@ const pitchDeckController = {
         });
       }
 
-      if (!pitchDeckService.pitchDeckExists(id)) {
-        await pitchDeckService.generatePitchDeck(analysis, id);
+      if (!pitchDeckService.pitchDeckExists(id, templateId)) {
+        await pitchDeckService.generatePitchDeck(analysis, id, templateId);
       }
 
-      const filePath = pitchDeckService.getPitchDeckPath(id);
+      const filePath = pitchDeckService.getPitchDeckPath(id, templateId);
       if (!fs.existsSync(filePath)) {
         throw new Error(`Pitch deck file not found at path: ${filePath}`);
       }
@@ -68,7 +90,7 @@ const pitchDeckController = {
         'Content-Type',
         'application/vnd.openxmlformats-officedocument.presentationml.presentation'
       );
-      res.setHeader('Content-Disposition', `attachment; filename="pitch-deck-${id}.pptx"`);
+      res.setHeader('Content-Disposition', `attachment; filename="pitch-deck-${id}-${templateId}.pptx"`);
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Content-Length', fileStats.size);
 

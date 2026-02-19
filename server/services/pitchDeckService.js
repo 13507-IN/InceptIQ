@@ -7,20 +7,7 @@ const pdfService = require('./pdfService');
 const SLIDE_W = 13.333;
 const SLIDE_H = 7.5;
 
-const THEME = {
-  background: '0B1020',
-  panel: '101827',
-  accent: '38BDF8',
-  accentSoft: '7DD3FC',
-  text: 'F8FAFC',
-  muted: 'CBD5F5',
-  subtle: '94A3B8',
-  success: '34D399',
-  warning: 'FBBF24',
-  danger: 'FB7185'
-};
-
-const HERO_SVG = `
+const HERO_SVG_AURORA = `
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="520" viewBox="0 0 800 520">
   <defs>
     <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
@@ -42,19 +29,136 @@ const HERO_SVG = `
 </svg>
 `;
 
+const HERO_SVG_NOIR = `
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="520" viewBox="0 0 800 520">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#94A3B8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="520" rx="32" fill="#0B0B0D"/>
+  <rect x="70" y="80" width="660" height="140" rx="24" fill="#15151A" stroke="#27272A"/>
+  <rect x="70" y="250" width="660" height="200" rx="24" fill="#111318" stroke="#1F1F24"/>
+  <circle cx="170" cy="150" r="50" stroke="#E2E8F0" stroke-width="3" fill="none"/>
+  <circle cx="260" cy="150" r="50" stroke="#A1A1AA" stroke-width="2" fill="none"/>
+  <path d="M110 360 L220 320 L340 340 L460 300 L590 330 L700 280" stroke="url(#g1)" stroke-width="6" fill="none" stroke-linecap="round"/>
+</svg>
+`;
+
+const HERO_SVG_SUNRISE = `
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="520" viewBox="0 0 800 520">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F97316"/>
+      <stop offset="1" stop-color="#FB7185"/>
+    </linearGradient>
+    <radialGradient id="g2" cx="0.25" cy="0.2" r="0.9">
+      <stop offset="0" stop-color="#FDBA74" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#1B0B0A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="520" rx="32" fill="#1B0B0A"/>
+  <circle cx="160" cy="120" r="120" fill="url(#g2)"/>
+  <rect x="60" y="300" width="680" height="160" rx="24" fill="#2A1412" stroke="#3F1C19"/>
+  <rect x="90" y="330" width="200" height="100" rx="18" fill="#2F1B1A" stroke="#4A2521"/>
+  <rect x="310" y="330" width="180" height="100" rx="18" fill="url(#g1)"/>
+  <rect x="510" y="330" width="200" height="100" rx="18" fill="#2F1B1A" stroke="#4A2521"/>
+  <path d="M120 250 L220 200 L320 230 L420 160 L540 210 L660 150" stroke="#FDBA74" stroke-width="8" fill="none" stroke-linecap="round"/>
+</svg>
+`;
+
+const TEMPLATE_PRESETS = {
+  aurora: {
+    id: 'aurora',
+    name: 'Aurora',
+    description: 'Cool blue + emerald with a tech gradient.',
+    theme: {
+      background: '0B1020',
+      panel: '101827',
+      accent: '38BDF8',
+      accentSoft: '7DD3FC',
+      text: 'F8FAFC',
+      muted: 'CBD5F5',
+      subtle: '94A3B8',
+      success: '34D399',
+      warning: 'FBBF24',
+      danger: 'FB7185'
+    },
+    heroSvg: HERO_SVG_AURORA
+  },
+  noir: {
+    id: 'noir',
+    name: 'Noir',
+    description: 'Minimal black + slate with crisp contrast.',
+    theme: {
+      background: '0B0B0D',
+      panel: '15151A',
+      accent: 'E2E8F0',
+      accentSoft: '94A3B8',
+      text: 'F8FAFC',
+      muted: 'A1A1AA',
+      subtle: '71717A',
+      success: '22C55E',
+      warning: 'F59E0B',
+      danger: 'EF4444'
+    },
+    heroSvg: HERO_SVG_NOIR
+  },
+  sunrise: {
+    id: 'sunrise',
+    name: 'Sunrise',
+    description: 'Warm orange + rose with bold energy.',
+    theme: {
+      background: '1B0B0A',
+      panel: '2A1412',
+      accent: 'F97316',
+      accentSoft: 'FDBA74',
+      text: 'FFF7ED',
+      muted: 'FED7AA',
+      subtle: 'FEC89A',
+      success: '34D399',
+      warning: 'FBBF24',
+      danger: 'FB7185'
+    },
+    heroSvg: HERO_SVG_SUNRISE
+  }
+};
+
 const svgToDataUri = (svg) => `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 
-const fetchImageData = async (url) => {
+const normalizeTemplateId = (value) => {
+  if (!value) return null;
+  const normalized = String(value).trim().toLowerCase();
+  return TEMPLATE_PRESETS[normalized] ? normalized : null;
+};
+
+const getTemplateOptions = () =>
+  Object.values(TEMPLATE_PRESETS).map(({ id, name, description }) => ({
+    id,
+    name,
+    description
+  }));
+
+const fetchImageData = async (url, timeoutMs = 8000) => {
   if (!url) return null;
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = setTimeout(() => controller?.abort(), timeoutMs);
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, controller ? { signal: controller.signal } : undefined);
     if (!response.ok) return null;
     const buffer = await response.buffer();
     const contentType = response.headers.get('content-type') || 'image/png';
     return `data:${contentType};base64,${buffer.toString('base64')}`;
   } catch (error) {
+    if (error?.name === 'AbortError') {
+      console.warn('Pitch deck image fetch timed out:', url);
+      return null;
+    }
     console.warn('Pitch deck image fetch failed:', error.message || error);
     return null;
+  } finally {
+    clearTimeout(timeoutId);
   }
 };
 
@@ -85,18 +189,47 @@ class PitchDeckService {
     }
   }
 
-  getPitchDeckPath(analysisId) {
+  getPitchDeckPath(analysisId, templateId) {
+    const safeTemplate = normalizeTemplateId(templateId) || 'aurora';
+    return path.join(this.pitchDir, `pitch-deck-${analysisId}-${safeTemplate}.pptx`);
+  }
+
+  getLegacyPitchDeckPath(analysisId) {
     return path.join(this.pitchDir, `pitch-deck-${analysisId}.pptx`);
   }
 
-  pitchDeckExists(analysisId) {
-    return fs.existsSync(this.getPitchDeckPath(analysisId));
+  pitchDeckExists(analysisId, templateId) {
+    return fs.existsSync(this.getPitchDeckPath(analysisId, templateId));
   }
 
-  async generatePitchDeck(analysisData, analysisId) {
+  pitchDeckExistsLegacy(analysisId) {
+    return fs.existsSync(this.getLegacyPitchDeckPath(analysisId));
+  }
+
+  getTemplateOptions() {
+    return getTemplateOptions();
+  }
+
+  resolveTemplateId(value) {
+    return normalizeTemplateId(value);
+  }
+
+  getTemplate(templateId) {
+    return TEMPLATE_PRESETS[templateId] || null;
+  }
+
+  async generatePitchDeck(analysisData, analysisId, templateId) {
     if (!analysisData) {
       throw new Error('Missing analysis data for pitch deck generation');
     }
+
+    const resolvedTemplateId = normalizeTemplateId(templateId);
+    if (!resolvedTemplateId) {
+      throw new Error('Invalid pitch deck template');
+    }
+
+    const template = TEMPLATE_PRESETS[resolvedTemplateId];
+    const theme = template.theme;
 
     const normalized = pdfService.normalizeAnalysisData(analysisData);
     const input = analysisData.input || {};
@@ -108,7 +241,7 @@ class PitchDeckService {
     pptx.subject = safeText(input.ideaTitle, 'Startup Pitch Deck');
     pptx.title = safeText(input.ideaTitle, 'Startup Pitch Deck');
 
-    const heroImageData = svgToDataUri(HERO_SVG);
+    const heroImageData = svgToDataUri(template.heroSvg);
     const [logoImageData, coverImageData] = await Promise.all([
       fetchImageData(input.logoUrl),
       fetchImageData(input.coverImageUrl)
@@ -120,15 +253,15 @@ class PitchDeckService {
     const logoPath = logoCandidates.find(candidate => fs.existsSync(candidate));
 
     const addSlideHeader = (slide, title, subtitle) => {
-      slide.background = { color: THEME.background };
+      slide.background = { color: theme.background };
 
       slide.addShape(pptx.ShapeType.rect, {
         x: 0,
         y: 0,
         w: SLIDE_W,
         h: 0.6,
-        fill: { color: THEME.panel },
-        line: { color: THEME.panel }
+        fill: { color: theme.panel },
+        line: { color: theme.panel }
       });
 
       slide.addText(title, {
@@ -138,7 +271,7 @@ class PitchDeckService {
         h: 0.6,
         fontSize: 30,
         bold: true,
-        color: THEME.text
+        color: theme.text
       });
 
       if (subtitle) {
@@ -148,7 +281,7 @@ class PitchDeckService {
           w: 12,
           h: 0.5,
           fontSize: 14,
-          color: THEME.subtle
+          color: theme.subtle
         });
       }
 
@@ -157,20 +290,20 @@ class PitchDeckService {
         y: 2.1,
         w: 2.4,
         h: 0.06,
-        fill: { color: THEME.accent },
-        line: { color: THEME.accent }
+        fill: { color: theme.accent },
+        line: { color: theme.accent }
       });
     };
 
     const titleSlide = pptx.addSlide();
-    titleSlide.background = { color: THEME.background };
+    titleSlide.background = { color: theme.background };
     titleSlide.addText(safeText(input.ideaTitle, 'Startup Pitch Deck'), {
       x: 0.9,
       y: 2.4,
       w: 12,
       h: 0.8,
       fontSize: 44,
-      color: THEME.text,
+      color: theme.text,
       bold: true
     });
     titleSlide.addText(safeText(input.ideaDescription, 'Investor presentation'), {
@@ -179,7 +312,7 @@ class PitchDeckService {
       w: 11.6,
       h: 1.3,
       fontSize: 18,
-      color: THEME.muted
+      color: theme.muted
     });
     titleSlide.addImage({
       data: coverImageData || heroImageData,
@@ -213,7 +346,7 @@ class PitchDeckService {
       w: 11,
       h: 0.4,
       fontSize: 12,
-      color: THEME.subtle
+      color: theme.subtle
     });
 
     const scoreSlide = pptx.addSlide();
@@ -235,17 +368,17 @@ class PitchDeckService {
       y: 2.6,
       w: 7.2,
       h: 4.2,
-      chartColors: [THEME.accent, THEME.success, THEME.warning],
+      chartColors: [theme.accent, theme.success, theme.warning],
       barDir: 'col',
-      dataLabelColor: THEME.text,
+      dataLabelColor: theme.text,
       dataLabelFontSize: 11,
       dataLabelPosition: 'outEnd',
       showLegend: false,
       valAxisMinVal: 0,
       valAxisMaxVal: 100,
       valAxisMajorUnit: 20,
-      valAxisLabelColor: THEME.subtle,
-      catAxisLabelColor: THEME.subtle
+      valAxisLabelColor: theme.subtle,
+      catAxisLabelColor: theme.subtle
     });
     scoreSlide.addImage({
       data: coverImageData || heroImageData,
@@ -265,7 +398,7 @@ class PitchDeckService {
       w: 4.1,
       h: 0.4,
       fontSize: 14,
-      color: THEME.muted
+      color: theme.muted
     });
 
     const problemSlide = pptx.addSlide();
@@ -275,8 +408,8 @@ class PitchDeckService {
       y: 2.5,
       w: 5.8,
       h: 4.5,
-      fill: { color: THEME.panel },
-      line: { color: THEME.panel }
+      fill: { color: theme.panel },
+      line: { color: theme.panel }
     });
     problemSlide.addShape(pptx.ShapeType.rect, {
       x: 6.9,
@@ -293,7 +426,7 @@ class PitchDeckService {
       h: 0.4,
       fontSize: 16,
       bold: true,
-      color: THEME.accentSoft
+      color: theme.accentSoft
     });
     problemSlide.addText(safeText(input.ideaDescription, normalized.uniqueness?.summary || 'Problem definition'), {
       x: 1.1,
@@ -301,7 +434,7 @@ class PitchDeckService {
       w: 5,
       h: 3.4,
       fontSize: 14,
-      color: THEME.text
+      color: theme.text
     });
     problemSlide.addText('Solution', {
       x: 7.3,
@@ -310,7 +443,7 @@ class PitchDeckService {
       h: 0.4,
       fontSize: 16,
       bold: true,
-      color: THEME.success
+      color: theme.success
     });
     problemSlide.addText(safeText(normalized.uniqueness?.summary, 'Solution narrative'), {
       x: 7.3,
@@ -318,7 +451,7 @@ class PitchDeckService {
       w: 5,
       h: 3.4,
       fontSize: 14,
-      color: THEME.text
+      color: theme.text
     });
 
     const marketSlide = pptx.addSlide();
@@ -329,7 +462,7 @@ class PitchDeckService {
       w: 4,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     marketSlide.addText(safeText(normalized.marketViability?.marketSize, 'TAM/SAM/SOM not provided'), {
       x: 0.8,
@@ -337,7 +470,7 @@ class PitchDeckService {
       w: 4.5,
       h: 1.2,
       fontSize: 20,
-      color: THEME.text,
+      color: theme.text,
       bold: true
     });
     marketSlide.addText('Target Audience', {
@@ -346,7 +479,7 @@ class PitchDeckService {
       w: 5.6,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     marketSlide.addText(safeText(normalized.marketViability?.targetAudience, 'Audience details not provided'), {
       x: 6.2,
@@ -354,7 +487,7 @@ class PitchDeckService {
       w: 5.6,
       h: 1.2,
       fontSize: 16,
-      color: THEME.text
+      color: theme.text
     });
     marketSlide.addText('Key Trends', {
       x: 0.8,
@@ -362,7 +495,7 @@ class PitchDeckService {
       w: 11.5,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     marketSlide.addText(bulletLines(normalized.marketViability?.trends, 'Add market trend signals'), {
       x: 0.8,
@@ -370,7 +503,7 @@ class PitchDeckService {
       w: 11.5,
       h: 2.0,
       fontSize: 13,
-      color: THEME.text
+      color: theme.text
     });
 
     const differentiationSlide = pptx.addSlide();
@@ -381,7 +514,7 @@ class PitchDeckService {
       w: 5.4,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     differentiationSlide.addText(bulletLines(normalized.uniqueness?.strengths, 'Highlight key strengths'), {
       x: 0.8,
@@ -389,7 +522,7 @@ class PitchDeckService {
       w: 5.4,
       h: 3.6,
       fontSize: 13,
-      color: THEME.text
+      color: theme.text
     });
     differentiationSlide.addText('Competitive Advantage', {
       x: 6.6,
@@ -397,7 +530,7 @@ class PitchDeckService {
       w: 5.8,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     differentiationSlide.addText(safeText(normalized.competition?.competitiveAdvantage, 'Describe how you stay ahead'), {
       x: 6.6,
@@ -405,7 +538,7 @@ class PitchDeckService {
       w: 5.8,
       h: 3.6,
       fontSize: 13,
-      color: THEME.text
+      color: theme.text
     });
 
     const competitionSlide = pptx.addSlide();
@@ -416,7 +549,7 @@ class PitchDeckService {
       w: 5.6,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     competitionSlide.addText(bulletLines(normalized.competition?.directCompetitors, 'List direct competitors'), {
       x: 0.8,
@@ -424,7 +557,7 @@ class PitchDeckService {
       w: 5.6,
       h: 3.6,
       fontSize: 13,
-      color: THEME.text
+      color: theme.text
     });
     competitionSlide.addText('Indirect Competitors', {
       x: 6.6,
@@ -432,7 +565,7 @@ class PitchDeckService {
       w: 5.6,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     competitionSlide.addText(bulletLines(normalized.competition?.indirectCompetitors, 'List indirect competitors'), {
       x: 6.6,
@@ -440,7 +573,7 @@ class PitchDeckService {
       w: 5.6,
       h: 3.6,
       fontSize: 13,
-      color: THEME.text
+      color: theme.text
     });
 
     const modelSlide = pptx.addSlide();
@@ -454,7 +587,7 @@ class PitchDeckService {
       w: 5.4,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     modelSlide.addText(safeText(input.businessModel, 'Define pricing and revenue streams'), {
       x: 0.8,
@@ -462,7 +595,7 @@ class PitchDeckService {
       w: 5.4,
       h: 1.8,
       fontSize: 13,
-      color: THEME.text
+      color: theme.text
     });
     modelSlide.addText('Go-to-Market', {
       x: 6.6,
@@ -470,7 +603,7 @@ class PitchDeckService {
       w: 5.6,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     modelSlide.addText(bulletLines(recommendationLines, 'Outline your first GTM moves'), {
       x: 6.6,
@@ -478,17 +611,17 @@ class PitchDeckService {
       w: 5.6,
       h: 3.6,
       fontSize: 13,
-      color: THEME.text
+      color: theme.text
     });
 
     const metricsSlide = pptx.addSlide();
     addSlideHeader(metricsSlide, 'Key Metrics', 'Fundraising and execution markers');
     const metrics = normalized.keyMetrics || {};
     const metricsList = [
-      { label: 'Funding Required', value: metrics.fundingRequired || 'Not specified', color: THEME.accent },
-      { label: 'Time to Market', value: metrics.timeToMarket || 'Not specified', color: THEME.success },
-      { label: 'Break-even Point', value: metrics.breakEvenPoint || 'Not specified', color: THEME.warning },
-      { label: 'Scalability Rating', value: metrics.scalabilityRating || 'Not specified', color: THEME.accentSoft }
+      { label: 'Funding Required', value: metrics.fundingRequired || 'Not specified', color: theme.accent },
+      { label: 'Time to Market', value: metrics.timeToMarket || 'Not specified', color: theme.success },
+      { label: 'Break-even Point', value: metrics.breakEvenPoint || 'Not specified', color: theme.warning },
+      { label: 'Scalability Rating', value: metrics.scalabilityRating || 'Not specified', color: theme.accentSoft }
     ];
 
     metricsList.forEach((metric, index) => {
@@ -499,8 +632,8 @@ class PitchDeckService {
         y,
         w: 5.6,
         h: 1.6,
-        fill: { color: THEME.panel },
-        line: { color: THEME.panel }
+        fill: { color: theme.panel },
+        line: { color: theme.panel }
       });
       metricsSlide.addText(metric.label, {
         x: x + 0.3,
@@ -508,7 +641,7 @@ class PitchDeckService {
         w: 5.0,
         h: 0.3,
         fontSize: 12,
-        color: THEME.subtle
+        color: theme.subtle
       });
       metricsSlide.addText(String(metric.value), {
         x: x + 0.3,
@@ -530,7 +663,7 @@ class PitchDeckService {
       w: 11.8,
       h: 4.6,
       fontSize: 13,
-      color: THEME.text
+      color: theme.text
     });
 
     const askSlide = pptx.addSlide();
@@ -544,7 +677,7 @@ class PitchDeckService {
       w: 5.6,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     askSlide.addText(safeText(metrics.fundingRequired, 'Define your raise'), {
       x: 0.8,
@@ -553,7 +686,7 @@ class PitchDeckService {
       h: 1.0,
       fontSize: 24,
       bold: true,
-      color: THEME.text
+      color: theme.text
     });
     askSlide.addText('Use of funds & milestones', {
       x: 6.6,
@@ -561,7 +694,7 @@ class PitchDeckService {
       w: 5.6,
       h: 0.4,
       fontSize: 14,
-      color: THEME.subtle
+      color: theme.subtle
     });
     askSlide.addText(bulletLines(opportunityLines, 'Outline your next milestones'), {
       x: 6.6,
@@ -569,10 +702,10 @@ class PitchDeckService {
       w: 5.6,
       h: 3.6,
       fontSize: 13,
-      color: THEME.text
+      color: theme.text
     });
 
-    const filePath = this.getPitchDeckPath(analysisId);
+    const filePath = this.getPitchDeckPath(analysisId, resolvedTemplateId);
     await pptx.writeFile({ fileName: filePath });
 
     return {
