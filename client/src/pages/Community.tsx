@@ -1,21 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Loader2, AlertCircle, Sparkles, ThumbsUp, ThumbsDown, Heart, TrendingUp, Mail, Briefcase } from 'lucide-react';
+import { Users, Loader2, AlertCircle, Sparkles, ThumbsUp, ThumbsDown, Heart, TrendingUp, Mail, Briefcase, Trash2 } from 'lucide-react';
 import { apiService } from '../services/api';
 import { CommunityPost } from '../types';
+import { AuthContext } from '../contexts/AuthContext';
 
 interface CommunityProps {
   variant?: 'community' | 'projects';
 }
 
 const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
+  const { user } = useContext(AuthContext);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
   const [voting, setVoting] = useState<Record<string, boolean>>({});
+  const [deleting, setDeleting] = useState<Record<string, boolean>>({});
 
   const isProjects = variant === 'projects';
   const title = isProjects ? 'Projects' : 'Community Ideas';
@@ -99,6 +102,22 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
     }
   };
 
+  const handleDelete = async (postId: string) => {
+    const confirmed = window.confirm('Delete this post? This action cannot be undone.');
+    if (!confirmed) return;
+
+    try {
+      setActionError(null);
+      setDeleting(prev => ({ ...prev, [postId]: true }));
+      await apiService.deleteCommunityPost(postId);
+      setPosts(prev => prev.filter(post => post.id !== postId));
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to delete post.');
+    } finally {
+      setDeleting(prev => ({ ...prev, [postId]: false }));
+    }
+  };
+
   return (
     <motion.div
       className="w-full max-w-none mx-auto px-4 sm:px-6 lg:px-8 py-10"
@@ -179,6 +198,8 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
                 ? truncateText(description, DESCRIPTION_LIMIT)
                 : description;
               const isVoting = voting[post.id];
+              const isDeleting = deleting[post.id];
+              const canDelete = !!user?.id && post.author?.id === user.id;
               const authorLabel = showContact
                 ? (post.author?.name || post.author?.email || 'Anonymous')
                 : (post.author?.name || 'Anonymous');
@@ -194,10 +215,23 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
                   className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-700/50 rounded-2xl p-6 shadow-xl"
                 >
                   <div className="flex items-start justify-between gap-3 mb-3">
-                    <h3 className="text-xl font-semibold text-white">{post.idea.ideaTitle}</h3>
-                    <span className="text-xs text-gray-400">
-                      {new Date(post.createdAt).toLocaleDateString()}
-                    </span>
+                    <div>
+                      <h3 className="text-xl font-semibold text-white">{post.idea.ideaTitle}</h3>
+                      <span className="text-xs text-gray-400">
+                        {new Date(post.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(post.id)}
+                        disabled={isDeleting}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-red-500/40 bg-red-500/10 text-red-200 text-xs font-semibold hover:bg-red-500/20 transition disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {isDeleting ? 'Deleting...' : 'Delete'}
+                      </button>
+                    )}
                   </div>
                   <p className="text-gray-300 text-sm leading-relaxed">
                     {displayDescription}

@@ -424,6 +424,26 @@ class ApiService {
       throw new Error('Failed to register vote.');
     }
   }
+
+  // Community: delete a post (owner only)
+  async deleteCommunityPost(postId: string): Promise<{ id: string }> {
+    try {
+      const response = await api.delete(`/community/${postId}`);
+      return response.data?.data;
+    } catch (error: any) {
+      console.error('Failed to delete community post:', error);
+      if (error.response?.status === 401) {
+        throw new Error('Please log in to delete your post.');
+      }
+      if (error.response?.status === 403) {
+        throw new Error('You can only delete your own post.');
+      }
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Failed to delete post.');
+    }
+  }
 }
 
 // Export singleton instance

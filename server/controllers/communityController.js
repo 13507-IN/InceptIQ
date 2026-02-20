@@ -307,6 +307,88 @@ const communityController = {
                 message: error.message
             });
         }
+    },
+
+    async deletePost(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user?.id;
+
+            if (!id) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Missing post ID',
+                    message: 'Post ID is required'
+                });
+            }
+
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'Unauthorized',
+                    message: 'Please log in to delete your post'
+                });
+            }
+
+            if (isDbConnected()) {
+                const existing = await CommunityPost.findOne({ id }).lean();
+                if (!existing) {
+                    return res.status(404).json({
+                        success: false,
+                        error: 'Post not found',
+                        message: `No community post found with ID: ${id}`
+                    });
+                }
+
+                if (existing.author?.id !== userId) {
+                    return res.status(403).json({
+                        success: false,
+                        error: 'Forbidden',
+                        message: 'You can only delete your own post'
+                    });
+                }
+
+                await CommunityPost.deleteOne({ id });
+
+                return res.status(200).json({
+                    success: true,
+                    message: 'Post deleted',
+                    data: { id }
+                });
+            }
+
+            const post = communityStorage.get(id);
+            if (!post) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Post not found',
+                    message: `No community post found with ID: ${id}`
+                });
+            }
+
+            if (post.author?.id !== userId) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Forbidden',
+                    message: 'You can only delete your own post'
+                });
+            }
+
+            communityStorage.remove(id);
+
+            return res.status(200).json({
+                success: true,
+                message: 'Post deleted',
+                data: { id }
+            });
+        } catch (error) {
+            console.error('Community delete post failed:', error);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to delete post',
+                message: error.message
+            });
+        }
     }
 };
 

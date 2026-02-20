@@ -15,4 +15,7 @@ router.post('/publish/:id', communityController.publishFromAnalysis);
 // POST /api/community/:id/vote - Vote on a community post
 router.post('/:id/vote', authMiddleware, communityController.voteOnPost);
 
+// DELETE /api/community/:id - Delete a community post (owner only)
+router.delete('/:id', authMiddleware, communityController.deletePost);
+
 module.exports = router;

@@ -119,6 +119,13 @@ class CommunityStorage {
         const post = this.posts.find(entry => entry.id === id) || null;
         return this.ensureVoteFields(post);
     }
+
+    remove(id) {
+        const index = this.posts.findIndex(entry => entry.id === id);
+        if (index === -1) return null;
+        const [removed] = this.posts.splice(index, 1);
+        return this.ensureVoteFields(removed);
+    }
 }
 
 // Create a singleton instance
