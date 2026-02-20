@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Calendar, FileText, TrendingUp, Download, Eye } from 'lucide-react';
 import { apiService } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 
 interface ResearchItem {
   id: string;
@@ -23,6 +24,7 @@ interface ResearchItem {
 const Profile: React.FC = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [researches, setResearches] = useState<ResearchItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -289,7 +291,11 @@ const Profile: React.FC = () => {
                     <button
                       onClick={() => {
                         // Download functionality can be added here
-                        alert('Download feature coming soon!');
+                        addToast({
+                          variant: 'info',
+                          title: 'Coming Soon',
+                          message: 'Download feature coming soon!'
+                        });
                       }}
                       className="flex items-center justify-center gap-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-semibold py-2 px-4 rounded-lg transition-all duration-200 border border-emerald-500/30 hover:border-emerald-500/50"
                     >

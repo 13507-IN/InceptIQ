@@ -8,10 +8,12 @@ import ScoreChart from "../components/ScoreChart";
 import ScoreBadge from "../components/ScoreBadge";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { AuthContext } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 
 const Results: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const { addToast } = useToast();
   const userId = user?.id;
   const { analysisId } = useParams<{ analysisId: string }>();
   const [analysisData, setAnalysisData] = useState<any>(null);
@@ -244,7 +246,11 @@ const Results: React.FC = () => {
       console.error(` Suggested Action: ${userErrorMessage}\n`);
       
       setPdfError(userErrorMessage);
-      alert(`PDF Download Error:\n${userErrorMessage}\n\nOpen Developer Tools (F12 -> Console) for detailed logs.`);
+      addToast({
+        variant: 'error',
+        title: 'PDF Download Error',
+        message: userErrorMessage
+      });
       
     } finally {
       setDownloadingPdf(false);
@@ -271,7 +277,11 @@ const Results: React.FC = () => {
         error?.message ||
         'Failed to generate pitch deck. Please try again.';
       setDeckError(message);
-      alert(`Pitch Deck Download Error:\n${message}\n\nOpen Developer Tools (F12 -> Console) for details.`);
+      addToast({
+        variant: 'error',
+        title: 'Pitch Deck Download Error',
+        message
+      });
     } finally {
       setDownloadingDeck(false);
     }
