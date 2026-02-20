@@ -268,7 +268,7 @@ const bulletLines = (items, fallback = 'Details coming soon', maxChars = LIMITS.
 
 const formatScore = (value) => (Number.isFinite(value) ? Math.round(value) : 'N/A');
 
-const addPanel = (slide, theme, { x, y, w, h, fill }) => {
+const addPanel = (slide, pptx, theme, { x, y, w, h, fill }) => {
   slide.addShape(pptx.ShapeType.rect, {
     x,
     y,
@@ -279,7 +279,7 @@ const addPanel = (slide, theme, { x, y, w, h, fill }) => {
   });
 };
 
-const addSlideHeader = (slide, theme, title, subtitle) => {
+const addSlideHeader = (slide, pptx, theme, title, subtitle) => {
   slide.background = { color: theme.background };
 
   slide.addShape(pptx.ShapeType.rect, {
@@ -324,7 +324,7 @@ const addSlideHeader = (slide, theme, title, subtitle) => {
   });
 };
 
-const addFooter = (slide, theme, index) => {
+const addFooter = (slide, pptx, theme, index) => {
   slide.addShape(pptx.ShapeType.rect, {
     x: LAYOUT.marginX,
     y: LAYOUT.footerLineY,
@@ -521,7 +521,7 @@ class PitchDeckService {
 
     // 2. Executive Summary
     const summarySlide = pptx.addSlide();
-    addSlideHeader(summarySlide, theme, 'Executive Summary', 'Problem, solution, and assessment at a glance');
+    addSlideHeader(summarySlide, pptx, theme, 'Executive Summary', 'Problem, solution, and assessment at a glance');
 
     const leftX = LAYOUT.marginX;
     const colW = 5.9;
@@ -529,7 +529,7 @@ class PitchDeckService {
     const panelH = 2.05;
     const panelGap = 0.35;
 
-    addPanel(summarySlide, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: panelH });
+    addPanel(summarySlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: panelH });
     summarySlide.addText('Problem', {
       x: leftX + 0.35,
       y: LAYOUT.contentTop + 0.2,
@@ -551,7 +551,7 @@ class PitchDeckService {
     });
 
     const panel2Y = LAYOUT.contentTop + panelH + panelGap;
-    addPanel(summarySlide, theme, { x: leftX, y: panel2Y, w: colW, h: panelH, fill: theme.panelAlt });
+    addPanel(summarySlide, pptx, theme, { x: leftX, y: panel2Y, w: colW, h: panelH, fill: theme.panelAlt });
     summarySlide.addText('Solution', {
       x: leftX + 0.35,
       y: panel2Y + 0.2,
@@ -596,7 +596,7 @@ class PitchDeckService {
       const cardH = 1.35;
       const cardX = rightX + col * (cardW + 0.4);
       const cardY = LAYOUT.contentTop + 0.5 + row * (cardH + 0.4);
-      addPanel(summarySlide, theme, { x: cardX, y: cardY, w: cardW, h: cardH, fill: theme.panelAlt });
+      addPanel(summarySlide, pptx, theme, { x: cardX, y: cardY, w: cardW, h: cardH, fill: theme.panelAlt });
       summarySlide.addText(card.label, {
         x: cardX + 0.2,
         y: cardY + 0.2,
@@ -618,13 +618,13 @@ class PitchDeckService {
       });
     });
 
-    addFooter(summarySlide, theme, slideNumber++);
+    addFooter(summarySlide, pptx, theme, slideNumber++);
 
     // 3. Problem & Solution
     const problemSlide = pptx.addSlide();
-    addSlideHeader(problemSlide, theme, 'Problem & Solution', 'What pain we solve and how');
+    addSlideHeader(problemSlide, pptx, theme, 'Problem & Solution', 'What pain we solve and how');
 
-    addPanel(problemSlide, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 4.5 });
+    addPanel(problemSlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 4.5 });
     problemSlide.addText('Problem', {
       x: leftX + 0.35,
       y: LAYOUT.contentTop + 0.2,
@@ -645,7 +645,7 @@ class PitchDeckService {
       color: theme.text
     });
 
-    addPanel(problemSlide, theme, { x: rightX, y: LAYOUT.contentTop, w: colW, h: 4.5, fill: theme.panelAlt });
+    addPanel(problemSlide, pptx, theme, { x: rightX, y: LAYOUT.contentTop, w: colW, h: 4.5, fill: theme.panelAlt });
     problemSlide.addText('Solution', {
       x: rightX + 0.35,
       y: LAYOUT.contentTop + 0.2,
@@ -666,13 +666,13 @@ class PitchDeckService {
       color: theme.text
     });
 
-    addFooter(problemSlide, theme, slideNumber++);
+    addFooter(problemSlide, pptx, theme, slideNumber++);
 
     // 4. Market Opportunity
     const marketSlide = pptx.addSlide();
-    addSlideHeader(marketSlide, theme, 'Market Opportunity', 'Why now and where demand concentrates');
+    addSlideHeader(marketSlide, pptx, theme, 'Market Opportunity', 'Why now and where demand concentrates');
 
-    addPanel(marketSlide, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 1.8 });
+    addPanel(marketSlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 1.8 });
     marketSlide.addText('Market Size', {
       x: leftX + 0.3,
       y: LAYOUT.contentTop + 0.2,
@@ -693,7 +693,7 @@ class PitchDeckService {
       color: theme.text
     });
 
-    addPanel(marketSlide, theme, { x: leftX, y: LAYOUT.contentTop + 2.1, w: colW, h: 1.8, fill: theme.panelAlt });
+    addPanel(marketSlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop + 2.1, w: colW, h: 1.8, fill: theme.panelAlt });
     marketSlide.addText('Target Audience', {
       x: leftX + 0.3,
       y: LAYOUT.contentTop + 2.3,
@@ -713,7 +713,7 @@ class PitchDeckService {
       color: theme.text
     });
 
-    addPanel(marketSlide, theme, { x: rightX, y: LAYOUT.contentTop, w: colW, h: 4.5, fill: theme.panelAlt });
+    addPanel(marketSlide, pptx, theme, { x: rightX, y: LAYOUT.contentTop, w: colW, h: 4.5, fill: theme.panelAlt });
     marketSlide.addText('Key Trends', {
       x: rightX + 0.3,
       y: LAYOUT.contentTop + 0.2,
@@ -734,13 +734,13 @@ class PitchDeckService {
       lineSpacingMultiple: 1.2
     });
 
-    addFooter(marketSlide, theme, slideNumber++);
+    addFooter(marketSlide, pptx, theme, slideNumber++);
 
     // 5. Product / Solution Overview
     const productSlide = pptx.addSlide();
-    addSlideHeader(productSlide, theme, 'Product & Solution Overview', 'What you are building and why it matters');
+    addSlideHeader(productSlide, pptx, theme, 'Product & Solution Overview', 'What you are building and why it matters');
 
-    addPanel(productSlide, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 4.5 });
+    addPanel(productSlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 4.5 });
     productSlide.addText('Solution Summary', {
       x: leftX + 0.3,
       y: LAYOUT.contentTop + 0.2,
@@ -792,13 +792,13 @@ class PitchDeckService {
       }
     });
 
-    addFooter(productSlide, theme, slideNumber++);
+    addFooter(productSlide, pptx, theme, slideNumber++);
 
     // 6. Business Model & GTM
     const modelSlide = pptx.addSlide();
-    addSlideHeader(modelSlide, theme, 'Business Model & GTM', 'How you monetize and reach customers');
+    addSlideHeader(modelSlide, pptx, theme, 'Business Model & GTM', 'How you monetize and reach customers');
 
-    addPanel(modelSlide, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 4.5 });
+    addPanel(modelSlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 4.5 });
     modelSlide.addText('Business Model', {
       x: leftX + 0.3,
       y: LAYOUT.contentTop + 0.2,
@@ -840,7 +840,7 @@ class PitchDeckService {
       `${safeText(rec.category, 'Recommendation')}: ${safeText(rec.action, 'Define next step')}`
     );
 
-    addPanel(modelSlide, theme, { x: rightX, y: LAYOUT.contentTop, w: colW, h: 4.5, fill: theme.panelAlt });
+    addPanel(modelSlide, pptx, theme, { x: rightX, y: LAYOUT.contentTop, w: colW, h: 4.5, fill: theme.panelAlt });
     modelSlide.addText('GTM Priorities', {
       x: rightX + 0.3,
       y: LAYOUT.contentTop + 0.2,
@@ -861,13 +861,13 @@ class PitchDeckService {
       lineSpacingMultiple: 1.2
     });
 
-    addFooter(modelSlide, theme, slideNumber++);
+    addFooter(modelSlide, pptx, theme, slideNumber++);
 
     // 7. Competitive Landscape
     const competitionSlide = pptx.addSlide();
-    addSlideHeader(competitionSlide, theme, 'Competitive Landscape', 'Who else is in the space');
+    addSlideHeader(competitionSlide, pptx, theme, 'Competitive Landscape', 'Who else is in the space');
 
-    addPanel(competitionSlide, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 3.1 });
+    addPanel(competitionSlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 3.1 });
     competitionSlide.addText('Direct Competitors', {
       x: leftX + 0.3,
       y: LAYOUT.contentTop + 0.2,
@@ -888,7 +888,7 @@ class PitchDeckService {
       lineSpacingMultiple: 1.2
     });
 
-    addPanel(competitionSlide, theme, { x: rightX, y: LAYOUT.contentTop, w: colW, h: 3.1, fill: theme.panelAlt });
+    addPanel(competitionSlide, pptx, theme, { x: rightX, y: LAYOUT.contentTop, w: colW, h: 3.1, fill: theme.panelAlt });
     competitionSlide.addText('Indirect Competitors', {
       x: rightX + 0.3,
       y: LAYOUT.contentTop + 0.2,
@@ -909,7 +909,7 @@ class PitchDeckService {
       lineSpacingMultiple: 1.2
     });
 
-    addPanel(competitionSlide, theme, { x: leftX, y: LAYOUT.contentTop + 3.45, w: 12.0, h: 1.2, fill: theme.panelAlt });
+    addPanel(competitionSlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop + 3.45, w: 12.0, h: 1.2, fill: theme.panelAlt });
     competitionSlide.addText('Competitive Advantage', {
       x: leftX + 0.3,
       y: LAYOUT.contentTop + 3.6,
@@ -929,11 +929,11 @@ class PitchDeckService {
       color: theme.text
     });
 
-    addFooter(competitionSlide, theme, slideNumber++);
+    addFooter(competitionSlide, pptx, theme, slideNumber++);
 
     // 8. Progress & Key Metrics
     const metricsSlide = pptx.addSlide();
-    addSlideHeader(metricsSlide, theme, 'Progress & Key Metrics', 'Signals that de-risk the opportunity');
+    addSlideHeader(metricsSlide, pptx, theme, 'Progress & Key Metrics', 'Signals that de-risk the opportunity');
 
     const metrics = normalized.keyMetrics || {};
     const metricItems = [
@@ -950,7 +950,7 @@ class PitchDeckService {
       const cardH = 1.4;
       const cardX = leftX + col * (cardW + 0.6);
       const cardY = LAYOUT.contentTop + row * (cardH + 0.4);
-      addPanel(metricsSlide, theme, { x: cardX, y: cardY, w: cardW, h: cardH });
+      addPanel(metricsSlide, pptx, theme, { x: cardX, y: cardY, w: cardW, h: cardH });
       metricsSlide.addText(metric.label, {
         x: cardX + 0.3,
         y: cardY + 0.2,
@@ -972,7 +972,7 @@ class PitchDeckService {
       });
     });
 
-    addPanel(metricsSlide, theme, { x: leftX, y: LAYOUT.contentTop + 3.2, w: 12.0, h: 1.5, fill: theme.panelAlt });
+    addPanel(metricsSlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop + 3.2, w: 12.0, h: 1.5, fill: theme.panelAlt });
     metricsSlide.addText('Progress Cues', {
       x: leftX + 0.3,
       y: LAYOUT.contentTop + 3.35,
@@ -1000,14 +1000,14 @@ class PitchDeckService {
       lineSpacingMultiple: 1.2
     });
 
-    addFooter(metricsSlide, theme, slideNumber++);
+    addFooter(metricsSlide, pptx, theme, slideNumber++);
 
     // 9. Risks & Mitigation
     const risksSlide = pptx.addSlide();
-    addSlideHeader(risksSlide, theme, 'Risks & Mitigation', 'Key risks to de-risk early');
+    addSlideHeader(risksSlide, pptx, theme, 'Risks & Mitigation', 'Key risks to de-risk early');
 
     const risks = take(normalized.risks, 4);
-    addPanel(risksSlide, theme, { x: leftX, y: LAYOUT.contentTop, w: 12.0, h: 4.5, fill: theme.panelAlt });
+    addPanel(risksSlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop, w: 12.0, h: 4.5, fill: theme.panelAlt });
     risksSlide.addText(bulletLines(risks.map((risk) => {
       const label = safeText(risk.category, 'Risk');
       const mitigation = safeText(risk.mitigation, safeText(risk.description, 'Mitigation plan'));
@@ -1023,13 +1023,13 @@ class PitchDeckService {
       lineSpacingMultiple: 1.2
     });
 
-    addFooter(risksSlide, theme, slideNumber++);
+    addFooter(risksSlide, pptx, theme, slideNumber++);
 
     // 10. Fundraising Ask
     const askSlide = pptx.addSlide();
-    addSlideHeader(askSlide, theme, 'Fundraising Ask', 'What you need to raise and deliver');
+    addSlideHeader(askSlide, pptx, theme, 'Fundraising Ask', 'What you need to raise and deliver');
 
-    addPanel(askSlide, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 4.5 });
+    addPanel(askSlide, pptx, theme, { x: leftX, y: LAYOUT.contentTop, w: colW, h: 4.5 });
     askSlide.addText('Funding Target', {
       x: leftX + 0.3,
       y: LAYOUT.contentTop + 0.2,
@@ -1054,7 +1054,7 @@ class PitchDeckService {
       `${safeText(opp.category, 'Milestone')}: ${safeText(opp.description, 'Define milestone')}`
     );
 
-    addPanel(askSlide, theme, { x: rightX, y: LAYOUT.contentTop, w: colW, h: 4.5, fill: theme.panelAlt });
+    addPanel(askSlide, pptx, theme, { x: rightX, y: LAYOUT.contentTop, w: colW, h: 4.5, fill: theme.panelAlt });
     askSlide.addText('Use of Funds & Milestones', {
       x: rightX + 0.3,
       y: LAYOUT.contentTop + 0.2,
@@ -1075,7 +1075,7 @@ class PitchDeckService {
       lineSpacingMultiple: 1.2
     });
 
-    addFooter(askSlide, theme, slideNumber++);
+    addFooter(askSlide, pptx, theme, slideNumber++);
 
     const filePath = this.getPitchDeckPath(analysisId, resolvedTemplateId);
     await pptx.writeFile({ fileName: filePath });
