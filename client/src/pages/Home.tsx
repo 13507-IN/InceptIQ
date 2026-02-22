@@ -21,6 +21,7 @@ const formatMetricValue = (value: number, decimals: number, suffix: string) => {
 const Home: React.FC = () => {
   const { token } = useContext<AuthContextValue>(AuthContext);
   const [requests, setRequests] = useState<any[]>([]);
+  const [introDone, setIntroDone] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const analysisCtaHref = token ? '/analysis' : '/login';
   const analysisCtaLabel = token ? 'Start Free Analysis' : 'Sign in to start';
@@ -42,48 +43,77 @@ const Home: React.FC = () => {
   }, [token]);
 
   useEffect(() => {
+    let isMounted = true;
     gsap.registerPlugin(ScrollTrigger);
     const ctx = gsap.context(() => {
+      const introTl = gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        onComplete: () => {
+          if (isMounted) setIntroDone(true);
+        }
+      });
+
+      gsap.set('.home-content', { opacity: 0 });
+      gsap.set('.intro-center', { opacity: 0, scale: 0.85 });
+      gsap.set('.intro-piece', { opacity: 0, scale: 0.85 });
+      gsap.set('.intro-top', { y: -160 });
+      gsap.set('.intro-bottom', { y: 160 });
+      gsap.set('.intro-left', { x: -160 });
+      gsap.set('.intro-right', { x: 160 });
+
+      introTl
+        .to('.intro-piece', { opacity: 1, duration: 0.6, stagger: 0.12 }, 0)
+        .to('.intro-top', { y: 0, duration: 1.1 }, 0)
+        .to('.intro-bottom', { y: 0, duration: 1.1 }, 0)
+        .to('.intro-left', { x: 0, duration: 1.1 }, 0)
+        .to('.intro-right', { x: 0, duration: 1.1 }, 0)
+        .to('.intro-center', { opacity: 1, scale: 1, duration: 0.9 }, 0.35)
+        .to('.home-content', { opacity: 1, duration: 0.9 }, 1.6)
+        .to('.intro-overlay', { opacity: 0, duration: 0.8 }, 1.9)
+        .set('.intro-overlay', { display: 'none' }, 2.8);
+
+      const heroDelay = 1.6;
       gsap.from('.hero-title', {
         y: 40,
         opacity: 0,
         duration: 1,
-        ease: 'power4.out'
+        ease: 'power4.out',
+        delay: heroDelay
       });
       gsap.from('.hero-subtitle', {
         y: 24,
         opacity: 0,
         duration: 0.9,
         ease: 'power3.out',
-        delay: 0.15
+        delay: heroDelay + 0.15
       });
       gsap.from('.hero-badge', {
         y: 18,
         opacity: 0,
         duration: 0.8,
         ease: 'power3.out',
-        delay: 0.05
+        delay: heroDelay + 0.05
       });
       gsap.from('.hero-cta', {
         y: 24,
         opacity: 0,
         duration: 0.9,
         ease: 'power3.out',
-        delay: 0.3
+        delay: heroDelay + 0.3
       });
       gsap.from('.hero-metrics', {
         y: 18,
         opacity: 0,
         duration: 0.8,
         ease: 'power3.out',
-        delay: 0.45
+        delay: heroDelay + 0.45
       });
       gsap.from('.hero-image', {
         y: 30,
         opacity: 0,
         duration: 1,
         ease: 'power3.out',
-        delay: 0.25
+        delay: heroDelay + 0.25
       });
 
       gsap.to('.float-slow', {
@@ -215,7 +245,10 @@ const Home: React.FC = () => {
       });
     }, rootRef);
 
-    return () => ctx.revert();
+    return () => {
+      isMounted = false;
+      ctx.revert();
+    };
   }, []);
 
   const steps = [
@@ -262,8 +295,45 @@ const Home: React.FC = () => {
 
   return (
     <div ref={rootRef} className="min-h-screen bg-[#0a122a] text-sand-200">
-      {/* Hero */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
+      {!introDone && (
+        <div className="intro-overlay fixed inset-0 z-[60] flex items-center justify-center bg-[#0a122a]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(104,143,63,0.25),transparent_60%)]" />
+          <div className="relative h-72 w-72">
+            <img
+              src="/logo-main.png"
+              alt="InceptIQ logo"
+              className="intro-piece intro-top absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 opacity-0"
+            />
+            <img
+              src="/logo-main.png"
+              alt="InceptIQ logo"
+              className="intro-piece intro-bottom absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 opacity-0"
+            />
+            <img
+              src="/logo-main.png"
+              alt="InceptIQ logo"
+              className="intro-piece intro-left absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 opacity-0"
+            />
+            <img
+              src="/logo-main.png"
+              alt="InceptIQ logo"
+              className="intro-piece intro-right absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 opacity-0"
+            />
+            <img
+              src="/logo-main.png"
+              alt="InceptIQ logo"
+              className="intro-center absolute left-1/2 top-1/2 h-54 w-54 -translate-x-1/2 -translate-y-1/2 opacity-0"
+            />
+          </div>
+          <div className="absolute bottom-16 text-xs uppercase tracking-[0.4em] text-sand-400">
+            Loading insights
+          </div>
+        </div>
+      )}
+
+      <div className="home-content">
+        {/* Hero */}
+        <section className="relative min-h-screen flex items-center overflow-hidden">
         <div
           className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(104,143,63,0.25),transparent_55%)] parallax"
           data-speed="0.15"
@@ -397,10 +467,10 @@ const Home: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* Strategy Steps */}
-      <section className="reveal py-24">
+        {/* Strategy Steps */}
+        <section className="reveal py-24">
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row lg:items-center gap-12">
             <div className="lg:w-1/2">
@@ -437,10 +507,10 @@ const Home: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* Feature Highlights */}
-      <section className="reveal py-24 bg-gradient-to-b from-[#0a122a] via-[#111b36] to-[#0a122a]">
+        {/* Feature Highlights */}
+        <section className="reveal py-24 bg-gradient-to-b from-[#0a122a] via-[#111b36] to-[#0a122a]">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-semibold text-sand-100">Deep intelligence, not generic advice</h2>
@@ -466,10 +536,10 @@ const Home: React.FC = () => {
             ))}
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* Social Proof */}
-      <section className="reveal py-24">
+        {/* Social Proof */}
+        <section className="reveal py-24">
         <div className="container mx-auto px-6 grid lg:grid-cols-[0.9fr_1.1fr] gap-12 items-center">
           <div>
             <h2 className="text-3xl sm:text-4xl font-semibold text-sand-100">Built for solo founders and fast teams</h2>
@@ -523,10 +593,10 @@ const Home: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* Pricing */}
-      <section className="reveal py-24 bg-[#0f1a33]">
+        {/* Pricing */}
+        <section className="reveal py-24 bg-[#0f1a33]">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl sm:text-4xl font-semibold text-sand-100">Simple, transparent pricing</h2>
           <p className="mt-4 text-sand-400">Start free today. Upgrade only when you need advanced insights.</p>
@@ -565,10 +635,10 @@ const Home: React.FC = () => {
             </Card>
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* Final CTA */}
-      <section className="reveal py-24">
+        {/* Final CTA */}
+        <section className="reveal py-24">
         <div className="container mx-auto px-6">
           <div className="relative overflow-hidden rounded-3xl border border-sand-100/10 bg-gradient-to-r from-sage-500/20 via-sand-200/10 to-sage-400/10 p-12">
             <div className="absolute inset-0 opacity-30">
@@ -595,11 +665,11 @@ const Home: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* Recent analyses */}
-      {requests && requests.length > 0 && (
-        <section className="reveal py-20">
+        {/* Recent analyses */}
+        {requests && requests.length > 0 && (
+          <section className="reveal py-20">
           <div className="container mx-auto px-6">
             <h3 className="text-2xl font-semibold mb-6 text-sand-100">Your recent analyses</h3>
             <div className="grid md:grid-cols-2 gap-4">
@@ -617,8 +687,9 @@ const Home: React.FC = () => {
               ))}
             </div>
           </div>
-        </section>
-      )}
+          </section>
+        )}
+      </div>
     </div>
   );
 };
