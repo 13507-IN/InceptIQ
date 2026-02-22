@@ -50,7 +50,7 @@ function App() {
         <AuthProvider>
           <ToastProvider>
             <InvestorGuard>
-              <div className="min-h-screen bg-gradient-to-b from-[#0b0f1a] via-[#0f172a] to-[#0b0f1a] flex flex-col">
+              <div className="min-h-screen bg-gradient-to-b from-[#0a122a] via-[#111b36] to-[#0a122a] flex flex-col text-sand-200">
                 <Header />
                 <main className="flex-1">
                   <Routes>

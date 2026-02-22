@@ -136,14 +136,14 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                     {toast.title && (
                       <div className={`text-sm font-semibold ${config.title}`}>{toast.title}</div>
                     )}
-                    <div className="text-xs text-gray-200/90 whitespace-pre-line">
+                    <div className="text-xs text-sand-200/90 whitespace-pre-line">
                       {toast.message}
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => removeToast(toast.id)}
-                    className="text-gray-300 hover:text-white transition"
+                    className="text-sand-300 hover:text-sand-100 transition"
                     aria-label="Dismiss toast"
                   >
                     <X className="h-4 w-4" />

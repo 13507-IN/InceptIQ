@@ -19,7 +19,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   };
 
   const containerClass = fullScreen
-    ? 'fixed inset-0 flex items-center justify-center bg-black/50 z-50'
+    ? 'fixed inset-0 flex items-center justify-center bg-ink-900/70 z-50'
     : 'flex items-center justify-center';
 
   return (
@@ -34,7 +34,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           <motion.p
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="text-sm text-gray-400 font-medium"
+            className="text-sm text-sand-400 font-medium"
           >
             {message}
           </motion.p>

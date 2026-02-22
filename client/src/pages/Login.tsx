@@ -89,7 +89,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f1a] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0a122a] flex items-center justify-center px-4 text-sand-200">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -98,10 +98,10 @@ const Login: React.FC = () => {
       >
         <div className="relative">
           {/* Background glow effect */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-2xl blur opacity-20 group-hover:opacity-100 transition duration-1000"></div>
+          <div className="absolute -inset-1 bg-gradient-to-r from-sage-500 to-sand-200 rounded-2xl blur opacity-20 group-hover:opacity-100 transition duration-1000"></div>
           
           {/* Form container */}
-          <div className="relative bg-gray-800/50 backdrop-blur-xl p-8 rounded-2xl border border-gray-700/50 shadow-2xl">
+          <div className="relative bg-ink-800/60 backdrop-blur-xl p-8 rounded-2xl border border-sand-200/10 shadow-2xl">
             {/* Header */}
             <motion.div 
               className="text-center mb-8"
@@ -110,15 +110,15 @@ const Login: React.FC = () => {
               transition={{ delay: 0.2 }}
             >
               {authRole === 'investor' && (
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/30 text-emerald-200 text-xs font-semibold mb-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sage-500/15 border border-sage-400/30 text-sage-200 text-xs font-semibold mb-3">
                   <Briefcase className="h-3.5 w-3.5" />
                   Investor Login
                 </div>
               )}
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-300 to-emerald-300 bg-clip-text text-transparent mb-2">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-sage-300 to-sand-200 bg-clip-text text-transparent mb-2">
                 {mode === 'login' ? heroTitle : 'Create Account'}
               </h2>
-              <p className="text-gray-400 text-sm">
+              <p className="text-sand-400 text-sm">
                 {mode === 'login' 
                   ? heroSubtitle
                   : authRole === 'investor'
@@ -147,16 +147,16 @@ const Login: React.FC = () => {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                  <label className="block text-sm font-medium text-sand-300 mb-2">Full Name</label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+                    <User className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
                     <input 
                       type="text"
                       placeholder="John Doe"
                       value={name} 
                       onChange={e => setName(e.target.value)}
                       disabled={isLoading}
-                      className="w-full bg-gray-900/50 border border-gray-700 text-white placeholder-gray-500 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
+                      className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
                     />
                   </div>
                 </motion.div>
@@ -168,16 +168,16 @@ const Login: React.FC = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.35 }}
               >
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                <label className="block text-sm font-medium text-sand-300 mb-2">Email Address</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+                  <Mail className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
                   <input 
                     type="email"
                     placeholder="you@example.com"
                     value={email} 
                     onChange={e => setEmail(e.target.value)}
                     disabled={isLoading}
-                    className="w-full bg-gray-900/50 border border-gray-700 text-white placeholder-gray-500 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
+                    className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
                     required
                   />
                 </div>
@@ -189,22 +189,22 @@ const Login: React.FC = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <label className="block text-sm font-medium text-sand-300 mb-2">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+                  <Lock className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
                   <input 
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     value={password} 
                     onChange={e => setPassword(e.target.value)}
                     disabled={isLoading}
-                    className="w-full bg-gray-900/50 border border-gray-700 text-white placeholder-gray-500 rounded-lg py-3 pl-10 pr-12 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
+                    className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-12 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-500 hover:text-gray-300 transition-colors"
+                    className="absolute right-3 top-3 text-sand-500 hover:text-sand-300 transition-colors"
                     disabled={isLoading}
                   >
                     {showPassword ? (
@@ -223,22 +223,22 @@ const Login: React.FC = () => {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.45 }}
                 >
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+                  <label className="block text-sm font-medium text-sand-300 mb-2">Confirm Password</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
                     <input 
                       type={showConfirmPassword ? 'text' : 'password'}
                       placeholder="Confirm your password"
                       value={confirmPassword} 
                       onChange={e => setConfirmPassword(e.target.value)}
                       disabled={isLoading}
-                      className="w-full bg-gray-900/50 border border-gray-700 text-white placeholder-gray-500 rounded-lg py-3 pl-10 pr-12 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
+                      className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-12 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-3 text-gray-500 hover:text-gray-300 transition-colors"
+                      className="absolute right-3 top-3 text-sand-500 hover:text-sand-300 transition-colors"
                       disabled={isLoading}
                     >
                       {showConfirmPassword ? (
@@ -257,7 +257,7 @@ const Login: React.FC = () => {
                 disabled={isLoading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-emerald-500 hover:from-blue-700 hover:to-emerald-600 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full mt-6 bg-gradient-to-r from-sage-500 to-sage-400 hover:from-sage-400 hover:to-sage-300 text-ink-900 font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>
@@ -280,29 +280,29 @@ const Login: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <p className="text-gray-400 text-sm">
+              <p className="text-sand-400 text-sm">
                 {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
                 <button 
                   type="button"
                   onClick={toggleMode}
                   disabled={isLoading}
-                  className="text-blue-400 hover:text-blue-300 font-semibold transition-colors disabled:opacity-50"
+                  className="text-sage-300 hover:text-sage-200 font-semibold transition-colors disabled:opacity-50"
                 >
                   {mode === 'login' ? 'Sign up' : 'Sign in'}
                 </button>
               </p>
-              <div className="mt-3 text-xs text-gray-500">
+              <div className="mt-3 text-xs text-sand-500">
                 {authRole === 'investor' ? (
                   <span>
                     Looking for the founder portal?{' '}
-                    <Link to="/login" className="text-emerald-300 hover:text-emerald-200 font-semibold">
+                    <Link to="/login" className="text-sage-200 hover:text-sage-100 font-semibold">
                       Sign in as user
                     </Link>
                   </span>
                 ) : (
                   <span>
                     Are you an investor?{' '}
-                    <Link to="/investor/login" className="text-emerald-300 hover:text-emerald-200 font-semibold">
+                    <Link to="/investor/login" className="text-sage-200 hover:text-sage-100 font-semibold">
                       Investor login
                     </Link>
                   </span>

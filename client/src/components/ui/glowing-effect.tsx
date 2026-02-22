@@ -20,7 +20,7 @@ export const GlowingEffect: React.FC<GlowingEffectProps> = ({
     <div
       className={cn(
         "absolute inset-0 -z-10 animate-pulse",
-        glow && "bg-gradient-to-r from-yellow-400/20 to-orange-500/20",
+        glow && "bg-gradient-to-r from-sage-400/20 to-sand-200/10",
         className
       )}
       style={{

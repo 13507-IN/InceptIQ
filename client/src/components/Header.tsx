@@ -17,22 +17,22 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0b0f1a]/90 shadow-lg border-b border-slate-800/70 backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-[#0a122a]/90 shadow-lg border-b border-sand-200/10 backdrop-blur-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
           <Link to={logoLink} className="flex items-center space-x-3 group">
             <motion.div
               whileHover={{ scale: 1.05, rotate: 2 }}
-              className="p-2 rounded-xl bg-white/10 border border-white/10 group-hover:border-blue-400/40 group-hover:shadow-lg group-hover:shadow-blue-500/30 transition-all"
+              className="p-2 rounded-xl bg-sand-100/10 border border-sand-100/10 group-hover:border-sage-400/40 group-hover:shadow-lg group-hover:shadow-sage-500/30 transition-all"
             >
               <img src="/logo-main.png" alt="InceptIQ" className="h-7 w-7 object-contain" />
             </motion.div>
             <div>
-              <h1 className="text-xl font-semibold tracking-tight text-white">
+              <h1 className="text-xl font-semibold tracking-tight text-sand-100">
                 InceptIQ
               </h1>
-              <p className="text-xs text-slate-400">AI-Powered Analysis</p>
+              <p className="text-xs text-sand-400">AI-Powered Analysis</p>
             </div>
           </Link>
 
@@ -44,8 +44,8 @@ const Header: React.FC = () => {
                   to="/investor"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive('/investor')
-                      ? 'text-emerald-200 bg-emerald-500/10 border border-emerald-400/30'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <Home className="h-4 w-4" />
@@ -55,8 +55,8 @@ const Header: React.FC = () => {
                   to="/investor/projects"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive('/investor/projects')
-                      ? 'text-emerald-200 bg-emerald-500/10 border border-emerald-400/30'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <Users className="h-4 w-4" />
@@ -69,8 +69,8 @@ const Header: React.FC = () => {
                   to="/"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive('/')
-                      ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <Home className="h-4 w-4" />
@@ -81,8 +81,8 @@ const Header: React.FC = () => {
                   to="/analysis"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive('/analysis')
-                      ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <FileText className="h-4 w-4" />
@@ -92,8 +92,8 @@ const Header: React.FC = () => {
                   to="/community"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive('/community')
-                      ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <Users className="h-4 w-4" />
@@ -103,8 +103,8 @@ const Header: React.FC = () => {
                   to="/pricing"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive('/pricing')
-                      ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <BadgeDollarSign className="h-4 w-4" />
@@ -114,8 +114,8 @@ const Header: React.FC = () => {
                   to="/investor-directory"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive('/investor-directory')
-                      ? 'text-blue-200 bg-blue-500/10 border border-blue-400/30'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <Briefcase className="h-4 w-4" />
@@ -131,7 +131,7 @@ const Header: React.FC = () => {
             <div className="md:hidden">
               <button 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-slate-300 hover:text-white p-2 transition-colors"
+              className="text-sand-300 hover:text-sand-100 p-2 transition-colors"
             >
               {mobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -149,7 +149,7 @@ const Header: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="md:hidden pb-4 border-t border-slate-800/70"
+            className="md:hidden pb-4 border-t border-sand-200/10"
           >
             {isInvestorView ? (
               <>
@@ -158,8 +158,8 @@ const Header: React.FC = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/investor')
-                      ? 'text-emerald-200 bg-emerald-500/10'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <div className="flex items-center space-x-2">
@@ -172,8 +172,8 @@ const Header: React.FC = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/investor/projects')
-                      ? 'text-emerald-200 bg-emerald-500/10'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <div className="flex items-center space-x-2">
@@ -189,8 +189,8 @@ const Header: React.FC = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/')
-                      ? 'text-blue-200 bg-blue-500/10'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <div className="flex items-center space-x-2">
@@ -204,8 +204,8 @@ const Header: React.FC = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/analysis')
-                      ? 'text-blue-200 bg-blue-500/10'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <div className="flex items-center space-x-2">
@@ -218,8 +218,8 @@ const Header: React.FC = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/community')
-                      ? 'text-blue-200 bg-blue-500/10'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <div className="flex items-center space-x-2">
@@ -232,8 +232,8 @@ const Header: React.FC = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/pricing')
-                      ? 'text-blue-200 bg-blue-500/10'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <div className="flex items-center space-x-2">
@@ -246,8 +246,8 @@ const Header: React.FC = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/investor-directory')
-                      ? 'text-blue-200 bg-blue-500/10'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? 'text-sand-100 bg-sage-500/20'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                   }`}
                 >
                   <div className="flex items-center space-x-2">
@@ -288,11 +288,11 @@ const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) =
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <div className="text-sm text-slate-300">{user.email}</div>
+        <div className="text-sm text-sand-300">{user.email}</div>
         {user.role !== 'investor' && !isInvestorView && (
           <Link
             to="/profile"
-            className="text-sm px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-200 rounded border border-blue-400/30 hover:border-blue-400/50 transition-all flex items-center gap-2"
+            className="text-sm px-3 py-2 bg-sage-500/15 hover:bg-sage-500/25 text-sand-100 rounded border border-sage-400/40 hover:border-sage-300/60 transition-all flex items-center gap-2"
           >
             <User className="h-4 w-4" />
             Profile
@@ -318,7 +318,7 @@ const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) =
       {isInvestorView ? (
         <Link
           to="/investor/login"
-          className="text-sm px-4 py-2 bg-emerald-500 text-black rounded hover:bg-emerald-400 transition-colors"
+          className="text-sm px-4 py-2 bg-sage-500 text-ink-900 rounded hover:bg-sage-400 transition-colors"
         >
           Investor Login
         </Link>
@@ -326,13 +326,13 @@ const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) =
         <>
           <Link 
             to="/login" 
-            className="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            className="text-sm px-4 py-2 bg-sage-500 text-ink-900 rounded hover:bg-sage-400 transition-colors"
           >
             Login
           </Link>
           <Link
             to="/investor/login"
-            className="text-sm px-4 py-2 bg-emerald-600/20 text-emerald-200 rounded border border-emerald-500/40 hover:bg-emerald-600/30 transition-colors"
+            className="text-sm px-4 py-2 bg-sage-500/15 text-sand-100 rounded border border-sage-400/40 hover:bg-sage-500/25 transition-colors"
           >
             Investor Login
           </Link>
@@ -361,13 +361,13 @@ const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, set
 
   if (user) {
     return (
-      <div className="mt-4 pt-4 border-t border-slate-800/70 space-y-2">
-        <div className="text-sm text-slate-400 px-3">{user.email}</div>
+      <div className="mt-4 pt-4 border-t border-sand-200/10 space-y-2">
+        <div className="text-sm text-sand-400 px-3">{user.email}</div>
         {user.role !== 'investor' && !isInvestorView && (
           <Link
             to="/profile"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 bg-blue-500/10 text-blue-200 rounded border border-blue-400/30 transition-colors flex items-center gap-2"
+            className="block px-3 py-2 bg-sage-500/15 text-sand-100 rounded border border-sage-400/40 transition-colors flex items-center gap-2"
           >
             <User className="h-4 w-4" />
             Profile
@@ -375,7 +375,7 @@ const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, set
         )}
         <button
           onClick={logout}
-          className="w-full text-left px-3 py-2 bg-rose-600/20 text-rose-200 rounded border border-rose-600/30 transition-colors"
+          className="w-full text-left px-3 py-2 bg-rose-600/20 text-rose-100 rounded border border-rose-600/30 transition-colors"
         >
           Logout
         </button>
@@ -384,12 +384,12 @@ const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, set
   }
 
   return (
-    <div className="mt-4 pt-4 border-t border-slate-800/70">
+    <div className="mt-4 pt-4 border-t border-sand-200/10">
       {isInvestorView ? (
         <Link
           to="/investor/login"
           onClick={() => setMobileMenuOpen(false)}
-          className="block px-3 py-2 bg-emerald-500 text-black rounded hover:bg-emerald-400 transition-colors"
+          className="block px-3 py-2 bg-sage-500 text-ink-900 rounded hover:bg-sage-400 transition-colors"
         >
           Investor Login
         </Link>
@@ -398,14 +398,14 @@ const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, set
           <Link
             to="/login"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            className="block px-3 py-2 bg-sage-500 text-ink-900 rounded hover:bg-sage-400 transition-colors"
           >
             Login
           </Link>
           <Link
             to="/investor/login"
             onClick={() => setMobileMenuOpen(false)}
-            className="block mt-2 px-3 py-2 bg-emerald-600/20 text-emerald-200 rounded border border-emerald-500/40 hover:bg-emerald-600/30 transition-colors"
+            className="block mt-2 px-3 py-2 bg-sage-500/15 text-sand-100 rounded border border-sage-400/40 hover:bg-sage-500/25 transition-colors"
           >
             Investor Login
           </Link>

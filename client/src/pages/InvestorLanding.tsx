@@ -44,7 +44,7 @@ const InvestorLanding: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0b0f1a] text-white">
+    <div className="min-h-screen bg-[#0a122a] text-white">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.22),transparent_55%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.4),rgba(15,23,42,0.9))]" />
@@ -109,7 +109,7 @@ const InvestorLanding: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-16 bg-gradient-to-b from-[#0b0f1a] via-[#0f172a] to-[#0b0f1a]">
+      <section className="py-16 bg-gradient-to-b from-[#0a122a] via-[#111b36] to-[#0a122a]">
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row gap-12 items-start">
             <div className="lg:w-1/2">

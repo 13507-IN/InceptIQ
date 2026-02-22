@@ -21,7 +21,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
   // If no token or user, show sign in message
   if (!token || !user) {
     return (
-      <div className="min-h-screen bg-[#0b0f1a] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#0a122a] flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-gray-700 rounded-lg p-8 text-center">
             <AlertTriangle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
@@ -59,7 +59,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
 
   if (!roleAllowed) {
     return (
-      <div className="min-h-screen bg-[#0b0f1a] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#0a122a] flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-gray-700 rounded-lg p-8 text-center">
             <AlertTriangle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
