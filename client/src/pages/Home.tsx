@@ -299,31 +299,41 @@ const Home: React.FC = () => {
         <div className="intro-overlay fixed inset-0 z-[60] flex items-center justify-center bg-[#0a122a]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(104,143,63,0.25),transparent_60%)]" />
           <div className="relative h-72 w-72">
-            <img
-              src="/logo-main.png"
-              alt="InceptIQ logo"
-              className="intro-piece intro-top absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 opacity-0"
-            />
-            <img
-              src="/logo-main.png"
-              alt="InceptIQ logo"
-              className="intro-piece intro-bottom absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 opacity-0"
-            />
-            <img
-              src="/logo-main.png"
-              alt="InceptIQ logo"
-              className="intro-piece intro-left absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 opacity-0"
-            />
-            <img
-              src="/logo-main.png"
-              alt="InceptIQ logo"
-              className="intro-piece intro-right absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 opacity-0"
-            />
-            <img
-              src="/logo-main.png"
-              alt="InceptIQ logo"
-              className="intro-center absolute left-1/2 top-1/2 h-54 w-54 -translate-x-1/2 -translate-y-1/2 opacity-0"
-            />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <img
+                src="/logo-main.png"
+                alt="InceptIQ logo"
+                className="intro-piece intro-top h-28 w-28 opacity-0"
+              />
+            </div>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <img
+                src="/logo-main.png"
+                alt="InceptIQ logo"
+                className="intro-piece intro-bottom h-28 w-28 opacity-0"
+              />
+            </div>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <img
+                src="/logo-main.png"
+                alt="InceptIQ logo"
+                className="intro-piece intro-left h-28 w-28 opacity-0"
+              />
+            </div>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <img
+                src="/logo-main.png"
+                alt="InceptIQ logo"
+                className="intro-piece intro-right h-28 w-28 opacity-0"
+              />
+            </div>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <img
+                src="/logo-main.png"
+                alt="InceptIQ logo"
+                className="intro-center h-52 w-52 opacity-0"
+              />
+            </div>
           </div>
           <div className="absolute bottom-16 text-xs uppercase tracking-[0.4em] text-sand-400">
             Loading insights
