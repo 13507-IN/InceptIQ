@@ -331,7 +331,7 @@ const Home: React.FC = () => {
               <img
                 src="/logo-main.png"
                 alt="InceptIQ logo"
-                className="intro-center h-52 w-52 opacity-0"
+                className="intro-center h-36 w-36 opacity-0"
               />
             </div>
           </div>
