@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { StartupIdea, AnalysisResponse, CommunityPost, CommunityIdea, Investor, InvestorMatch, InvestorMatchRequest } from '../types';
+import { StartupIdea, AnalysisResponse, CommunityPost, CommunityIdea, Investor, InvestorMatch, InvestorMatchRequest, FounderMatch, FounderMatchRequest } from '../types';
 
 // Base API configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -353,6 +353,20 @@ class ApiService {
     } catch (error: any) {
       console.error('Failed to match investors:', error);
       throw new Error(error.response?.data?.message || 'Failed to match investors.');
+    }
+  }
+
+  // Founder matching: find similar founders from community ideas
+  async matchFounderIdeas(payload: FounderMatchRequest): Promise<FounderMatch[]> {
+    try {
+      const response = await api.post('/community/matches', payload);
+      return response.data?.data || [];
+    } catch (error: any) {
+      console.error('Failed to match founders:', error);
+      if (error.response?.status === 401) {
+        throw new Error('Please log in to see founder matches.');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to match founders.');
     }
   }
 

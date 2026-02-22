@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const { analysisStorage, communityStorage } = require('../utils/storage');
 const CommunityPost = require('../models/communityPost');
 const { mongoose } = require('../db');
+const { findFounderMatches } = require('../services/founderMatchService');
 
 const normalizeIdeaType = (value) => {
     if (!value) return '';
@@ -88,6 +89,56 @@ const communityController = {
             res.status(500).json({
                 success: false,
                 error: 'Failed to load community posts',
+                message: error.message
+            });
+        }
+    },
+
+    async matchFounders(req, res) {
+        try {
+            if (!req.user?.id) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'Unauthorized',
+                    message: 'Please log in to find founder matches.'
+                });
+            }
+
+            const { idea = {}, minScore = 35, maxResults = 5 } = req.body || {};
+            const title = String(idea.ideaTitle || '').trim();
+            const description = String(idea.ideaDescription || '').trim();
+
+            if (!title || !description) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Missing idea data',
+                    message: 'Idea title and description are required to match founders.'
+                });
+            }
+
+            const posts = isDbConnected()
+                ? await CommunityPost.find().sort({ createdAt: -1 }).lean()
+                : communityStorage.list();
+
+            const matches = findFounderMatches({
+                idea,
+                posts,
+                userId: req.user.id,
+                userEmail: req.user.email,
+                minScore,
+                maxResults
+            });
+
+            return res.status(200).json({
+                success: true,
+                data: matches,
+                count: matches.length
+            });
+        } catch (error) {
+            console.error('Community match founders failed:', error);
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to match founders',
                 message: error.message
             });
         }

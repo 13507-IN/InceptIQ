@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import { Download, AlertCircle, ArrowLeft, Send, Users, UserPlus, ChevronDown, ChevronUp, CheckCircle2, AlertTriangle, Sparkles, X } from "lucide-react";
+import { Download, AlertCircle, ArrowLeft, Send, Users, UserPlus, ChevronDown, ChevronUp, CheckCircle2, AlertTriangle, Sparkles, X, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../services/api";
@@ -9,6 +9,7 @@ import ScoreBadge from "../components/ScoreBadge";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { AuthContext } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import { FounderMatch } from "../types";
 
 const Results: React.FC = () => {
   const navigate = useNavigate();
@@ -38,6 +39,9 @@ const Results: React.FC = () => {
     'overview' | 'uniqueness' | 'market' | 'competition' | 'metrics' | 'risks' | 'opportunities' | 'recommendations'
   >('overview');
   const [collabOpen, setCollabOpen] = useState(true);
+  const [founderMatches, setFounderMatches] = useState<FounderMatch[]>([]);
+  const [matchesLoading, setMatchesLoading] = useState(false);
+  const [matchesError, setMatchesError] = useState<string | null>(null);
 
   useEffect(() => {
     if (analysisId) fetchAnalysisData(analysisId);
@@ -46,6 +50,68 @@ const Results: React.FC = () => {
   useEffect(() => {
     if (analysisId && userId) loadCollaboration(analysisId);
   }, [analysisId, userId]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadFounderMatches = async () => {
+      if (!analysisInput?.ideaTitle || !analysisInput?.ideaDescription) {
+        setMatchesLoading(false);
+        setMatchesError(null);
+        setFounderMatches([]);
+        return;
+      }
+      if (!user?.id || user?.role === 'investor') {
+        setMatchesLoading(false);
+        setMatchesError(null);
+        setFounderMatches([]);
+        return;
+      }
+
+      try {
+        setMatchesLoading(true);
+        setMatchesError(null);
+        const matches = await apiService.matchFounderIdeas({
+          idea: {
+            ideaTitle: analysisInput.ideaTitle,
+            ideaDescription: analysisInput.ideaDescription,
+            targetMarket: analysisInput.targetMarket,
+            businessModel: analysisInput.businessModel,
+            industry: analysisInput.industry,
+            budget: analysisInput.budget,
+            timeline: analysisInput.timeline
+          },
+          minScore: 35,
+          maxResults: 6
+        });
+        if (active) {
+          setFounderMatches(matches);
+        }
+      } catch (err: any) {
+        if (active) {
+          setMatchesError(err.message || 'Failed to load founder matches.');
+        }
+      } finally {
+        if (active) setMatchesLoading(false);
+      }
+    };
+
+    loadFounderMatches();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    analysisInput?.ideaTitle,
+    analysisInput?.ideaDescription,
+    analysisInput?.targetMarket,
+    analysisInput?.businessModel,
+    analysisInput?.industry,
+    analysisInput?.budget,
+    analysisInput?.timeline,
+    user?.id,
+    user?.role
+  ]);
 
   const fetchAnalysisData = async (id: string) => {
     try {
@@ -98,6 +164,50 @@ const Results: React.FC = () => {
 
   const getInitial = (value?: string | null) =>
     (value || '?').trim().charAt(0).toUpperCase();
+
+  const getMatchBadgeClass = (score: number) => {
+    if (score >= 75) {
+      return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40';
+    }
+    if (score >= 55) {
+      return 'bg-blue-500/20 text-blue-200 border-blue-500/40';
+    }
+    return 'bg-amber-500/20 text-amber-200 border-amber-500/40';
+  };
+
+  const buildFounderMailto = (match: FounderMatch) => {
+    const email = match.author?.email?.trim();
+    if (!email) return '';
+    const name = match.author?.name || email;
+    const subject = `Founder connection: ${analysisInput?.ideaTitle || 'Similar idea'}`;
+    const bodyLines = [
+      `Hi ${name},`,
+      '',
+      `I saw your community post about "${match.idea?.ideaTitle || 'your project'}".`,
+      `I'm working on "${analysisInput?.ideaTitle || 'a similar project'}" and it looks aligned.`,
+      'Would you be open to a quick chat to compare notes?',
+      '',
+      'Thanks!'
+    ];
+    return `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+  };
+
+  const handleConnectFounder = (match: FounderMatch) => {
+    const email = match.author?.email?.trim();
+    if (!email) {
+      addToast({
+        variant: 'info',
+        title: 'Email unavailable',
+        message: 'This founder did not share an email address.'
+      });
+      return;
+    }
+    const name = match.author?.name || email;
+    const confirmed = window.confirm(`Connect with ${name}? We'll open your email client.`);
+    if (!confirmed) return;
+    const mailto = buildFounderMailto(match);
+    if (mailto) window.location.href = mailto;
+  };
 
   const handleInvite = async () => {
     if (!analysisId) return;
@@ -632,6 +742,124 @@ const Results: React.FC = () => {
           <p className="mt-4 text-sm text-gray-400">
             Collaboration tools are hidden. Click "Show" to expand.
           </p>
+        )}
+      </motion.section>
+
+      {/* Founder Matches */}
+      <motion.section
+        variants={itemVariants}
+        className="mt-8 bg-gradient-to-br from-emerald-900/20 via-blue-900/10 to-slate-900/40 border border-emerald-500/20 rounded-2xl p-6"
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-emerald-500/20 rounded-lg">
+            <Users className="h-5 w-5 text-emerald-300" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-white">Founder Matches</h2>
+            <p className="text-sm text-gray-400">Founders building similar ideas in the community.</p>
+          </div>
+        </div>
+
+        {!user && (
+          <div className="text-sm text-gray-400 bg-gray-900/60 border border-gray-700 rounded-lg p-4">
+            Sign in to see matched founders and connect by email.
+          </div>
+        )}
+
+        {user && user.role === 'investor' && (
+          <div className="text-sm text-gray-400 bg-gray-900/60 border border-gray-700 rounded-lg p-4">
+            Founder matches are available on founder accounts.
+          </div>
+        )}
+
+        {user && user.role !== 'investor' && matchesLoading && (
+          <div className="text-sm text-gray-400">Finding similar founders...</div>
+        )}
+
+        {user && user.role !== 'investor' && matchesError && (
+          <div className="text-sm text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+            {matchesError}
+          </div>
+        )}
+
+        {user && user.role !== 'investor' && !matchesLoading && !matchesError && founderMatches.length > 0 && (
+          <>
+            <div className="mb-4 flex items-center gap-2 text-sm text-emerald-200 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-4 py-3">
+              <Sparkles className="h-4 w-4" />
+              We found {founderMatches.length} founders with similar ideas. Want to connect?
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              {founderMatches.map((match) => {
+                const authorLabel = match.author?.name || match.author?.email || 'Founder';
+                const contactAvailable = !!match.author?.email;
+                return (
+                  <div key={match.id} className="bg-gray-900/60 border border-gray-700 rounded-xl p-4">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">{match.idea?.ideaTitle || 'Untitled idea'}</h3>
+                        <p className="text-xs text-gray-400">By {authorLabel}</p>
+                      </div>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full border ${getMatchBadgeClass(match.matchScore)}`}>
+                        {match.matchScore}% match
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-300 line-clamp-3">
+                      {match.idea?.ideaDescription || 'No description provided.'}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {match.idea?.industry && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-200 border border-emerald-500/30">
+                          Industry: {match.idea.industry}
+                        </span>
+                      )}
+                      {match.idea?.targetMarket && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-200 border border-blue-500/30">
+                          Target: {match.idea.targetMarket}
+                        </span>
+                      )}
+                      {match.idea?.businessModel && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-sky-500/10 text-sky-200 border border-sky-500/30">
+                          Model: {match.idea.businessModel}
+                        </span>
+                      )}
+                    </div>
+                    {match.matchReasons?.length ? (
+                      <div className="mt-3 text-xs text-gray-400">
+                        {match.matchReasons.slice(0, 2).join(' • ')}
+                      </div>
+                    ) : null}
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <span className="text-xs text-gray-500">
+                        Posted {new Date(match.createdAt).toLocaleDateString()}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleConnectFounder(match)}
+                        className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition ${
+                          contactAvailable
+                            ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-100 hover:bg-emerald-500/20'
+                            : 'border-gray-700 bg-gray-800/60 text-gray-500 cursor-not-allowed'
+                        }`}
+                        disabled={!contactAvailable}
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                        {contactAvailable ? 'Connect by email' : 'Email unavailable'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-4 text-xs text-gray-500">
+              Matches are based on community-published ideas. Publish your idea to appear in founder matches.
+            </p>
+          </>
+        )}
+
+        {user && user.role !== 'investor' && !matchesLoading && !matchesError && founderMatches.length === 0 && (
+          <div className="text-sm text-gray-400 bg-gray-900/60 border border-gray-700 rounded-lg p-4">
+            No similar founders yet. Check back later or publish to the community to improve visibility.
+          </div>
         )}
       </motion.section>
 

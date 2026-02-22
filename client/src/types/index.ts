@@ -168,6 +168,18 @@ export interface CommunityPost {
   likes?: number;
 }
 
+// Founder matching types
+export interface FounderMatch extends CommunityPost {
+  matchScore: number;
+  matchReasons?: string[];
+}
+
+export interface FounderMatchRequest {
+  idea: StartupIdea;
+  minScore?: number;
+  maxResults?: number;
+}
+
 // Investor Directory types
 export interface Investor {
   id: string;
