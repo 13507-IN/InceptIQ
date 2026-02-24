@@ -7,7 +7,9 @@ import {
   MapPin,
   Coins,
   Layers,
+  Building2,
   Briefcase,
+  ChevronDown,
   Sparkles,
   ArrowRight,
   Filter
@@ -90,6 +92,11 @@ const InvestorDirectory: React.FC = () => {
     '--glow': '#22d3ee',
     '--ember': '#fbbf24'
   } as React.CSSProperties;
+  const selectShellClassName =
+    'group relative rounded-xl border border-gray-700/70 bg-gradient-to-br from-gray-900/95 via-gray-900/85 to-gray-950/95 shadow-[0_10px_30px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-blue-400/60 hover:shadow-[0_14px_36px_rgba(30,64,175,0.18)] focus-within:border-blue-400/70 focus-within:shadow-[0_0_0_3px_rgba(59,130,246,0.18)]';
+  const selectClassName =
+    'analysis-select peer w-full appearance-none rounded-xl border-0 bg-transparent py-3.5 pl-11 pr-12 text-sm font-medium [color-scheme:dark] [&>option]:bg-[#0b1220] [&>option]:text-gray-100 [&>option]:py-2 [&>option:checked]:bg-blue-600 [&>option:checked]:text-white focus:outline-none disabled:cursor-not-allowed disabled:opacity-60';
+  const getSelectTextClassName = (value?: string) => (value ? 'text-gray-100' : 'text-gray-400');
   const [investors, setInvestors] = useState<Investor[]>([]);
   const [matchResults, setMatchResults] = useState<InvestorMatch[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -240,86 +247,121 @@ const InvestorDirectory: React.FC = () => {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs uppercase tracking-wide text-gray-400 mb-2">Industry</label>
-                    <select
-                      name="industry"
-                      value={criteria.industry}
-                      onChange={handleCriteriaChange}
-                      className="w-full bg-gray-900/60 border border-white/10 rounded-lg px-4 py-3 text-sm"
-                    >
-                      <option value="">Any</option>
-                      {industryOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                    <div className={selectShellClassName}>
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
+                      <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
+                      <select
+                        name="industry"
+                        value={criteria.industry}
+                        onChange={handleCriteriaChange}
+                        className={`${selectClassName} ${getSelectTextClassName(criteria.industry)}`}
+                      >
+                        <option value="">Any</option>
+                        {industryOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <ChevronDown className="h-4 w-4 text-gray-400 transition-all duration-200 group-hover:text-gray-200 group-focus-within:text-blue-300 group-focus-within:-rotate-180" />
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs uppercase tracking-wide text-gray-400 mb-2">Stage</label>
-                    <select
-                      name="stage"
-                      value={criteria.stage}
-                      onChange={handleCriteriaChange}
-                      className="w-full bg-gray-900/60 border border-white/10 rounded-lg px-4 py-3 text-sm"
-                    >
-                      <option value="">Any</option>
-                      {stageOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                    <div className={selectShellClassName}>
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
+                      <Layers className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
+                      <select
+                        name="stage"
+                        value={criteria.stage}
+                        onChange={handleCriteriaChange}
+                        className={`${selectClassName} ${getSelectTextClassName(criteria.stage)}`}
+                      >
+                        <option value="">Any</option>
+                        {stageOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <ChevronDown className="h-4 w-4 text-gray-400 transition-all duration-200 group-hover:text-gray-200 group-focus-within:text-blue-300 group-focus-within:-rotate-180" />
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs uppercase tracking-wide text-gray-400 mb-2">Region</label>
-                    <select
-                      name="geography"
-                      value={criteria.geography}
-                      onChange={handleCriteriaChange}
-                      className="w-full bg-gray-900/60 border border-white/10 rounded-lg px-4 py-3 text-sm"
-                    >
-                      <option value="">Any</option>
-                      {geographyOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                    <div className={selectShellClassName}>
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
+                      <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
+                      <select
+                        name="geography"
+                        value={criteria.geography}
+                        onChange={handleCriteriaChange}
+                        className={`${selectClassName} ${getSelectTextClassName(criteria.geography)}`}
+                      >
+                        <option value="">Any</option>
+                        {geographyOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <ChevronDown className="h-4 w-4 text-gray-400 transition-all duration-200 group-hover:text-gray-200 group-focus-within:text-blue-300 group-focus-within:-rotate-180" />
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs uppercase tracking-wide text-gray-400 mb-2">Business model</label>
-                    <select
-                      name="model"
-                      value={criteria.model}
-                      onChange={handleCriteriaChange}
-                      className="w-full bg-gray-900/60 border border-white/10 rounded-lg px-4 py-3 text-sm"
-                    >
-                      <option value="">Any</option>
-                      {modelOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                    <div className={selectShellClassName}>
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
+                      <Briefcase className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
+                      <select
+                        name="model"
+                        value={criteria.model}
+                        onChange={handleCriteriaChange}
+                        className={`${selectClassName} ${getSelectTextClassName(criteria.model)}`}
+                      >
+                        <option value="">Any</option>
+                        {modelOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <ChevronDown className="h-4 w-4 text-gray-400 transition-all duration-200 group-hover:text-gray-200 group-focus-within:text-blue-300 group-focus-within:-rotate-180" />
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs uppercase tracking-wide text-gray-400 mb-2">Funding ask</label>
-                    <select
-                      name="ticketSize"
-                      value={criteria.ticketSize}
-                      onChange={handleCriteriaChange}
-                      className="w-full bg-gray-900/60 border border-white/10 rounded-lg px-4 py-3 text-sm"
-                    >
-                      {ticketOptions.map((option) => (
-                        <option key={option.label} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className={selectShellClassName}>
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
+                      <Coins className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
+                      <select
+                        name="ticketSize"
+                        value={criteria.ticketSize}
+                        onChange={handleCriteriaChange}
+                        className={`${selectClassName} ${getSelectTextClassName(criteria.ticketSize)}`}
+                      >
+                        {ticketOptions.map((option) => (
+                          <option key={option.label} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <ChevronDown className="h-4 w-4 text-gray-400 transition-all duration-200 group-hover:text-gray-200 group-focus-within:text-blue-300 group-focus-within:-rotate-180" />
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs uppercase tracking-wide text-gray-400 mb-2">Theme keywords</label>

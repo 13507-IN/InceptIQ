@@ -1,6 +1,17 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lightbulb, Loader2, Send, FileUp, CheckCircle } from 'lucide-react';
+import {
+  Lightbulb,
+  Loader2,
+  Send,
+  FileUp,
+  CheckCircle,
+  ChevronDown,
+  Briefcase,
+  Building2,
+  Wallet,
+  Clock3
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import * as pdfjsLib from 'pdfjs-dist';
 import { StartupIdea, FormErrors } from '../types';
@@ -101,6 +112,11 @@ const Analysis: React.FC = () => {
     { title: 'Enrich', description: 'Add market, model, and timeline.' },
     { title: 'Submit', description: 'Run AI analysis and get results.' }
   ];
+  const selectShellClassName =
+    'group relative rounded-xl border border-gray-700/70 bg-gradient-to-br from-gray-900/95 via-gray-900/85 to-gray-950/95 shadow-[0_10px_30px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-blue-400/60 hover:shadow-[0_14px_36px_rgba(30,64,175,0.18)] focus-within:border-blue-400/70 focus-within:shadow-[0_0_0_3px_rgba(59,130,246,0.18)]';
+  const selectClassName =
+    'analysis-select peer w-full appearance-none rounded-xl border-0 bg-transparent py-3.5 pl-11 pr-12 text-sm font-medium [color-scheme:dark] [&>option]:bg-[#0b1220] [&>option]:text-gray-100 [&>option]:py-2 [&>option:checked]:bg-blue-600 [&>option:checked]:text-white focus:outline-none disabled:cursor-not-allowed disabled:opacity-60';
+  const getSelectTextClassName = (value?: string) => (value ? 'text-gray-100' : 'text-gray-400');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -561,58 +577,98 @@ const Analysis: React.FC = () => {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
-              <label htmlFor="businessModel" className="block text-sm font-medium text-gray-300 mb-2">Business Model</label>
-              <select id="businessModel" name="businessModel" value={formData.businessModel} onChange={handleInputChange} disabled={isSubmitting} className="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
-                <option value="">Select a business model</option>
-                <option value="subscription">Subscription/SaaS</option>
-                <option value="marketplace">Marketplace</option>
-                <option value="ecommerce">E-commerce</option>
-                <option value="freemium">Freemium</option>
-                <option value="advertising">Advertising</option>
-                <option value="transaction">Transaction-based</option>
-                <option value="licensing">Licensing</option>
-                <option value="other">Other</option>
-              </select>
+              <label htmlFor="businessModel" className="mb-2 flex items-center justify-between text-sm">
+                <span className="font-medium text-gray-300">Business Model</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">Optional</span>
+              </label>
+              <div className={selectShellClassName}>
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
+                <Briefcase className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
+                <select id="businessModel" name="businessModel" value={formData.businessModel} onChange={handleInputChange} disabled={isSubmitting} className={`${selectClassName} ${getSelectTextClassName(formData.businessModel)}`}>
+                  <option value="">Select a business model</option>
+                  <option value="subscription">Subscription/SaaS</option>
+                  <option value="marketplace">Marketplace</option>
+                  <option value="ecommerce">E-commerce</option>
+                  <option value="freemium">Freemium</option>
+                  <option value="advertising">Advertising</option>
+                  <option value="transaction">Transaction-based</option>
+                  <option value="licensing">Licensing</option>
+                  <option value="other">Other</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronDown className="h-4 w-4 text-gray-400 transition-all duration-200 group-hover:text-gray-200 group-focus-within:text-blue-300 group-focus-within:-rotate-180" />
+                </div>
+              </div>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-              <label htmlFor="industry" className="block text-sm font-medium text-gray-300 mb-2">Industry</label>
-              <select id="industry" name="industry" value={formData.industry} onChange={handleInputChange} disabled={isSubmitting} className="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
-                <option value="">Select an industry</option>
-                <option value="technology">Technology</option>
-                <option value="healthcare">Healthcare</option>
-                <option value="finance">Finance</option>
-                <option value="education">Education</option>
-                <option value="retail">Retail</option>
-                <option value="manufacturing">Manufacturing</option>
-                <option value="services">Services</option>
-                <option value="entertainment">Entertainment</option>
-                <option value="other">Other</option>
-              </select>
+              <label htmlFor="industry" className="mb-2 flex items-center justify-between text-sm">
+                <span className="font-medium text-gray-300">Industry</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">Optional</span>
+              </label>
+              <div className={selectShellClassName}>
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
+                <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
+                <select id="industry" name="industry" value={formData.industry} onChange={handleInputChange} disabled={isSubmitting} className={`${selectClassName} ${getSelectTextClassName(formData.industry)}`}>
+                  <option value="">Select an industry</option>
+                  <option value="technology">Technology</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="finance">Finance</option>
+                  <option value="education">Education</option>
+                  <option value="retail">Retail</option>
+                  <option value="manufacturing">Manufacturing</option>
+                  <option value="services">Services</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="other">Other</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronDown className="h-4 w-4 text-gray-400 transition-all duration-200 group-hover:text-gray-200 group-focus-within:text-blue-300 group-focus-within:-rotate-180" />
+                </div>
+              </div>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}>
-              <label htmlFor="budget" className="block text-sm font-medium text-gray-300 mb-2">Initial Budget Range</label>
-              <select id="budget" name="budget" value={formData.budget} onChange={handleInputChange} disabled={isSubmitting} className="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
-                <option value="">Select budget range</option>
-                <option value="under-10k">Under INR 10,000</option>
-                <option value="10k-50k">INR 10,000 - INR 50,000</option>
-                <option value="50k-100k">INR 50,000 - INR 100,000</option>
-                <option value="100k-500k">INR 100,000 - INR 500,000</option>
-                <option value="500k-1m">INR 500,000 - INR 1,000,000</option>
-                <option value="over-1m">Over INR 1,000,000</option>
-              </select>
+              <label htmlFor="budget" className="mb-2 flex items-center justify-between text-sm">
+                <span className="font-medium text-gray-300">Initial Budget Range</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">Optional</span>
+              </label>
+              <div className={selectShellClassName}>
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
+                <Wallet className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
+                <select id="budget" name="budget" value={formData.budget} onChange={handleInputChange} disabled={isSubmitting} className={`${selectClassName} ${getSelectTextClassName(formData.budget)}`}>
+                  <option value="">Select budget range</option>
+                  <option value="under-10k">Under INR 10,000</option>
+                  <option value="10k-50k">INR 10,000 - INR 50,000</option>
+                  <option value="50k-100k">INR 50,000 - INR 100,000</option>
+                  <option value="100k-500k">INR 100,000 - INR 500,000</option>
+                  <option value="500k-1m">INR 500,000 - INR 1,000,000</option>
+                  <option value="over-1m">Over INR 1,000,000</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronDown className="h-4 w-4 text-gray-400 transition-all duration-200 group-hover:text-gray-200 group-focus-within:text-blue-300 group-focus-within:-rotate-180" />
+                </div>
+              </div>
             </motion.div>
 
             <motion.div className="md:col-span-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
-              <label htmlFor="timeline" className="block text-sm font-medium text-gray-300 mb-2">Expected Timeline to Market</label>
-              <select id="timeline" name="timeline" value={formData.timeline} onChange={handleInputChange} disabled={isSubmitting} className="w-full bg-gray-900/50 border border-gray-700 text-white rounded-lg py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
-                <option value="">Select timeline</option>
-                <option value="3-months">Within 3 months</option>
-                <option value="6-months">3-6 months</option>
-                <option value="1-year">6-12 months</option>
-                <option value="over-1-year">Over 1 year</option>
-              </select>
+              <label htmlFor="timeline" className="mb-2 flex items-center justify-between text-sm">
+                <span className="font-medium text-gray-300">Expected Timeline to Market</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">Optional</span>
+              </label>
+              <div className={selectShellClassName}>
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
+                <Clock3 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
+                <select id="timeline" name="timeline" value={formData.timeline} onChange={handleInputChange} disabled={isSubmitting} className={`${selectClassName} ${getSelectTextClassName(formData.timeline)}`}>
+                  <option value="">Select timeline</option>
+                  <option value="3-months">Within 3 months</option>
+                  <option value="6-months">3-6 months</option>
+                  <option value="1-year">6-12 months</option>
+                  <option value="over-1-year">Over 1 year</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronDown className="h-4 w-4 text-gray-400 transition-all duration-200 group-hover:text-gray-200 group-focus-within:text-blue-300 group-focus-within:-rotate-180" />
+                </div>
+              </div>
             </motion.div>
           </div>
         </motion.div>
