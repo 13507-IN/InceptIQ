@@ -54,6 +54,8 @@ const Home: React.FC = () => {
       });
 
       gsap.set('.home-content', { opacity: 0 });
+      gsap.set('.intro-video-stage', { opacity: 0, scale: 1.02 });
+      gsap.set('.intro-logo-stage', { opacity: 0 });
       gsap.set('.intro-center', { opacity: 0, scale: 0.85 });
       gsap.set('.intro-piece', { opacity: 0, scale: 0.85 });
       gsap.set('.intro-top', { y: -160 });
@@ -62,17 +64,22 @@ const Home: React.FC = () => {
       gsap.set('.intro-right', { x: 160 });
 
       introTl
-        .to('.intro-piece', { opacity: 1, duration: 0.6, stagger: 0.12 }, 0)
-        .to('.intro-top', { y: 0, duration: 1.1 }, 0)
-        .to('.intro-bottom', { y: 0, duration: 1.1 }, 0)
-        .to('.intro-left', { x: 0, duration: 1.1 }, 0)
-        .to('.intro-right', { x: 0, duration: 1.1 }, 0)
-        .to('.intro-center', { opacity: 1, scale: 1, duration: 0.9 }, 0.35)
-        .to('.home-content', { opacity: 1, duration: 0.9 }, 1.6)
-        .to('.intro-overlay', { opacity: 0, duration: 0.8 }, 1.9)
-        .set('.intro-overlay', { display: 'none' }, 2.8);
+        .to('.intro-video-stage', { opacity: 1, scale: 1, duration: 0.7 }, 0)
+        .to({}, { duration: 2.2 })
+        .to('.intro-video-stage', { opacity: 0.3, duration: 0.45 })
+        .to('.intro-logo-stage', { opacity: 1, duration: 0.28 }, '-=0.1')
+        .to('.intro-piece', { opacity: 1, duration: 0.55, stagger: 0.1 }, '-=0.05')
+        .to('.intro-top', { y: 0, duration: 0.95 }, '<')
+        .to('.intro-bottom', { y: 0, duration: 0.95 }, '<')
+        .to('.intro-left', { x: 0, duration: 0.95 }, '<')
+        .to('.intro-right', { x: 0, duration: 0.95 }, '<')
+        .to('.intro-center', { opacity: 1, scale: 1, duration: 0.8 }, '-=0.55')
+        .to('.intro-video-stage', { opacity: 0, duration: 0.45 }, '-=0.2')
+        .to('.home-content', { opacity: 1, duration: 0.9 }, '+=0.2')
+        .to('.intro-overlay', { opacity: 0, duration: 0.8 }, '-=0.1')
+        .set('.intro-overlay', { display: 'none' });
 
-      const heroDelay = 1.6;
+      const heroDelay = Math.max(0, introTl.duration() - 1.3);
       gsap.from('.hero-title', {
         y: 40,
         opacity: 0,
@@ -298,7 +305,14 @@ const Home: React.FC = () => {
       {!introDone && (
         <div className="intro-overlay fixed inset-0 z-[60] flex items-center justify-center bg-[#0a122a]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(104,143,63,0.25),transparent_60%)]" />
-          <div className="relative h-72 w-72">
+          <div className="intro-video-stage absolute inset-0 z-0 overflow-hidden">
+            <video autoPlay muted playsInline preload="auto" className="h-full w-full object-cover">
+              <source src="/landing.mp4" type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0a122a]/25 via-[#0a122a]/10 to-[#0a122a]/55" />
+          </div>
+
+          <div className="intro-logo-stage absolute left-1/2 top-1/2 z-20 h-72 w-72 -translate-x-1/2 -translate-y-1/2">
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <img
                 src="/logo-main.png"
@@ -331,7 +345,7 @@ const Home: React.FC = () => {
               <img
                 src="/logo-main.png"
                 alt="InceptIQ logo"
-                className="intro-center h-36 w-36 opacity-0"
+                className="intro-center h-36 w-36 opacity-0 drop-shadow-[0_0_28px_rgba(156,184,95,0.45)]"
               />
             </div>
           </div>
