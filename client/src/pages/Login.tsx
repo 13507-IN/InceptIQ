@@ -4,6 +4,7 @@ import { login, signup, setToken } from '../services/auth';
 import { AuthContext } from '../contexts/AuthContext';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Briefcase } from 'lucide-react';
 import { motion } from 'framer-motion';
+import ImageCarousel from '../components/ImageCarousel';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -94,154 +95,137 @@ const Login: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md"
+        className="w-full max-w-6xl h-screen max-h-[900px] flex gap-4"
       >
-        <div className="relative">
-          {/* Background glow effect */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-sage-500 to-sand-200 rounded-2xl blur opacity-20 group-hover:opacity-100 transition duration-1000"></div>
-          
-          {/* Form container */}
-          <div className="relative bg-ink-800/60 backdrop-blur-xl p-8 rounded-2xl border border-sand-200/10 shadow-2xl">
-            {/* Header */}
-            <motion.div 
-              className="text-center mb-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              {authRole === 'investor' && (
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sage-500/15 border border-sage-400/30 text-sage-200 text-xs font-semibold mb-3">
-                  <Briefcase className="h-3.5 w-3.5" />
-                  Investor Login
-                </div>
-              )}
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-sage-300 to-sand-200 bg-clip-text text-transparent mb-2">
-                {mode === 'login' ? heroTitle : 'Create Account'}
-              </h2>
-              <p className="text-sand-400 text-sm">
-                {mode === 'login' 
-                  ? heroSubtitle
-                  : authRole === 'investor'
-                    ? 'Create an investor account to connect with founders'
-                    : 'Join us to start validating your ideas'}
-              </p>
-            </motion.div>
+        {/* Left Side - Image Carousel */}
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="hidden lg:flex w-1/2 rounded-2xl overflow-hidden shadow-2xl border border-sand-200/10"
+        >
+          <ImageCarousel isInvestor={isInvestorRoute} />
+        </motion.div>
 
-            {/* Error Message */}
-            {error && (
+        {/* Right Side - Form */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="w-full lg:w-1/2 flex items-center justify-center"
+        >
+          <div className="relative w-full max-w-md">
+            {/* Background glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-sage-500 to-sand-200 rounded-2xl blur opacity-20 group-hover:opacity-100 transition duration-1000"></div>
+            
+            {/* Form container */}
+            <div className="relative bg-ink-800/60 backdrop-blur-xl p-8 rounded-2xl border border-sand-200/10 shadow-2xl max-h-[calc(100vh-100px)] overflow-y-auto">
+              {/* Header */}
               <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg"
+                className="text-center mb-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
               >
-                <p className="text-red-400 text-sm font-medium">{error}</p>
-              </motion.div>
-            )}
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name Field (Signup only) */}
-              {mode === 'signup' && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <label className="block text-sm font-medium text-sand-300 mb-2">Full Name</label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
-                    <input 
-                      type="text"
-                      placeholder="John Doe"
-                      value={name} 
-                      onChange={e => setName(e.target.value)}
-                      disabled={isLoading}
-                      className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
-                    />
+                {authRole === 'investor' && (
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sage-500/15 border border-sage-400/30 text-sage-200 text-xs font-semibold mb-3">
+                    <Briefcase className="h-3.5 w-3.5" />
+                    Investor Login
                   </div>
+                )}
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-sage-300 to-sand-200 bg-clip-text text-transparent mb-2">
+                  {mode === 'login' ? heroTitle : 'Create Account'}
+                </h2>
+                <p className="text-sand-400 text-sm">
+                  {mode === 'login' 
+                    ? heroSubtitle
+                    : authRole === 'investor'
+                      ? 'Create an investor account to connect with founders'
+                      : 'Join us to start validating your ideas'}
+                </p>
+              </motion.div>
+
+              {/* Error Message */}
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg"
+                >
+                  <p className="text-red-400 text-sm font-medium">{error}</p>
                 </motion.div>
               )}
 
-              {/* Email Field */}
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.35 }}
-              >
-                <label className="block text-sm font-medium text-sand-300 mb-2">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
-                  <input 
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)}
-                    disabled={isLoading}
-                    className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
-                    required
-                  />
-                </div>
-              </motion.div>
-
-              {/* Password Field */}
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-              >
-                <label className="block text-sm font-medium text-sand-300 mb-2">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
-                  <input 
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)}
-                    disabled={isLoading}
-                    className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-12 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-sand-500 hover:text-sand-300 transition-colors"
-                    disabled={isLoading}
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Name Field (Signup only) */}
+                {mode === 'signup' && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-              </motion.div>
+                    <label className="block text-sm font-medium text-sand-300 mb-2">Full Name</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
+                      <input 
+                        type="text"
+                        placeholder="John Doe"
+                        value={name} 
+                        onChange={e => setName(e.target.value)}
+                        disabled={isLoading}
+                        className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
+                      />
+                    </div>
+                  </motion.div>
+                )}
 
-              {/* Confirm Password Field (Signup only) */}
-              {mode === 'signup' && (
+                {/* Email Field */}
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.45 }}
+                  transition={{ delay: 0.35 }}
                 >
-                  <label className="block text-sm font-medium text-sand-300 mb-2">Confirm Password</label>
+                  <label className="block text-sm font-medium text-sand-300 mb-2">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
+                    <input 
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email} 
+                      onChange={e => setEmail(e.target.value)}
+                      disabled={isLoading}
+                      className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
+                      required
+                    />
+                  </div>
+                </motion.div>
+
+                {/* Password Field */}
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <label className="block text-sm font-medium text-sand-300 mb-2">Password</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
                     <input 
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Confirm your password"
-                      value={confirmPassword} 
-                      onChange={e => setConfirmPassword(e.target.value)}
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)}
                       disabled={isLoading}
                       className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-12 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
                       required
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-3 text-sand-500 hover:text-sand-300 transition-colors"
                       disabled={isLoading}
                     >
-                      {showConfirmPassword ? (
+                      {showPassword ? (
                         <EyeOff className="h-5 w-5" />
                       ) : (
                         <Eye className="h-5 w-5" />
@@ -249,68 +233,103 @@ const Login: React.FC = () => {
                     </button>
                   </div>
                 </motion.div>
-              )}
 
-              {/* Submit Button */}
-              <motion.button 
-                type="submit"
-                disabled={isLoading}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full mt-6 bg-gradient-to-r from-sage-500 to-sage-400 hover:from-sage-400 hover:to-sage-300 text-ink-900 font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    {mode === 'login' ? 'Sign In' : 'Create Account'}
-                    <ArrowRight className="h-4 w-4" />
-                  </>
+                {/* Confirm Password Field (Signup only) */}
+                {mode === 'signup' && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.45 }}
+                  >
+                    <label className="block text-sm font-medium text-sand-300 mb-2">Confirm Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-5 w-5 text-sand-500" />
+                      <input 
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="Confirm your password"
+                        value={confirmPassword} 
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        disabled={isLoading}
+                        className="w-full bg-ink-900/60 border border-sand-200/10 text-sand-100 placeholder-sand-500 rounded-lg py-3 pl-10 pr-12 focus:outline-none focus:border-sage-400 focus:ring-2 focus:ring-sage-400/20 transition-all disabled:opacity-50"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-3 text-sand-500 hover:text-sand-300 transition-colors"
+                        disabled={isLoading}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
+                  </motion.div>
                 )}
-              </motion.button>
-            </form>
 
-            {/* Toggle Mode */}
-            <motion.div 
-              className="mt-6 text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <p className="text-sand-400 text-sm">
-                {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-                <button 
-                  type="button"
-                  onClick={toggleMode}
+                {/* Submit Button */}
+                <motion.button 
+                  type="submit"
                   disabled={isLoading}
-                  className="text-sage-300 hover:text-sage-200 font-semibold transition-colors disabled:opacity-50"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full mt-6 bg-gradient-to-r from-sage-500 to-sage-400 hover:from-sage-400 hover:to-sage-300 text-ink-900 font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {mode === 'login' ? 'Sign up' : 'Sign in'}
-                </button>
-              </p>
-              <div className="mt-3 text-xs text-sand-500">
-                {authRole === 'investor' ? (
-                  <span>
-                    Looking for the founder portal?{' '}
-                    <Link to="/login" className="text-sage-200 hover:text-sage-100 font-semibold">
-                      Sign in as user
-                    </Link>
-                  </span>
-                ) : (
-                  <span>
-                    Are you an investor?{' '}
-                    <Link to="/investor/login" className="text-sage-200 hover:text-sage-100 font-semibold">
-                      Investor login
-                    </Link>
-                  </span>
-                )}
-              </div>
-            </motion.div>
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      {mode === 'login' ? 'Sign In' : 'Create Account'}
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </motion.button>
+              </form>
+
+              {/* Toggle Mode */}
+              <motion.div 
+                className="mt-6 text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <p className="text-sand-400 text-sm">
+                  {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+                  <button 
+                    type="button"
+                    onClick={toggleMode}
+                    disabled={isLoading}
+                    className="text-sage-300 hover:text-sage-200 font-semibold transition-colors disabled:opacity-50"
+                  >
+                    {mode === 'login' ? 'Sign up' : 'Sign in'}
+                  </button>
+                </p>
+                <div className="mt-3 text-xs text-sand-500">
+                  {authRole === 'investor' ? (
+                    <span>
+                      Looking for the founder portal?{' '}
+                      <Link to="/login" className="text-sage-200 hover:text-sage-100 font-semibold">
+                        Sign in as user
+                      </Link>
+                    </span>
+                  ) : (
+                    <span>
+                      Are you an investor?{' '}
+                      <Link to="/investor/login" className="text-sage-200 hover:text-sage-100 font-semibold">
+                        Investor login
+                      </Link>
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );
