@@ -9,6 +9,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Analysis from './pages/Analysis';
+import AnalysisStreaming from './pages/AnalysisStreaming';
 import Results from './pages/Results';
 import Profile from './pages/Profile';
 import Community from './pages/Community';
@@ -60,6 +61,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <Analysis />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/analysis/stream"
+                      element={
+                        <ProtectedRoute>
+                          <AnalysisStreaming />
                         </ProtectedRoute>
                       }
                     />

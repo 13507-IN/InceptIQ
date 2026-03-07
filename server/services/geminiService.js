@@ -5,7 +5,7 @@ class GeminiService {
         if (!process.env.GEMINI_API_KEY) {
             throw new Error('GEMINI_API_KEY is required but not found in environment variables');
         }
-        
+
         this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     }
@@ -31,7 +31,7 @@ class GeminiService {
 
             // Parse the structured response
             const analysis = this.parseAnalysisResponse(analysisText);
-            
+
             return {
                 success: true,
                 analysis,
@@ -41,6 +41,57 @@ class GeminiService {
         } catch (error) {
             console.error('Gemini AI analysis failed:', error);
             throw new Error(`AI analysis failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Streaming version of analyzeStartupIdea.
+     * Calls Gemini's generateContentStream and invokes onChunk(text) for every
+     * incremental text delta, then returns the final parsed analysis.
+     * 
+     * @param {object} ideaData   - The startup idea form data
+     * @param {function} onChunk  - Called with each raw text chunk as it arrives
+     */
+    async analyzeStartupIdeaStream(ideaData, onChunk) {
+        const { ideaTitle, ideaDescription, targetMarket, businessModel, industry, budget, timeline } = ideaData;
+
+        const prompt = this.createAnalysisPrompt({
+            ideaTitle,
+            ideaDescription,
+            targetMarket,
+            businessModel,
+            industry,
+            budget,
+            timeline
+        });
+
+        try {
+            console.log('🔄 Starting streaming Gemini AI analysis...');
+            const streamResult = await this.model.generateContentStream(prompt);
+
+            let fullText = '';
+            for await (const chunk of streamResult.stream) {
+                const chunkText = chunk.text();
+                if (chunkText) {
+                    fullText += chunkText;
+                    if (typeof onChunk === 'function') {
+                        onChunk(chunkText);
+                    }
+                }
+            }
+
+            console.log('✅ Streaming complete. Parsing final response...');
+            const analysis = this.parseAnalysisResponse(fullText);
+
+            return {
+                success: true,
+                analysis,
+                rawResponse: fullText,
+                timestamp: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Gemini AI streaming analysis failed:', error);
+            throw new Error(`AI streaming analysis failed: ${error.message}`);
         }
     }
 
@@ -130,11 +181,11 @@ Provide only the JSON response without any additional text or markdown formattin
                 .trim();
 
             const analysis = JSON.parse(cleanedResponse);
-            
+
             // Validate required fields
             const requiredFields = ['uniquenessScore', 'marketViabilityScore', 'competitionScore', 'overallScore', 'analysis'];
             const missingFields = requiredFields.filter(field => !(field in analysis));
-            
+
             if (missingFields.length > 0) {
                 throw new Error(`Missing required fields in AI response: ${missingFields.join(', ')}`);
             }
@@ -143,7 +194,7 @@ Provide only the JSON response without any additional text or markdown formattin
         } catch (error) {
             console.error('Failed to parse AI response:', error);
             console.log('Raw response:', responseText);
-            
+
             // Return a fallback structure
             return {
                 uniquenessScore: 50,

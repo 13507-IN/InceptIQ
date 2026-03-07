@@ -28,7 +28,7 @@ const analysisController = {
             try {
                 if (req.user && req.user.id) {
                     console.log(`\n📝 Saving request to user record (ID: ${req.user.id})`);
-                    
+
                     const summary = {
                         id: analysisId,
                         input: {
@@ -74,7 +74,7 @@ const analysisController = {
 
         } catch (error) {
             console.error('❌ Analysis failed:', error.message);
-            
+
             res.status(500).json({
                 success: false,
                 error: 'Analysis failed',
@@ -102,7 +102,7 @@ const analysisController = {
 
             // First check in-memory storage
             let analysis = analysisStorage.get(id);
-            
+
             if (analysis) {
                 console.log(`✅ Analysis found in memory`);
                 console.log(`${'='.repeat(60)}\n`);
@@ -115,7 +115,7 @@ const analysisController = {
 
             // If not in memory, try to find in database from user's requests
             console.log(`⚠️  Analysis not in memory. Checking database...`);
-            
+
             if (req.user && req.user.id) {
                 const user = await User.findById(req.user.id).lean();
                 if (user && user.requests) {
@@ -137,7 +137,7 @@ const analysisController = {
             console.log(`📌 Analysis ID: ${id}`);
             console.log(`📌 User ID: ${req.user?.id || 'Not authenticated'}`);
             console.log(`${'='.repeat(60)}\n`);
-            
+
             return res.status(404).json({
                 error: 'Analysis not found',
                 message: `No analysis found with ID: ${id}. The analysis may have expired or not been saved.`,
@@ -148,7 +148,7 @@ const analysisController = {
         } catch (error) {
             console.error('❌ Error retrieving analysis:', error);
             console.error(`${'='.repeat(60)}\n`);
-            
+
             res.status(500).json({
                 error: 'Failed to retrieve analysis',
                 message: error.message
@@ -178,7 +178,7 @@ const analysisController = {
 
         } catch (error) {
             console.error('Quick insights failed:', error);
-            
+
             res.status(500).json({
                 success: false,
                 error: 'Failed to generate quick insights',
@@ -225,7 +225,7 @@ const analysisController = {
 
         } catch (error) {
             console.error('❌ Form field extraction failed:', error.message);
-            
+
             res.status(500).json({
                 success: false,
                 error: 'Failed to extract form fields',
@@ -233,7 +233,87 @@ const analysisController = {
                 timestamp: new Date().toISOString()
             });
         }
+    },
+
+    // ─── Streaming endpoint ─────────────────────────────────────────────────
+    // POST /api/analyze/stream
+    // Uses SSE (Server-Sent Events) to push Gemini token chunks to the browser.
+    // The client reads via fetch + ReadableStream.
+    async analyzeIdeaStream(req, res) {
+        const ideaData = req.body;
+        const analysisId = uuidv4();
+
+        console.log(`🔄 [STREAM] Starting streaming analysis for: "${ideaData.ideaTitle}" (${analysisId})`);
+
+        // ── SSE headers
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        res.flushHeaders();
+
+        // Helper: write one SSE event
+        const send = (event, data) => {
+            res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+        };
+
+        send('thinking', { message: 'Gemini is analyzing your idea...', analysisId });
+
+        let charCount = 0;
+
+        try {
+            const aiResult = await geminiService.analyzeStartupIdeaStream(ideaData, (chunkText) => {
+                charCount += chunkText.length;
+                send('chunk', { text: chunkText, chars: charCount });
+            });
+
+            const analysisResult = {
+                id: analysisId,
+                input: ideaData,
+                ...aiResult,
+                createdAt: new Date().toISOString()
+            };
+
+            analysisStorage.set(analysisId, analysisResult);
+
+            if (req.user && req.user.id) {
+                try {
+                    const user = await User.findById(req.user.id);
+                    if (user) {
+                        const summary = {
+                            id: analysisId,
+                            input: {
+                                ideaTitle: ideaData.ideaTitle,
+                                ideaDescription: ideaData.ideaDescription,
+                                targetMarket: ideaData.targetMarket || null,
+                            },
+                            analysis: analysisResult,
+                            createdAt: analysisResult.createdAt
+                        };
+                        await user.addRequest(summary);
+                        console.log(`   ✅ [STREAM] Saved analysis to user record`);
+                    }
+                } catch (dbErr) {
+                    console.warn('[STREAM] Failed to save to user DB:', dbErr.message);
+                }
+            }
+
+            send('done', {
+                analysisId,
+                overallScore: aiResult.analysis?.overallScore ?? null,
+                message: 'Analysis complete!'
+            });
+
+            console.log(`✅ [STREAM] Analysis ${analysisId} complete (${charCount} chars)`);
+            res.end();
+
+        } catch (error) {
+            console.error('❌ [STREAM] Failed:', error.message);
+            send('error', { message: error.message || 'Analysis failed. Please try again.' });
+            res.end();
+        }
     }
 };
 
 module.exports = analysisController;
+
