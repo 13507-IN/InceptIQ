@@ -16,6 +16,9 @@ router.post('/extract-pdf-fields', requireAuth, analysisController.extractFormFi
 // Must be before /:id wildcard.
 router.post('/stream', requireAuth, validateAnalysisRequest, analysisController.analyzeIdeaStream);
 
+// DELETE /api/analyze/:id - Delete analysis from user's profile
+router.delete('/:id', requireAuth, analysisController.deleteAnalysis);
+
 // GET /api/analyze/:id - Get analysis result by ID
 router.get('/:id', analysisController.getAnalysis);
 

@@ -98,6 +98,26 @@ class ApiService {
     }
   }
 
+  // Delete an analysis by ID
+  async deleteAnalysis(analysisId: string): Promise<any> {
+    try {
+      const response = await api.delete(`/analyze/${analysisId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to delete analysis:', error);
+      
+      if (error.response?.status === 401) {
+        throw new Error('Please sign in to delete an analysis.');
+      }
+      
+      if (error.response?.status === 404) {
+        throw new Error('Analysis not found.');
+      }
+      
+      throw new Error('Failed to delete analysis. Please try again.');
+    }
+  }
+
   // Collaboration: get collaboration info for an analysis
   async getCollaboration(analysisId: string): Promise<any> {
     try {

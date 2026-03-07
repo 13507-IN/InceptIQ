@@ -312,6 +312,77 @@ const analysisController = {
             send('error', { message: error.message || 'Analysis failed. Please try again.' });
             res.end();
         }
+    },
+
+    // DELETE /api/analyze/:id
+    // Delete an analysis from user's profile
+    async deleteAnalysis(req, res) {
+        try {
+            const { id } = req.params;
+
+            if (!id) {
+                return res.status(400).json({
+                    error: 'Missing analysis ID',
+                    message: 'Analysis ID is required'
+                });
+            }
+
+            // Require authentication
+            if (!req.user || !req.user.id) {
+                return res.status(401).json({
+                    error: 'Not authenticated',
+                    message: 'Please log in to delete an analysis'
+                });
+            }
+
+            console.log(`\n${'='.repeat(60)}`);
+            console.log(`🗑️  DELETING ANALYSIS`);
+            console.log(`Analysis ID: ${id}`);
+            console.log(`User ID: ${req.user.id}`);
+            console.log(`${'='.repeat(60)}`);
+
+            // Find user and delete the request
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({
+                    error: 'User not found',
+                    message: 'User record not found'
+                });
+            }
+
+            // Check if analysis exists
+            const analysisExists = user.requests.some(r => r.id === id);
+            if (!analysisExists) {
+                return res.status(404).json({
+                    error: 'Analysis not found',
+                    message: `No analysis found with ID: ${id}`
+                });
+            }
+
+            // Delete the analysis
+            await user.deleteRequest(id);
+
+            // Also remove from in-memory storage if it exists
+            analysisStorage.delete(id);
+
+            console.log(`✅ Analysis ${id} deleted successfully`);
+            console.log(`${'='.repeat(60)}\n`);
+
+            res.status(200).json({
+                success: true,
+                message: 'Analysis deleted successfully',
+                analysisId: id
+            });
+
+        } catch (error) {
+            console.error('❌ Error deleting analysis:', error);
+            console.error(`${'='.repeat(60)}\n`);
+
+            res.status(500).json({
+                error: 'Failed to delete analysis',
+                message: error.message
+            });
+        }
     }
 };
 

@@ -42,4 +42,9 @@ UserSchema.methods.addRequest = async function (summary) {
   return this.save();
 };
 
+UserSchema.methods.deleteRequest = async function (analysisId) {
+  this.requests = this.requests.filter(req => req.id !== analysisId);
+  return this.save();
+};
+
 module.exports = model('User', UserSchema);

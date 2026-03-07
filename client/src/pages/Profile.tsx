@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Calendar, FileText, TrendingUp, Download, Eye } from 'lucide-react';
+import { Mail, Calendar, FileText, TrendingUp, Download, Eye, Trash2 } from 'lucide-react';
 import { apiService } from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -28,6 +28,8 @@ const Profile: React.FC = () => {
   const [researches, setResearches] = useState<ResearchItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchResearches = async () => {
@@ -84,6 +86,32 @@ const Profile: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const handleDeleteAnalysis = async (researchId: string) => {
+    try {
+      setDeletingId(researchId);
+      await apiService.deleteAnalysis(researchId);
+      
+      // Remove from state
+      setResearches(researches.filter(r => r.id !== researchId));
+      setDeleteConfirm(null);
+      
+      addToast({
+        variant: 'success',
+        title: 'Success',
+        message: 'Analysis deleted successfully'
+      });
+    } catch (err: any) {
+      console.error('Failed to delete analysis:', err);
+      addToast({
+        variant: 'error',
+        title: 'Error',
+        message: err.message || 'Failed to delete analysis'
+      });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const containerVariants = {
@@ -242,7 +270,7 @@ const Profile: React.FC = () => {
               {researches.map((research) => (
                 <motion.div
                   key={research.id}
-                  className="group bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-gray-700 hover:border-blue-500/50 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20"
+                  className="relative group bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl border border-gray-700 hover:border-blue-500/50 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20"
                   variants={itemVariants}
                   whileHover={{ y: -5 }}
                 >
@@ -280,13 +308,13 @@ const Profile: React.FC = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => navigate(`/results/${research.id}`)}
                       className="flex items-center justify-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 font-semibold py-2 px-4 rounded-lg transition-all duration-200 border border-blue-500/30 hover:border-blue-500/50"
                     >
                       <Eye className="h-4 w-4" />
-                      View Results
+                      <span className="hidden sm:inline">View</span>
                     </button>
                     <button
                       onClick={() => {
@@ -300,9 +328,68 @@ const Profile: React.FC = () => {
                       className="flex items-center justify-center gap-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-semibold py-2 px-4 rounded-lg transition-all duration-200 border border-emerald-500/30 hover:border-emerald-500/50"
                     >
                       <Download className="h-4 w-4" />
-                      Download
+                      <span className="hidden sm:inline">Download</span>
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(research.id)}
+                      disabled={deletingId === research.id}
+                      className="flex items-center justify-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 font-semibold py-2 px-4 rounded-lg transition-all duration-200 border border-red-500/30 hover:border-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="hidden sm:inline">Delete</span>
                     </button>
                   </div>
+
+                  {/* Delete Confirmation Modal */}
+                  {deleteConfirm === research.id && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute inset-0 bg-black/50 backdrop-blur-sm rounded-xl flex items-center justify-center p-4 z-50"
+                    >
+                      <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bg-gray-900 border border-red-500/50 rounded-lg p-6 max-w-sm w-full shadow-2xl"
+                      >
+                        <h3 className="text-xl font-bold text-white mb-2">Delete Analysis?</h3>
+                        <p className="text-gray-400 text-sm mb-6">
+                          Are you sure you want to delete "<strong>{research.input.ideaTitle}</strong>"? This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setDeleteConfirm(null)}
+                            disabled={deletingId === research.id}
+                            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAnalysis(research.id)}
+                            disabled={deletingId === research.id}
+                            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            {deletingId === research.id ? (
+                              <>
+                                <motion.div
+                                  animate={{ rotate: 360 }}
+                                  transition={{ duration: 1, repeat: Infinity }}
+                                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                                />
+                                Deleting...
+                              </>
+                            ) : (
+                              <>
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
                 </motion.div>
               ))}
             </motion.div>
