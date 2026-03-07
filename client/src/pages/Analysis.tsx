@@ -34,7 +34,6 @@ const Analysis: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
   const [pdfFileName, setPdfFileName] = useState<string>('');

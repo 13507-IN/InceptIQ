@@ -161,7 +161,6 @@ const AnalysisStreaming: React.FC = () => {
                     if (eventType === 'thinking') {
                         setState((s) => ({ ...s, phase: 'thinking' }));
                     } else if (eventType === 'chunk') {
-                        const newRaw = (state.rawChunks + (payload.text ?? ''));
                         setState((s) => {
                             const combined = s.rawChunks + (payload.text ?? '');
                             const partialScore = extractScoreFromPartial(combined);
@@ -204,7 +203,7 @@ const AnalysisStreaming: React.FC = () => {
                 errorMessage: err.message || 'Network error. Please check your connection.',
             }));
         }
-    }, [ideaData, navigate]);
+    }, [ideaData, navigate, state]);
 
     useEffect(() => {
         startStream();
