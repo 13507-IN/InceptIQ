@@ -16,7 +16,20 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { StartupIdea, FormErrors } from '../types';
 import { apiService } from '../services/api';
 
+// Configure pdf.js worker and fonts
 pdfjsLib.GlobalWorkerOptions.workerSrc = `${process.env.PUBLIC_URL || ''}/pdf.worker.min.mjs`;
+
+// For better PDF text extraction, try to set standard font data URL
+// This helps pdf.js locate font data when the public URL has standard_fonts
+try {
+  const publicUrl = process.env.PUBLIC_URL || '';
+  if (publicUrl) {
+    (pdfjsLib.GlobalWorkerOptions as any).standardFontDataUrl = `${publicUrl}/standard_fonts/`;
+  }
+} catch (e) {
+  // Fallback: continue without explicit font data URL
+  // pdf.js will attempt to use default paths
+}
 
 const Analysis: React.FC = () => {
   const navigate = useNavigate();
@@ -145,20 +158,48 @@ const Analysis: React.FC = () => {
     try {
       setIsProcessingPdf(true);
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      
+      // Configure document options - use lenient settings for text extraction
+      // The key is to disable strict font validation which requires external font data
+      const docOptions: any = { 
+        data: arrayBuffer,
+        disableAutoFetch: true,  // Don't auto-fetch missing resources
+        rangeChunkSize: 65536,
+      };
+
+      // Try with full options first
+      let pdf: any;
+      try {
+        docOptions.standardFontDataUrl = `${process.env.PUBLIC_URL || ''}/standard_fonts/`;
+        pdf = await pdfjsLib.getDocument(docOptions).promise;
+      } catch (docError: any) {
+        // If strict mode fails, retry with minimal options
+        const minimalOptions: any = { data: arrayBuffer };
+        console.warn('⚠️ Retrying PDF parsing with minimal settings...');
+        pdf = await pdfjsLib.getDocument(minimalOptions).promise;
+      }
+
       let fullText = '';
 
       for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((item: any) => item.str).join(' ');
-        fullText += pageText + ' ';
+        try {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items
+            .map((item: any) => (item.str ? item.str : ''))
+            .join(' ');
+          fullText += pageText + ' ';
+        } catch (pageError) {
+          console.warn(`⚠️ Failed to extract text from page ${i}, continuing...`);
+          continue;
+        }
       }
 
       if (!fullText.trim()) {
-        throw new Error('No text found in PDF');
+        throw new Error('No text could be extracted from the PDF. Please make sure the PDF contains selectable text (not scanned images).');
       }
 
+      console.log(`✅ Extracted ${fullText.length} characters from PDF`);
       const result = await apiService.extractFormFieldsFromPdf(fullText);
 
       if (result.success && result.data) {
@@ -354,7 +395,7 @@ const Analysis: React.FC = () => {
                   type="file"
                   accept=".pdf"
                   onChange={handlePdfUpload}
-                  disabled={isProcessingPdf || isSubmitting}
+                  disabled={isProcessingPdf}
                   className="hidden"
                 />
               </label>
@@ -413,7 +454,7 @@ const Analysis: React.FC = () => {
                           const file = e.target.files?.[0];
                           if (file) handleImageUpload('logo', file);
                         }}
-                        disabled={logoUploading || isSubmitting}
+                        disabled={logoUploading}
                         className="hidden"
                       />
                     </label>
@@ -458,7 +499,7 @@ const Analysis: React.FC = () => {
                           const file = e.target.files?.[0];
                           if (file) handleImageUpload('cover', file);
                         }}
-                        disabled={coverUploading || isSubmitting}
+                        disabled={coverUploading}
                         className="hidden"
                       />
                     </label>
@@ -516,7 +557,6 @@ const Analysis: React.FC = () => {
                     onChange={handleInputChange}
                     placeholder="e.g., AI-Powered Personal Fitness Coach"
                     maxLength={200}
-                    disabled={isSubmitting}
                     className={`w-full bg-gray-900/50 border text-white placeholder-gray-600 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 transition-all ${errors.ideaTitle ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500/20'
                       }`}
                   />
@@ -537,7 +577,6 @@ const Analysis: React.FC = () => {
                     rows={6}
                     placeholder="Describe your startup idea in detail..."
                     maxLength={5000}
-                    disabled={isSubmitting}
                     className={`w-full bg-gray-900/50 border text-white placeholder-gray-600 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 transition-all resize-none ${errors.ideaDescription ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500/20'
                       }`}
                   />
@@ -558,7 +597,7 @@ const Analysis: React.FC = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
                   <label htmlFor="targetMarket" className="block text-sm font-medium text-gray-300 mb-2">Target Market</label>
-                  <input type="text" id="targetMarket" name="targetMarket" value={formData.targetMarket} onChange={handleInputChange} placeholder="e.g., Health-conscious millennials" disabled={isSubmitting} className="w-full bg-gray-900/50 border border-gray-700 text-white placeholder-gray-600 rounded-lg py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+                  <input type="text" id="targetMarket" name="targetMarket" value={formData.targetMarket} onChange={handleInputChange} placeholder="e.g., Health-conscious millennials" className="w-full bg-gray-900/50 border border-gray-700 text-white placeholder-gray-600 rounded-lg py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
                 </motion.div>
 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
@@ -569,7 +608,7 @@ const Analysis: React.FC = () => {
                   <div className={selectShellClassName}>
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
                     <Briefcase className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
-                    <select id="businessModel" name="businessModel" value={formData.businessModel} onChange={handleInputChange} disabled={isSubmitting} className={`${selectClassName} ${getSelectTextClassName(formData.businessModel)}`}>
+                    <select id="businessModel" name="businessModel" value={formData.businessModel} onChange={handleInputChange} className={`${selectClassName} ${getSelectTextClassName(formData.businessModel)}`}>
                       <option value="">Select a business model</option>
                       <option value="subscription">Subscription/SaaS</option>
                       <option value="marketplace">Marketplace</option>
@@ -594,7 +633,7 @@ const Analysis: React.FC = () => {
                   <div className={selectShellClassName}>
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
                     <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
-                    <select id="industry" name="industry" value={formData.industry} onChange={handleInputChange} disabled={isSubmitting} className={`${selectClassName} ${getSelectTextClassName(formData.industry)}`}>
+                    <select id="industry" name="industry" value={formData.industry} onChange={handleInputChange} className={`${selectClassName} ${getSelectTextClassName(formData.industry)}`}>
                       <option value="">Select an industry</option>
                       <option value="technology">Technology</option>
                       <option value="healthcare">Healthcare</option>
@@ -620,7 +659,7 @@ const Analysis: React.FC = () => {
                   <div className={selectShellClassName}>
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
                     <Wallet className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
-                    <select id="budget" name="budget" value={formData.budget} onChange={handleInputChange} disabled={isSubmitting} className={`${selectClassName} ${getSelectTextClassName(formData.budget)}`}>
+                    <select id="budget" name="budget" value={formData.budget} onChange={handleInputChange} className={`${selectClassName} ${getSelectTextClassName(formData.budget)}`}>
                       <option value="">Select budget range</option>
                       <option value="under-10k">Under INR 10,000</option>
                       <option value="10k-50k">INR 10,000 - INR 50,000</option>
@@ -643,7 +682,7 @@ const Analysis: React.FC = () => {
                   <div className={selectShellClassName}>
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100" />
                     <Clock3 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors duration-200 group-hover:text-blue-300 group-focus-within:text-blue-300" />
-                    <select id="timeline" name="timeline" value={formData.timeline} onChange={handleInputChange} disabled={isSubmitting} className={`${selectClassName} ${getSelectTextClassName(formData.timeline)}`}>
+                    <select id="timeline" name="timeline" value={formData.timeline} onChange={handleInputChange} className={`${selectClassName} ${getSelectTextClassName(formData.timeline)}`}>
                       <option value="">Select timeline</option>
                       <option value="3-months">Within 3 months</option>
                       <option value="6-months">3-6 months</option>

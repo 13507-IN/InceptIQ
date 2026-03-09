@@ -270,14 +270,165 @@ Focus on: uniqueness, market potential, and one key challenge.
         }
     }
 
+    sanitizePdfText(rawText) {
+        if (!rawText) return '';
+        return rawText
+            .replace(/\u0000/g, '')
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ' ')
+            .replace(/\r\n/g, '\n')
+            .replace(/[ \t]+/g, ' ')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+    }
+
+    truncatePdfText(text, maxChars) {
+        if (!text) return { text: '', truncated: false };
+        if (text.length <= maxChars) {
+            return { text, truncated: false };
+        }
+        return { text: text.slice(0, maxChars), truncated: true };
+    }
+
+    isRetryableGeminiError(error) {
+        const message = (error && error.message ? String(error.message) : '').toLowerCase();
+        return (
+            message.includes('resource_exhausted') ||
+            message.includes('rate limit') ||
+            message.includes('429') ||
+            message.includes('503') ||
+            message.includes('unavailable') ||
+            message.includes('deadline') ||
+            message.includes('timeout') ||
+            message.includes('internal')
+        );
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    extractFormFieldsHeuristically(rawText) {
+        const text = rawText || '';
+        const normalized = text.replace(/\s+/g, ' ').trim();
+
+        const emailMatch = normalized.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+        const urlMatch = normalized.match(/\bhttps?:\/\/[^\s)]+|\bwww\.[^\s)]+/i);
+
+        const titleMatch = normalized.match(/\b(?:idea\s*title|startup\s*name|product\s*name|company\s*name|app\s*name|project\s*name)\s*[:-]\s*([^.;]{3,200})/i);
+        const titleCandidate = titleMatch ? titleMatch[1].trim() : null;
+
+        const descriptionMatch = normalized.match(/\b(?:description|overview|summary|about)\s*[:-]\s*([^]{20,2000})/i);
+        const descriptionCandidate = descriptionMatch ? descriptionMatch[1].trim() : null;
+
+        const founderMatch = normalized.match(/\b(?:founder|co-founder|cofounder|ceo|contact)\s*[:-]\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){0,3})/);
+
+        const ideaTitle = this.guessIdeaTitle(normalized, titleCandidate);
+        const ideaDescription = this.guessIdeaDescription(normalized, descriptionCandidate);
+
+        const targetMarketMatch = normalized.match(/\b(?:target\s*market|target\s*customers|audience|ideal\s*customer|customer\s*segment)\s*[:-]\s*([^.;]{5,200})/i);
+
+        return {
+            ideaTitle: ideaTitle || null,
+            ideaDescription: ideaDescription || null,
+            targetMarket: targetMarketMatch ? targetMarketMatch[1].trim() : null,
+            businessModel: this.detectBusinessModel(normalized),
+            industry: this.detectIndustry(normalized),
+            budget: this.detectBudget(normalized),
+            timeline: this.detectTimeline(normalized),
+            founderName: founderMatch ? founderMatch[1].trim() : null,
+            contactEmail: emailMatch ? emailMatch[0] : null,
+            website: urlMatch ? urlMatch[0].replace(/[).,]+$/, '') : null
+        };
+    }
+
+    guessIdeaTitle(text, candidate) {
+        if (candidate && candidate.length <= 200) {
+            return candidate.replace(/\s+/g, ' ').trim();
+        }
+
+        const lineCandidate = text.split(/\n/).map(s => s.trim()).filter(Boolean)[0];
+        if (lineCandidate && lineCandidate.length <= 200 && lineCandidate.split(/\s+/).length <= 12) {
+            return lineCandidate;
+        }
+
+        const sentenceCandidate = text.split(/[.!?]\s+/)[0] || '';
+        const cleanedSentence = sentenceCandidate.replace(/\s+/g, ' ').trim();
+        if (cleanedSentence && cleanedSentence.length <= 200) {
+            return cleanedSentence;
+        }
+
+        const words = text.split(/\s+/).filter(Boolean).slice(0, 12).join(' ');
+        return words || null;
+    }
+
+    guessIdeaDescription(text, candidate) {
+        const cleanCandidate = candidate ? candidate.replace(/\s+/g, ' ').trim() : '';
+        if (cleanCandidate && cleanCandidate.length >= 20) {
+            return cleanCandidate.slice(0, 5000);
+        }
+
+        if (!text) return null;
+        const normalized = text.replace(/\s+/g, ' ').trim();
+        if (!normalized) return null;
+        return normalized.slice(0, 5000);
+    }
+
+    detectBusinessModel(text) {
+        const lower = text.toLowerCase();
+        if (/(subscription|saas|recurring)/.test(lower)) return 'subscription';
+        if (/(marketplace|two-sided|platform)/.test(lower)) return 'marketplace';
+        if (/(e-commerce|ecommerce|online store|shop|retail platform)/.test(lower)) return 'ecommerce';
+        if (/freemium/.test(lower)) return 'freemium';
+        if (/(advertising|ads-supported|ad-supported)/.test(lower)) return 'advertising';
+        if (/(transaction|commission|take rate|payment per use)/.test(lower)) return 'transaction';
+        if (/(licensing|license)/.test(lower)) return 'licensing';
+        return null;
+    }
+
+    detectIndustry(text) {
+        const lower = text.toLowerCase();
+        if (/(healthcare|health care|medical|clinic|hospital|biotech)/.test(lower)) return 'healthcare';
+        if (/(finance|fintech|banking|payments|insurance)/.test(lower)) return 'finance';
+        if (/(education|edtech|learning|school|university)/.test(lower)) return 'education';
+        if (/(retail|store|shopping|consumer goods)/.test(lower)) return 'retail';
+        if (/(manufacturing|factory|supply chain|logistics)/.test(lower)) return 'manufacturing';
+        if (/(services|consulting|agency|professional services)/.test(lower)) return 'services';
+        if (/(entertainment|media|gaming|music|video)/.test(lower)) return 'entertainment';
+        if (/(technology|software|ai|app|platform|cloud|data|iot)/.test(lower)) return 'technology';
+        return null;
+    }
+
+    detectBudget(text) {
+        const lower = text.toLowerCase();
+        if (/(under|less than)\s*(\$|rs|inr)?\s*10k/.test(lower)) return 'under-10k';
+        if (/(10k|10,000)\s*(to|-)\s*(50k|50,000)/.test(lower)) return '10k-50k';
+        if (/(50k|50,000)\s*(to|-)\s*(100k|100,000)/.test(lower)) return '50k-100k';
+        if (/(100k|100,000)\s*(to|-)\s*(500k|500,000)/.test(lower)) return '100k-500k';
+        if (/(500k|500,000)\s*(to|-)\s*(1m|1,000,000)/.test(lower)) return '500k-1m';
+        if (/(over|above|more than)\s*(\$|rs|inr)?\s*(1m|1,000,000)/.test(lower)) return 'over-1m';
+        return null;
+    }
+
+    detectTimeline(text) {
+        const lower = text.toLowerCase();
+        if (/(within\s*)?3\s*months?/.test(lower)) return '3-months';
+        if (/(3\s*-\s*6\s*months?|within\s*6\s*months?)/.test(lower)) return '6-months';
+        if (/(6\s*-\s*12\s*months?|1\s*year|12\s*months?)/.test(lower)) return '1-year';
+        if (/(over\s*1\s*year|18\s*months?|2\s*years?)/.test(lower)) return 'over-1-year';
+        return null;
+    }
+
     async extractFormFieldsFromPdfText(pdfText) {
+        const sanitizedText = this.sanitizePdfText(pdfText);
+        const { text: trimmedText, truncated } = this.truncatePdfText(sanitizedText, 12000);
+
         const prompt = `
 You are an expert at extracting structured information from documents. 
 I have extracted text from a PDF about a startup idea. 
 Please analyze this text and extract the following fields in JSON format:
 
 **Extracted PDF Text:**
-${pdfText}
+${trimmedText}
 
 Please respond ONLY with a valid JSON object (no markdown, no extra text) with these fields:
 {
@@ -297,10 +448,46 @@ Be intelligent about inferring missing information from context. If a field cann
 `;
 
         try {
-            console.log('🔍 Extracting form fields from PDF text using Gemini...');
-            const result = await this.model.generateContent(prompt);
+            console.log('Extracting form fields from PDF text using Gemini...');
+            console.log(`PDF text length: ${sanitizedText.length} characters${truncated ? ' (truncated for prompt)' : ''}`);
+
+            if (!this.model) {
+                throw new Error('Gemini model not initialized. Check GEMINI_API_KEY environment variable.');
+            }
+
+            let result = null;
+            const maxAttempts = 3;
+            let lastError = null;
+
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                try {
+                    result = await this.model.generateContent(prompt);
+                    break;
+                } catch (err) {
+                    lastError = err;
+                    const retryable = this.isRetryableGeminiError(err);
+                    if (!retryable || attempt === maxAttempts) {
+                        break;
+                    }
+                    const delayMs = 500 * attempt;
+                    console.warn(`Gemini request failed (attempt ${attempt}/${maxAttempts}). Retrying in ${delayMs}ms...`);
+                    await this.delay(delayMs);
+                }
+            }
+
+            if (!result) {
+                throw lastError || new Error('No response received from Gemini API');
+            }
+
             const response = await result.response;
+
+            if (!response) {
+                throw new Error('Invalid response object from Gemini API');
+            }
+
             const jsonText = response.text().trim();
+
+            console.log(`Gemini response received (${jsonText.length} chars)`);
 
             // Parse JSON response
             let parsed = null;
@@ -313,24 +500,51 @@ Be intelligent about inferring missing information from context. If a field cann
                     parsed = JSON.parse(jsonText);
                 }
             } catch (parseErr) {
-                console.error('Failed to parse Gemini JSON response:', parseErr);
-                console.log('Raw response:', jsonText);
+                console.error('Failed to parse Gemini JSON response:', parseErr.message);
+                console.log('Raw response:', jsonText.substring(0, 500));
+
+                const fallback = this.extractFormFieldsHeuristically(sanitizedText);
                 return {
-                    success: false,
-                    message: 'Failed to parse AI response',
-                    rawResponse: jsonText
+                    success: true,
+                    data: fallback,
+                    warning: 'AI response could not be parsed. Used heuristic extraction instead.',
+                    rawResponse: jsonText.substring(0, 1000),
+                    timestamp: new Date().toISOString()
                 };
             }
 
-            console.log('✅ Form fields extracted successfully');
+            console.log('Form fields extracted successfully');
             return {
                 success: true,
                 data: parsed,
                 timestamp: new Date().toISOString()
             };
         } catch (error) {
-            console.error('Form field extraction failed:', error);
-            throw new Error(`Failed to extract form fields: ${error.message}`);
+            const errorMessage = error && error.message ? String(error.message) : '';
+            console.error('Form field extraction failed:', errorMessage || error);
+            console.error('Error type:', error && error.constructor ? error.constructor.name : 'Unknown');
+            console.error('Full error:', error);
+
+            // Provide more specific error messages
+            let userMessage = 'Failed to extract form fields from PDF';
+
+            if (errorMessage.includes('API key')) {
+                userMessage = 'API key not configured. Please contact support.';
+            } else if (errorMessage.includes('INVALID_ARGUMENT')) {
+                userMessage = 'Invalid request to AI service. The PDF might be too large or contain unsupported content.';
+            } else if (errorMessage.includes('RESOURCE_EXHAUSTED')) {
+                userMessage = 'AI service is currently busy. Please try again in a moment.';
+            } else if (errorMessage.includes('PERMISSION_DENIED')) {
+                userMessage = 'Not authorized to use AI service. Please check API key.';
+            }
+
+            const fallback = this.extractFormFieldsHeuristically(sanitizedText);
+            return {
+                success: true,
+                data: fallback,
+                warning: userMessage,
+                timestamp: new Date().toISOString()
+            };
         }
     }
 }

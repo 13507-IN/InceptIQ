@@ -203,7 +203,7 @@ const AnalysisStreaming: React.FC = () => {
                 errorMessage: err.message || 'Network error. Please check your connection.',
             }));
         }
-    }, [ideaData, navigate, state]);
+    }, [ideaData, navigate]);
 
     useEffect(() => {
         startStream();

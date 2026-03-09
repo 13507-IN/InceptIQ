@@ -218,18 +218,43 @@ const analysisController = {
                 });
             }
 
+            if (pdfText.length < 50) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'PDF text too short',
+                    message: 'The extracted PDF text is too short. Please upload a document with more content.'
+                });
+            }
+
             console.log('📄 Extracting form fields from PDF text...');
+            console.log(`📊 PDF text size: ${pdfText.length} bytes`);
+            
             const result = await geminiService.extractFormFieldsFromPdfText(pdfText);
 
+            if (!result.success) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Extraction failed',
+                    message: result.message || 'Failed to extract form fields',
+                    rawResponse: result.rawResponse?.substring(0, 500)
+                });
+            }
+
+            console.log('✅ PDF fields extracted and returned to client');
             res.status(200).json(result);
 
         } catch (error) {
-            console.error('❌ Form field extraction failed:', error.message);
+            console.error('❌ PDF extraction error:', error.message);
+            console.error('Error details:', {
+                message: error.message,
+                name: error.name,
+                stack: error.stack
+            });
 
             res.status(500).json({
                 success: false,
-                error: 'Failed to extract form fields',
-                message: error.message,
+                error: 'Server error',
+                message: error.message || 'Failed to extract form fields from PDF',
                 timestamp: new Date().toISOString()
             });
         }
