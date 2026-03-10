@@ -440,6 +440,66 @@ const communityController = {
                 message: error.message
             });
         }
+    },
+
+    async getWeeklySpotlight(req, res) {
+        try {
+            // Calculate the start of the current week (last 7 days)
+            const now = new Date();
+            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            let posts = [];
+
+            if (isDbConnected()) {
+                posts = await CommunityPost.find({
+                    createdAt: { $gte: sevenDaysAgo }
+                }).lean();
+            } else {
+                all_posts = communityStorage.list();
+                posts = all_posts.filter(post => {
+                    const postDate = new Date(post.createdAt);
+                    return postDate >= sevenDaysAgo;
+                });
+            }
+
+            if (posts.length === 0) {
+                return res.status(200).json({
+                    success: true,
+                    data: null,
+                    message: 'No posts this week yet'
+                });
+            }
+
+            // Calculate score: upvotes + likes, with upvotes weighted higher
+            const postsWithScores = posts.map(post => {
+                const normalized = normalizeVoteCounts(post);
+                const score = (normalized.upvotes || 0) * 2 + (normalized.likes || 0);
+                return {
+                    ...normalized,
+                    score
+                };
+            });
+
+            // Find the highest scored post
+            const spotlight = postsWithScores.reduce((prev, current) => 
+                (prev.score > current.score) ? prev : current
+            );
+
+            // Remove score from response
+            const { score, ...spotlightData } = spotlight;
+
+            res.status(200).json({
+                success: true,
+                data: spotlightData
+            });
+        } catch (error) {
+            console.error('Community weekly spotlight failed:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to fetch weekly spotlight',
+                message: error.message
+            });
+        }
     }
 };
 

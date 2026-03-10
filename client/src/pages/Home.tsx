@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
+import WeeklySpotlight from '../components/WeeklySpotlight';
 import { ArrowRight, Rocket, Sparkles, ShieldCheck, LineChart, Users, CheckCircle2, PenTool, BrainCircuit, Flag, Lightbulb, Clock, Star } from 'lucide-react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -492,6 +493,9 @@ const Home: React.FC = () => {
           </div>
         </div>
         </section>
+
+        {/* Weekly Spotlight */}
+        <WeeklySpotlight />
 
         {/* Strategy Steps */}
         <section className="reveal py-24">

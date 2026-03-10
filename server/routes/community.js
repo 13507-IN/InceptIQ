@@ -7,6 +7,9 @@ const requireAuth = require('../middleware/requireAuth');
 // GET /api/community - List community posts
 router.get('/', communityController.listPosts);
 
+// GET /api/community/weekly-spotlight - Get the highest-scored idea from this week
+router.get('/weekly-spotlight', communityController.getWeeklySpotlight);
+
 // POST /api/community/matches - Find similar founders for an idea
 router.post('/matches', requireAuth, communityController.matchFounders);
 
