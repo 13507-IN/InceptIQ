@@ -35,24 +35,24 @@ const Profile: React.FC = () => {
     const fetchResearches = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         console.log('\n' + '='.repeat(60));
         console.log('FETCHING USER RESEARCH HISTORY');
         console.log(`User ID: ${user?.id}`);
         console.log('='.repeat(60));
-        
+
         const response = await apiService.getUserResearches();
         console.log('Response received:', response);
         console.log(`Total researches: ${response.requests?.length || 0}`);
-        
+
         if (response.requests && response.requests.length > 0) {
           console.log('Research list:');
-            response.requests.forEach((r: ResearchItem, idx: number) => {
+          response.requests.forEach((r: ResearchItem, idx: number) => {
             console.log(`   ${idx + 1}. ${r.input?.ideaTitle || 'Unknown'} (${r.id})`);
-            });
+          });
         }
-        
+
         setResearches(response.requests || []);
         console.log('='.repeat(60) + '\n');
       } catch (err: any) {
@@ -92,11 +92,11 @@ const Profile: React.FC = () => {
     try {
       setDeletingId(researchId);
       await apiService.deleteAnalysis(researchId);
-      
+
       // Remove from state
       setResearches(researches.filter(r => r.id !== researchId));
       setDeleteConfirm(null);
-      
+
       addToast({
         variant: 'success',
         title: 'Success',
@@ -203,11 +203,21 @@ const Profile: React.FC = () => {
           animate="visible"
         >
           <motion.h2
-            className="text-3xl font-bold text-white mb-8 flex items-center gap-3"
+            className="text-3xl font-bold text-white mb-8 flex items-center gap-3 justify-between"
             variants={itemVariants}
           >
-            <TrendingUp className="h-8 w-8 text-blue-400" />
-            Your Research History
+            <div className="flex items-center gap-3">
+              <TrendingUp className="h-8 w-8 text-blue-400" />
+              Your Research History
+            </div>
+            {researches.length >= 2 && (
+              <button
+                onClick={() => navigate('/compare')}
+                className="text-sm bg-gradient-to-r from-blue-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white font-semibold flex items-center gap-2 py-2 px-4 rounded-lg transition-all duration-200"
+              >
+                Compare Ideas
+              </button>
+            )}
           </motion.h2>
 
           {loading ? (

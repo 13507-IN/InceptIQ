@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
-import { Home, FileText, Menu, X, User, Users, BadgeDollarSign, Briefcase } from 'lucide-react';
+import { Home, FileText, Menu, X, User, Users, BadgeDollarSign, Briefcase, BarChart2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Header: React.FC = () => {
@@ -42,22 +42,20 @@ const Header: React.FC = () => {
               <>
                 <Link
                   to="/investor"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    isActive('/investor')
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/investor')
                       ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <Home className="h-4 w-4" />
                   <span>Investor Home</span>
                 </Link>
                 <Link
                   to="/investor/projects"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    isActive('/investor/projects')
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/investor/projects')
                       ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <Users className="h-4 w-4" />
                   <span>Projects</span>
@@ -67,56 +65,61 @@ const Header: React.FC = () => {
               <>
                 <Link
                   to="/"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    isActive('/')
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/')
                       ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <Home className="h-4 w-4" />
                   <span>Home</span>
                 </Link>
-                
+
                 <Link
                   to="/analysis"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    isActive('/analysis')
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/analysis')
                       ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <FileText className="h-4 w-4" />
                   <span>New Analysis</span>
                 </Link>
                 <Link
-                  to="/community"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    isActive('/community')
+                  to="/compare"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/compare')
                       ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
+                >
+                  <BarChart2 className="h-4 w-4" />
+                  <span>Compare</span>
+                </Link>
+                <Link
+                  to="/community"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/community')
+                      ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
+                    }`}
                 >
                   <Users className="h-4 w-4" />
                   <span>Community</span>
                 </Link>
                 <Link
                   to="/pricing"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    isActive('/pricing')
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/pricing')
                       ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <BadgeDollarSign className="h-4 w-4" />
                   <span>Pricing</span>
                 </Link>
                 <Link
                   to="/investor-directory"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    isActive('/investor-directory')
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/investor-directory')
                       ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <Briefcase className="h-4 w-4" />
                   <span>Investors</span>
@@ -129,12 +132,12 @@ const Header: React.FC = () => {
             {/** Auth status */}
             <AuthStatus isInvestorView={isInvestorView} />
             <div className="md:hidden">
-              <button 
+              <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-sand-300 hover:text-sand-100 p-2 transition-colors"
-            >
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
+                className="text-sand-300 hover:text-sand-100 p-2 transition-colors"
+              >
+                {mobileMenuOpen ? (
+                  <X className="h-6 w-6" />
                 ) : (
                   <Menu className="h-6 w-6" />
                 )}
@@ -156,11 +159,10 @@ const Header: React.FC = () => {
                 <Link
                   to="/investor"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/investor')
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/investor')
                       ? 'text-sand-100 bg-sage-500/20'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-2">
                     <Home className="h-4 w-4" />
@@ -170,11 +172,10 @@ const Header: React.FC = () => {
                 <Link
                   to="/investor/projects"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/investor/projects')
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/investor/projects')
                       ? 'text-sand-100 bg-sage-500/20'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-2">
                     <Users className="h-4 w-4" />
@@ -187,26 +188,24 @@ const Header: React.FC = () => {
                 <Link
                   to="/"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/')
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/')
                       ? 'text-sand-100 bg-sage-500/20'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-2">
                     <Home className="h-4 w-4" />
                     <span>Home</span>
                   </div>
                 </Link>
-                
+
                 <Link
                   to="/analysis"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/analysis')
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/analysis')
                       ? 'text-sand-100 bg-sage-500/20'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-2">
                     <FileText className="h-4 w-4" />
@@ -214,13 +213,25 @@ const Header: React.FC = () => {
                   </div>
                 </Link>
                 <Link
-                  to="/community"
+                  to="/compare"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/community')
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/compare')
                       ? 'text-sand-100 bg-sage-500/20'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <BarChart2 className="h-4 w-4" />
+                    <span>Compare</span>
+                  </div>
+                </Link>
+                <Link
+                  to="/community"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/community')
+                      ? 'text-sand-100 bg-sage-500/20'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
+                    }`}
                 >
                   <div className="flex items-center space-x-2">
                     <Users className="h-4 w-4" />
@@ -230,11 +241,10 @@ const Header: React.FC = () => {
                 <Link
                   to="/pricing"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/pricing')
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/pricing')
                       ? 'text-sand-100 bg-sage-500/20'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-2">
                     <BadgeDollarSign className="h-4 w-4" />
@@ -244,11 +254,10 @@ const Header: React.FC = () => {
                 <Link
                   to="/investor-directory"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/investor-directory')
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/investor-directory')
                       ? 'text-sand-100 bg-sage-500/20'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-2">
                     <Briefcase className="h-4 w-4" />
@@ -283,7 +292,7 @@ const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) =
 
   if (user) {
     return (
-      <motion.div 
+      <motion.div
         className="hidden md:flex items-center space-x-3"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -298,9 +307,9 @@ const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) =
             Profile
           </Link>
         )}
-        <motion.button 
+        <motion.button
           whileHover={{ scale: 1.05 }}
-          onClick={logout} 
+          onClick={logout}
           className="text-sm px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded transition-colors"
         >
           Logout
@@ -310,7 +319,7 @@ const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) =
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="hidden md:flex items-center space-x-3"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -324,8 +333,8 @@ const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) =
         </Link>
       ) : (
         <>
-          <Link 
-            to="/login" 
+          <Link
+            to="/login"
             className="text-sm px-4 py-2 bg-sage-500 text-ink-900 rounded hover:bg-sage-400 transition-colors"
           >
             Login

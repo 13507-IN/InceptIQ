@@ -11,6 +11,7 @@ import Home from './pages/Home';
 import Analysis from './pages/Analysis';
 import AnalysisStreaming from './pages/AnalysisStreaming';
 import Results from './pages/Results';
+import Compare from './pages/Compare';
 import Profile from './pages/Profile';
 import Community from './pages/Community';
 import CommunityPublish from './pages/CommunityPublish';
@@ -73,6 +74,14 @@ function App() {
                       }
                     />
                     <Route path="/results/:analysisId" element={<Results />} />
+                    <Route
+                      path="/compare"
+                      element={
+                        <ProtectedRoute>
+                          <Compare />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route path="/login" element={<Login key="user-login" />} />
                     <Route path="/investor/login" element={<Login key="investor-login" />} />
                     <Route path="/investor" element={<InvestorLanding />} />
