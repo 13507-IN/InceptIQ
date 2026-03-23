@@ -478,6 +478,40 @@ class ApiService {
       throw new Error('Failed to delete post.');
     }
   }
+
+  // Share: create a shareable link for an analysis
+  async createShareLink(analysisId: string): Promise<{ token: string; shareUrl: string; expiresAt: string }> {
+    try {
+      const response = await api.post('/share', { analysisId });
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to create share link:', error);
+      if (error.response?.status === 401) {
+        throw new Error('Please sign in to share an analysis.');
+      }
+      if (error.response?.status === 404) {
+        throw new Error('Analysis not found in your account.');
+      }
+      throw new Error(error.response?.data?.message || 'Failed to create share link.');
+    }
+  }
+
+  // Share: get analysis data via share token (public, no auth required)
+  async getSharedAnalysis(token: string): Promise<any> {
+    try {
+      const response = await api.get(`/share/${token}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to retrieve shared analysis:', error);
+      if (error.response?.status === 404) {
+        throw new Error(error.response?.data?.message || 'This share link does not exist or has expired.');
+      }
+      if (error.response?.status === 410) {
+        throw new Error('This share link has expired.');
+      }
+      throw new Error('Failed to load shared analysis.');
+    }
+  }
 }
 
 // Export singleton instance

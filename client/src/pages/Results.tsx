@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import { Download, AlertCircle, ArrowLeft, Send, Users, UserPlus, ChevronDown, ChevronUp, CheckCircle2, AlertTriangle, Sparkles, X, Mail } from "lucide-react";
+import { Download, AlertCircle, ArrowLeft, Send, Users, UserPlus, ChevronDown, ChevronUp, CheckCircle2, AlertTriangle, Sparkles, X, Mail, Share2, Copy, Check, Link as LinkIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../services/api";
@@ -42,6 +42,11 @@ const Results: React.FC = () => {
   const [founderMatches, setFounderMatches] = useState<FounderMatch[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [matchesError, setMatchesError] = useState<string | null>(null);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     if (analysisId) fetchAnalysisData(analysisId);
@@ -411,6 +416,50 @@ const Results: React.FC = () => {
     });
   };
 
+  const handleShare = async () => {
+    if (!analysisId) return;
+    if (shareUrl) {
+      setShareModalOpen(true);
+      return;
+    }
+    try {
+      setShareBusy(true);
+      setShareError(null);
+      const response = await apiService.createShareLink(analysisId);
+      setShareUrl(response.shareUrl);
+      setShareModalOpen(true);
+    } catch (err: any) {
+      setShareError(err.message || 'Failed to create share link.');
+      addToast({
+        variant: 'error',
+        title: 'Share Error',
+        message: err.message || 'Failed to create share link.'
+      });
+    } finally {
+      setShareBusy(false);
+    }
+  };
+
+  const handleCopyShareUrl = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      addToast({ variant: 'success', title: 'Copied!', message: 'Share link copied to clipboard.' });
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = shareUrl;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    }
+  };
+
   if (loading) return <LoadingSpinner fullScreen message="Loading analysis results..." />;
 
   if (error || !analysisData)
@@ -474,6 +523,63 @@ const Results: React.FC = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      {/* Share Link Modal */}
+      {shareModalOpen && shareUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setShareModalOpen(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-gray-800 border border-gray-600 rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-500/20 rounded-lg">
+                  <LinkIcon className="h-5 w-5 text-purple-300" />
+                </div>
+                <h3 className="text-lg font-semibold text-white">Share Analysis</h3>
+              </div>
+              <button
+                onClick={() => setShareModalOpen(false)}
+                className="text-gray-400 hover:text-gray-200 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-400 mb-4">
+              Anyone with this link can view the analysis — no login required.
+            </p>
+            <div className="flex items-center gap-2 bg-gray-900/60 border border-gray-700 rounded-lg p-3">
+              <input
+                type="text"
+                readOnly
+                value={shareUrl}
+                className="flex-1 bg-transparent text-sm text-gray-200 outline-none"
+                onFocus={(e) => e.target.select()}
+              />
+              <button
+                onClick={handleCopyShareUrl}
+                className={`p-2 rounded-lg transition-all ${
+                  shareCopied
+                    ? 'bg-green-500/20 text-green-300'
+                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                }`}
+                title="Copy to clipboard"
+              >
+                {shareCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              This link expires in 30 days. Deleting the analysis will invalidate the link.
+            </p>
+          </motion.div>
+        </div>
+      )}
+
       {/* PDF Error Display */}
       {pdfError && (
         <motion.div
@@ -554,6 +660,18 @@ const Results: React.FC = () => {
             <Send className="h-5 w-5" />
             Publish to Community
           </motion.button>
+          {user && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleShare}
+              disabled={shareBusy}
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
+            >
+              <Share2 className="h-5 w-5" />
+              {shareBusy ? "Generating..." : "Share"}
+            </motion.button>
+          )}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
