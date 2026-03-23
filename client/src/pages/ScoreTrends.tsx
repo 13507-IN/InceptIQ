@@ -12,13 +12,11 @@ const ScoreTrends: React.FC = () => {
   const navigate = useNavigate();
   const [trendData, setTrendData] = useState<TrendDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        setError(null);
         const response = await apiService.getUserResearches();
         const requests = response?.requests || [];
 
@@ -45,7 +43,7 @@ const ScoreTrends: React.FC = () => {
 
         setTrendData(points);
       } catch (err: any) {
-        setError(err.message || 'Failed to load score trends.');
+        console.error('Failed to load score trends:', err);
       } finally {
         setLoading(false);
       }

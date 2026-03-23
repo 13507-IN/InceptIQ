@@ -24,8 +24,6 @@ interface ScoreTrendChartProps {
   data: TrendDataPoint[];
 }
 
-const truncate = (str: string, max: number) =>
-  str.length > max ? str.slice(0, max) + '…' : str;
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;

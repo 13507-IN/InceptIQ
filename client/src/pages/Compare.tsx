@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, AlertCircle, X, Plus } from 'lucide-react';
 import { apiService } from '../services/api';
-import { AuthContext } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import ScoreBadge from '../components/ScoreBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -11,7 +10,6 @@ import LoadingSpinner from '../components/LoadingSpinner';
 const Compare: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { user } = useContext(AuthContext);
     const { addToast } = useToast();
 
     const [analyses, setAnalyses] = useState<any[]>([]);

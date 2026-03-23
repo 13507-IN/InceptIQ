@@ -45,7 +45,6 @@ const Results: React.FC = () => {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareBusy, setShareBusy] = useState(false);
-  const [shareError, setShareError] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
@@ -424,12 +423,10 @@ const Results: React.FC = () => {
     }
     try {
       setShareBusy(true);
-      setShareError(null);
       const response = await apiService.createShareLink(analysisId);
       setShareUrl(response.shareUrl);
       setShareModalOpen(true);
     } catch (err: any) {
-      setShareError(err.message || 'Failed to create share link.');
       addToast({
         variant: 'error',
         title: 'Share Error',

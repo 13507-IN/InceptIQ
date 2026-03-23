@@ -26,7 +26,6 @@ interface SpotlightPost {
 const WeeklySpotlight: React.FC = () => {
   const [spotlight, setSpotlight] = useState<SpotlightPost | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSpotlight = async () => {
@@ -38,10 +37,8 @@ const WeeklySpotlight: React.FC = () => {
         if (response.data.success && response.data.data) {
           setSpotlight(response.data.data);
         }
-        setError(null);
       } catch (err) {
         console.error('Failed to fetch weekly spotlight:', err);
-        setError('Failed to load spotlight');
       } finally {
         setLoading(false);
       }
