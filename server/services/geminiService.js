@@ -165,6 +165,23 @@ Please provide your analysis in the following JSON structure:
     "timeToMarket": "estimated time to launch",
     "breakEvenPoint": "estimated break-even timeline",
     "scalabilityRating": "High/Medium/Low"
+  },
+  "marketSizing": {
+    "tam": {
+      "value": "$XX billion - estimated total addressable market size as a dollar figure",
+      "description": "Explanation of how the TAM was calculated and what it includes"
+    },
+    "sam": {
+      "value": "$XX billion - estimated serviceable addressable market size as a dollar figure",
+      "description": "Explanation of the reachable segment within the TAM"
+    },
+    "som": {
+      "value": "$XX million - estimated serviceable obtainable market size as a dollar figure",
+      "description": "Realistic capturable market share in the first 2-3 years"
+    },
+    "methodology": "Brief explanation of data sources and reasoning used to derive these estimates",
+    "growthRate": "XX% CAGR - expected market growth rate",
+    "sources": ["Industry report or data source 1", "Market trend or reasoning 2"]
   }
 }
 
@@ -245,6 +262,14 @@ Provide only the JSON response without any additional text or markdown formattin
                     timeToMarket: "Unable to determine",
                     breakEvenPoint: "Unable to determine",
                     scalabilityRating: "Unable to determine"
+                },
+                marketSizing: {
+                    tam: { value: "Unable to determine", description: "Analysis incomplete" },
+                    sam: { value: "Unable to determine", description: "Analysis incomplete" },
+                    som: { value: "Unable to determine", description: "Analysis incomplete" },
+                    methodology: "Unable to determine",
+                    growthRate: "Unable to determine",
+                    sources: []
                 },
                 error: "Partial analysis failure - please try again"
             };

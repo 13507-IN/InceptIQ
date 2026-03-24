@@ -10,6 +10,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { AuthContext } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { FounderMatch } from "../types";
+import MarketSizeEstimator from "../components/MarketSizeEstimator";
 
 const Results: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const Results: React.FC = () => {
   const [inviteSummary, setInviteSummary] = useState<{ invited?: number; skipped?: number; errors?: number } | null>(null);
   const [inviteDetails, setInviteDetails] = useState<{ errors?: any[]; skipped?: any[] } | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'uniqueness' | 'market' | 'competition' | 'metrics' | 'risks' | 'opportunities' | 'recommendations'
+    'overview' | 'uniqueness' | 'market' | 'market-size' | 'competition' | 'metrics' | 'risks' | 'opportunities' | 'recommendations'
   >('overview');
   const [collabOpen, setCollabOpen] = useState(true);
   const [founderMatches, setFounderMatches] = useState<FounderMatch[]>([]);
@@ -500,6 +501,7 @@ const Results: React.FC = () => {
     { id: 'overview', label: 'Overview' },
     { id: 'uniqueness', label: 'Uniqueness' },
     { id: 'market', label: 'Market' },
+    { id: 'market-size', label: 'Market Size' },
     { id: 'competition', label: 'Competition' },
     { id: 'metrics', label: 'Key Metrics' },
     { id: 'risks', label: 'Risks' },
@@ -1122,6 +1124,13 @@ const Results: React.FC = () => {
                 )}
               </div>
             </div>
+          )}
+
+          {activeTab === 'market-size' && (
+            <MarketSizeEstimator
+              data={analysisData?.marketSizing || null}
+              onReanalyze={() => navigate('/')}
+            />
           )}
 
           {activeTab === 'competition' && (
