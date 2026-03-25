@@ -1,7 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
-import { Home, FileText, Menu, X, User, Users, BadgeDollarSign, Briefcase, BarChart2 } from 'lucide-react';
+import { Home, FileText, Menu, X, User, Users, BadgeDollarSign, Briefcase, BarChart2, Bell } from 'lucide-react';
+import { useNotifications } from '../hooks/useNotifications';
 import { motion } from 'framer-motion';
 
 const Header: React.FC = () => {
@@ -283,6 +284,15 @@ const Header: React.FC = () => {
 const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) => {
   const { user, setAuth } = useContext<AuthContextValue>(AuthContext);
   const navigate = useNavigate();
+  const { unreadCount, clearUnread, requestSubscription, isSubscribed } = useNotifications();
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  React.useEffect(() => {
+    // Automatically request permission on login/entry
+    if (user && !isSubscribed) {
+      requestSubscription().catch(() => {});
+    }
+  }, [user, isSubscribed, requestSubscription]);
 
   const logout = () => {
     setAuth(null);
@@ -297,6 +307,61 @@ const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) =
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
+        <div className="relative">
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="relative p-1.5 text-sand-300 hover:text-sand-100 transition-colors"
+            title="Notifications"
+          >
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-[#0a122a]"></span>
+            )}
+          </button>
+          
+          {/* Notification Dropdown */}
+          {showDropdown && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="absolute right-0 mt-2 w-72 bg-[#111b36] border border-sand-200/10 rounded-lg shadow-xl overflow-hidden z-50 text-left"
+            >
+              <div className="p-3 border-b border-sand-200/10 flex justify-between items-center bg-[#0a122a]">
+                <h3 className="text-sm font-semibold text-sand-100">Notifications</h3>
+                {unreadCount > 0 && (
+                  <button 
+                    onClick={() => {
+                      clearUnread();
+                      setShowDropdown(false);
+                    }} 
+                    className="text-xs text-sage-400 hover:text-sage-300 transition-colors"
+                  >
+                    Mark as read
+                  </button>
+                )}
+              </div>
+              <div className="p-2 max-h-64 overflow-y-auto">
+                {unreadCount > 0 ? (
+                  <div 
+                    onClick={() => {
+                      clearUnread();
+                      setShowDropdown(false);
+                      navigate('/community');
+                    }}
+                    className="p-3 bg-sage-500/10 hover:bg-sage-500/20 rounded cursor-pointer transition-colors border-l-2 border-sage-500"
+                  >
+                    <p className="text-sm text-sand-100">You have {unreadCount} new founder match{unreadCount > 1 ? 'es' : ''}!</p>
+                    <p className="text-xs text-sand-400 mt-1">Click to view in community.</p>
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-sm text-sand-400">
+                    No new notifications
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </div>
         <div className="text-sm text-sand-300">{user.email}</div>
         {user.role !== 'investor' && !isInvestorView && (
           <Link
@@ -360,6 +425,14 @@ interface MobileAuthStatusProps {
 const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, setMobileMenuOpen, isInvestorView }) => {
   const { user, setAuth } = useContext<AuthContextValue>(AuthContext);
   const navigate = useNavigate();
+  const { unreadCount, clearUnread, requestSubscription, isSubscribed } = useNotifications();
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  React.useEffect(() => {
+    if (user && !isSubscribed) {
+      requestSubscription().catch(() => {});
+    }
+  }, [user, isSubscribed, requestSubscription]);
 
   const logout = () => {
     setAuth(null);
@@ -371,7 +444,43 @@ const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, set
   if (user) {
     return (
       <div className="mt-4 pt-4 border-t border-sand-200/10 space-y-2">
-        <div className="text-sm text-sand-400 px-3">{user.email}</div>
+        <div className="flex flex-col space-y-2 px-3">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-sand-400">{user.email}</div>
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="relative p-1.5 text-sand-300 hover:text-sand-100 transition-colors"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-[#0a122a]"></span>
+              )}
+            </button>
+          </div>
+          
+          {/* Mobile Notification Dropdown embedded */}
+          {showDropdown && (
+            <div className="bg-[#0a122a]/50 rounded border border-sand-200/10 p-2 mt-2">
+              <div className="flex justify-between items-center mb-2 px-1">
+                <span className="text-xs font-semibold text-sand-300">Notifications</span>
+              </div>
+              {unreadCount > 0 ? (
+                <div 
+                  onClick={() => {
+                    clearUnread();
+                    setMobileMenuOpen(false);
+                    navigate('/community');
+                  }}
+                  className="p-3 bg-sage-500/10 rounded border-l-2 border-sage-500 cursor-pointer"
+                >
+                  <p className="text-sm text-sand-100">You have {unreadCount} new match{unreadCount > 1 ? 'es' : ''}!</p>
+                </div>
+              ) : (
+                <p className="text-xs text-sand-400 text-center py-2">No new notifications</p>
+              )}
+            </div>
+          )}
+        </div>
         {user.role !== 'investor' && !isInvestorView && (
           <Link
             to="/profile"

@@ -3,6 +3,8 @@ const { analysisStorage, communityStorage } = require('../utils/storage');
 const CommunityPost = require('../models/communityPost');
 const { mongoose } = require('../db');
 const { findFounderMatches } = require('../services/founderMatchService');
+const { notifyUser } = require('../services/pushNotificationService');
+const User = require('../models/user');
 
 const normalizeIdeaType = (value) => {
     if (!value) return '';
@@ -185,6 +187,52 @@ const communityController = {
                 success: true,
                 message: 'Idea published to community',
                 data: post
+            });
+
+            // Fire-and-forget: notify matched founders via Chrome push notifications
+            setImmediate(async () => {
+                try {
+                    const allPosts = isDbConnected()
+                        ? await CommunityPost.find({ id: { $ne: post.id } }).lean()
+                        : communityStorage.list().filter(p => p.id !== post.id);
+
+                    const matches = findFounderMatches({
+                        idea: post.idea,
+                        posts: allPosts,
+                        userId: post.author?.id,
+                        userEmail: post.author?.email,
+                        minScore: 35,
+                        maxResults: 10
+                    });
+
+                    if (matches.length === 0) return;
+
+                    const matcherName = post.author?.name || post.author?.email || 'A founder';
+                    const matcherTitle = post.idea?.ideaTitle || '';
+
+                    // Collect unique author IDs to notify
+                    const authorIds = [...new Set(matches.map(m => m.author?.id).filter(Boolean))];
+
+                    await Promise.all(
+                        authorIds.map(async (authorId) => {
+                            try {
+                                const matchedUser = await User.findById(authorId);
+                                if (!matchedUser) return;
+                                const bestMatch = matches.find(m => m.author?.id === authorId);
+                                await notifyUser(matchedUser, {
+                                    matcherName,
+                                    matcherTitle,
+                                    matchScore: bestMatch?.matchScore ?? 0,
+                                    postId: post.id
+                                });
+                            } catch (err) {
+                                console.warn('[Notifications] Could not notify user', authorId, err.message);
+                            }
+                        })
+                    );
+                } catch (err) {
+                    console.warn('[Notifications] Match notification sweep failed:', err.message);
+                }
             });
         } catch (error) {
             console.error('Community create post failed:', error);

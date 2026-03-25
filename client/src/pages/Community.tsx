@@ -80,6 +80,19 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
     })
     .slice(0, 5);
 
+  const [matchedPostsMap, setMatchedPostsMap] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    try {
+      const matchedArray: string[] = JSON.parse(localStorage.getItem('iv_matched_posts') || '[]');
+      const map: Record<string, boolean> = {};
+      matchedArray.forEach(id => { map[id] = true; });
+      setMatchedPostsMap(map);
+    } catch (e) {
+      // ignore parse errors
+    }
+  }, [posts]);
+
   const toggleExpanded = (postId: string) => {
     setExpandedPosts(prev => ({
       ...prev,
@@ -207,16 +220,29 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
               const contactHref = authorEmail
                 ? `mailto:${authorEmail}?subject=${encodeURIComponent(`Investor inquiry: ${post.idea.ideaTitle || 'Project'}`)}`
                 : '';
+              const isMatched = matchedPostsMap[post.id];
 
               return (
                 <motion.div
                   key={post.id}
                   variants={itemVariants}
-                  className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-700/50 rounded-2xl p-6 shadow-xl"
+                  className={`border rounded-2xl p-6 shadow-xl transition-all ${
+                    isMatched 
+                      ? 'bg-gradient-to-br from-indigo-900/60 to-purple-900/40 border-indigo-500/60 shadow-indigo-500/20' 
+                      : 'bg-gradient-to-br from-gray-800/60 to-gray-900/60 border-gray-700/50'
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
-                      <h3 className="text-xl font-semibold text-white">{post.idea.ideaTitle}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-semibold text-white">{post.idea.ideaTitle}</h3>
+                        {isMatched && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500 text-white uppercase tracking-wider animate-pulse">
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            Matched
+                          </span>
+                        )}
+                      </div>
                       <span className="text-xs text-gray-400">
                         {new Date(post.createdAt).toLocaleDateString()}
                       </span>

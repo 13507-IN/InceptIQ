@@ -512,6 +512,35 @@ class ApiService {
       throw new Error('Failed to load shared analysis.');
     }
   }
+
+  // Notifications: Save push subscription
+  async subscribePushNotifications(subscription: PushSubscription): Promise<{ success: boolean; message: string }> {
+    try {
+      const subJson = subscription.toJSON();
+      const response = await api.post('/notifications/subscribe', {
+        endpoint: subJson.endpoint,
+        expirationTime: subJson.expirationTime,
+        keys: subJson.keys
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to subscribe to push notifications:', error);
+      throw new Error(error.response?.data?.error || 'Failed to save push subscription.');
+    }
+  }
+
+  // Notifications: Remove push subscription
+  async unsubscribePushNotifications(endpoint: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await api.delete('/notifications/unsubscribe', {
+        data: { endpoint }
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to unsubscribe from push notifications:', error);
+      throw new Error(error.response?.data?.error || 'Failed to remove push subscription.');
+    }
+  }
 }
 
 // Export singleton instance

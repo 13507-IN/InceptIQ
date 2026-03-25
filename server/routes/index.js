@@ -11,6 +11,7 @@ const investorRoutes = require('./investors');
 const pitchDeckRoutes = require('./pitchDecks');
 const uploadRoutes = require('./uploads');
 const shareRoutes = require('./share');
+const notificationRoutes = require('./notifications');
 
 // Route definitions
 router.use('/analyze', analysisRoutes);
@@ -22,6 +23,7 @@ router.use('/investors', investorRoutes);
 router.use('/pitch-decks', pitchDeckRoutes);
 router.use('/uploads', uploadRoutes);
 router.use('/share', shareRoutes);
+router.use('/notifications', notificationRoutes);
 
 // API info endpoint
 router.get('/', (req, res) => {

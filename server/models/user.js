@@ -1,5 +1,14 @@
 const { Schema, model } = require('mongoose');
 
+const PushSubscriptionSchema = new Schema({
+  endpoint: { type: String, required: true },
+  expirationTime: { type: Number, default: null },
+  keys: {
+    p256dh: { type: String, required: true },
+    auth: { type: String, required: true }
+  }
+}, { _id: false });
+
 const SharedBySchema = new Schema({
   id: { type: String, required: true },
   email: { type: String, required: true, lowercase: true, trim: true },
@@ -32,7 +41,8 @@ const UserSchema = new Schema({
   passwordHash: { type: String, required: true },
   role: { type: String, enum: ['user', 'investor'], default: 'user' },
   createdAt: { type: Date, default: Date.now },
-  requests: { type: [RequestSchema], default: [] }
+  requests: { type: [RequestSchema], default: [] },
+  pushSubscriptions: { type: [PushSubscriptionSchema], default: [] }
 }, { _id: false });
 
 UserSchema.methods.addRequest = async function (summary) {
