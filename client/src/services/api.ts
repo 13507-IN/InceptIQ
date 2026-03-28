@@ -483,6 +483,12 @@ class ApiService {
   async createShareLink(analysisId: string): Promise<{ token: string; shareUrl: string; expiresAt: string }> {
     try {
       const response = await api.post('/share', { analysisId });
+      
+      // Override backend shareUrl with actual client origin to avoid localhost issues in production
+      if (response.data && response.data.token) {
+        response.data.shareUrl = `${window.location.origin}/share/${response.data.token}`;
+      }
+      
       return response.data;
     } catch (error: any) {
       console.error('Failed to create share link:', error);
