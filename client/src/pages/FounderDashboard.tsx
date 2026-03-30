@@ -163,7 +163,7 @@ const FounderDashboard: React.FC = () => {
             </div>
             <p className="text-3xl font-bold text-sand-100">
               {stats.averageScore}
-              <span className="text-lg text-sand-400">/10</span>
+              <span className="text-lg text-sand-400">/100</span>
             </p>
             <p className="text-sm text-sand-400 mt-2">Overall performance</p>
           </motion.div>
@@ -288,7 +288,7 @@ const FounderDashboard: React.FC = () => {
                           return score != null ? (
                             <div className="flex items-center gap-1 px-2 py-1 bg-sage-500/20 rounded text-sage-300">
                               <LineChart className="h-4 w-4" />
-                              Score: {Math.round(score)}/10
+                              Score: {Math.round(score)}/100
                             </div>
                           ) : null;
                         })()}
