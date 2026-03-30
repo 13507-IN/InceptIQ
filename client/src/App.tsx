@@ -8,6 +8,7 @@ import { AuthContext, AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import Login from './pages/Login';
 import Home from './pages/Home';
+import FounderDashboard from './pages/FounderDashboard';
 import Analysis from './pages/Analysis';
 import AnalysisStreaming from './pages/AnalysisStreaming';
 import Results from './pages/Results';
@@ -88,6 +89,14 @@ function App() {
                     <Route path="/investor/login" element={<Login key="investor-login" />} />
                     <Route
                       path="/founder"
+                      element={
+                        <ProtectedRoute>
+                          <FounderDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/founder/analysis"
                       element={
                         <ProtectedRoute>
                           <Analysis />

@@ -77,8 +77,8 @@ const Header: React.FC = () => {
                 </Link>
 
                 <Link
-                  to="/founder"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/founder')
+                  to="/founder/analysis"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/founder/analysis')
                       ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                     }`}
@@ -183,9 +183,9 @@ const Header: React.FC = () => {
                 </Link>
 
                 <Link
-                  to="/founder"
+                  to="/founder/analysis"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/founder')
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/founder/analysis')
                       ? 'text-sand-100 bg-sage-500/20'
                       : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
                     }`}
