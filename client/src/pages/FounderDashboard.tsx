@@ -42,17 +42,29 @@ const FounderDashboard: React.FC = () => {
         
         if (response && response.requests && Array.isArray(response.requests)) {
           const allAnalyses = response.requests as Analysis[];
-          const recentAnalyses = allAnalyses.slice(0, 10);
+          
+          // Filter for analyses with valid scores (same logic as ScoreTrends)
+          const validAnalyses = allAnalyses.filter((r: any) => {
+            const a = r.analysis;
+            return a && (a.overallScore != null || a.analysis?.overallScore != null);
+          });
+
+          // Show only last 3 analyses
+          const recentAnalyses = allAnalyses.slice(0, 3);
           setAnalyses(recentAnalyses);
 
-          // Calculate stats
+          // Calculate average score (same formula as ScoreTrends - Math.round())
           const totalAnalyses = allAnalyses.length;
-          const averageScore = allAnalyses.length > 0
-            ? (allAnalyses.reduce((sum: number, a: Analysis) => sum + (a.score || 0), 0) / allAnalyses.length)
+          const averageScore = validAnalyses.length > 0
+            ? Math.round(validAnalyses.reduce((sum: number, a: any) => {
+                // Handle nested score structure like ScoreTrends does
+                const score = a.analysis?.analysis?.overallScore ?? a.analysis?.overallScore ?? 0;
+                return sum + score;
+              }, 0) / validAnalyses.length)
             : 0;
           const totalViews = allAnalyses.length * 2; // Mock calculation
 
-          setStats({ totalAnalyses, averageScore: parseFloat(averageScore.toFixed(1)), totalViews });
+          setStats({ totalAnalyses, averageScore, totalViews });
         } else {
           setAnalyses([]);
           setStats({ totalAnalyses: 0, averageScore: 0, totalViews: 0 });
@@ -150,7 +162,7 @@ const FounderDashboard: React.FC = () => {
               </div>
             </div>
             <p className="text-3xl font-bold text-sand-100">
-              {stats.averageScore.toFixed(1)}
+              {stats.averageScore}
               <span className="text-lg text-sand-400">/10</span>
             </p>
             <p className="text-sm text-sand-400 mt-2">Overall performance</p>
@@ -175,7 +187,7 @@ const FounderDashboard: React.FC = () => {
         {/* Recent Analyses Section */}
         <motion.div variants={itemVariants}>
           <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-bold text-sand-100">Recent Analyses</h2>
+            <h2 className="text-2xl font-bold text-sand-100">Last 3 Analyses</h2>
             <span className="text-sm bg-sage-500/20 text-sage-300 px-3 py-1 rounded-full">
               {analyses.length}
             </span>
@@ -208,12 +220,22 @@ const FounderDashboard: React.FC = () => {
                     .then(response => {
                       if (response?.requests) {
                         const allAnalyses = response.requests as Analysis[];
-                        setAnalyses(allAnalyses.slice(0, 10));
+                        setAnalyses(allAnalyses.slice(0, 3));
+                        
+                        const validAnalyses = allAnalyses.filter((r: any) => {
+                          const a = r.analysis;
+                          return a && (a.overallScore != null || a.analysis?.overallScore != null);
+                        });
+                        
                         const totalAnalyses = allAnalyses.length;
-                        const averageScore = allAnalyses.length > 0
-                          ? (allAnalyses.reduce((sum: number, a: Analysis) => sum + (a.score || 0), 0) / allAnalyses.length)
+                        const averageScore = validAnalyses.length > 0
+                          ? Math.round(validAnalyses.reduce((sum: number, a: any) => {
+                              const score = a.analysis?.analysis?.overallScore ?? a.analysis?.overallScore ?? 0;
+                              return sum + score;
+                            }, 0) / validAnalyses.length)
                           : 0;
-                        setStats({ totalAnalyses, averageScore: parseFloat(averageScore.toFixed(1)), totalViews: allAnalyses.length * 2 });
+                        
+                        setStats({ totalAnalyses, averageScore, totalViews: allAnalyses.length * 2 });
                       }
                     })
                     .catch(err => setError(err.message || 'Failed to retry'))
@@ -261,12 +283,15 @@ const FounderDashboard: React.FC = () => {
                           <Calendar className="h-4 w-4" />
                           {formatDate(analysis.createdAt)}
                         </div>
-                        {analysis.score && (
-                          <div className="flex items-center gap-1 px-2 py-1 bg-sage-500/20 rounded text-sage-300">
-                            <LineChart className="h-4 w-4" />
-                            Score: {analysis.score.toFixed(1)}/10
-                          </div>
-                        )}
+                        {(() => {
+                          const score = (analysis as any).analysis?.analysis?.overallScore ?? (analysis as any).analysis?.overallScore;
+                          return score != null ? (
+                            <div className="flex items-center gap-1 px-2 py-1 bg-sage-500/20 rounded text-sage-300">
+                              <LineChart className="h-4 w-4" />
+                              Score: {Math.round(score)}/10
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
                     <Link
@@ -281,7 +306,7 @@ const FounderDashboard: React.FC = () => {
             </motion.div>
           )}
 
-          {analyses.length > 0 && analyses.length < (stats.totalAnalyses || 0) && (
+          {analyses.length > 0 && (stats.totalAnalyses > 3) && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -289,7 +314,7 @@ const FounderDashboard: React.FC = () => {
               className="mt-6 text-center"
             >
               <p className="text-sand-400 mb-4">
-                Showing {analyses.length} of {stats.totalAnalyses} analyses
+                Showing latest 3 of {stats.totalAnalyses} total analyses
               </p>
               <Link
                 to="/community"
