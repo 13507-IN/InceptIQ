@@ -127,7 +127,7 @@ const Login: React.FC = () => {
       if (resp && resp.token) {
         setToken(resp.token);
         setAuth(resp.token);
-        const destination = (resp?.user?.role || authRole) === 'investor' ? '/investor/projects' : '/analysis';
+        const destination = (resp?.user?.role || authRole) === 'investor' ? '/investor/projects' : '/founder';
         navigate(destination);
       }
     } catch (err: any) {

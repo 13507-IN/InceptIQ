@@ -86,6 +86,22 @@ function App() {
                     />
                     <Route path="/login" element={<Login key="user-login" />} />
                     <Route path="/investor/login" element={<Login key="investor-login" />} />
+                    <Route
+                      path="/founder"
+                      element={
+                        <ProtectedRoute>
+                          <Analysis />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/founder/stream"
+                      element={
+                        <ProtectedRoute>
+                          <AnalysisStreaming />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route path="/investor" element={<InvestorLanding />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/investor-directory" element={<InvestorDirectory />} />
