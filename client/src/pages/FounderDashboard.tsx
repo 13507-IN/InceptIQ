@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { apiService } from '../services/api';
-import { ArrowRight, LineChart, Plus, TrendingUp, Calendar, Users, Zap, Clock, BarChart3, FileText, AlertCircle } from 'lucide-react';
+import { ArrowRight, LineChart, Plus, TrendingUp, Calendar, Users, Zap, BarChart3, FileText, AlertCircle } from 'lucide-react';
 
 interface Analysis {
   id: string;
@@ -23,7 +23,6 @@ interface DashboardStats {
 }
 
 const FounderDashboard: React.FC = () => {
-  const navigate = useNavigate();
   const { token, user } = useContext<AuthContextValue>(AuthContext);
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [stats, setStats] = useState<DashboardStats>({ totalAnalyses: 0, averageScore: 0, totalViews: 0 });

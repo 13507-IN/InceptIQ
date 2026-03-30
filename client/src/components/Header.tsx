@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
-import { Home, FileText, Menu, X, User, Users, BadgeDollarSign, Briefcase, BarChart2, Bell } from 'lucide-react';
+import { Home, FileText, Menu, X, User, Users, BarChart2, Bell } from 'lucide-react';
 import { useNotifications } from '../hooks/useNotifications';
 import { motion } from 'framer-motion';
 
