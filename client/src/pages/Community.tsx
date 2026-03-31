@@ -226,7 +226,7 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
                 <motion.div
                   key={post.id}
                   variants={itemVariants}
-                  className={`border rounded-2xl p-6 shadow-xl transition-all ${
+                  className={`border rounded-lg p-6 shadow-xl transition-all ${
                     isMatched 
                       ? 'bg-gradient-to-br from-indigo-900/60 to-purple-900/40 border-indigo-500/60 shadow-indigo-500/20' 
                       : 'bg-gradient-to-br from-gray-800/60 to-gray-900/60 border-gray-700/50'
@@ -252,7 +252,7 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
                         type="button"
                         onClick={() => handleDelete(post.id)}
                         disabled={isDeleting}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-red-500/40 bg-red-500/10 text-red-200 text-xs font-semibold hover:bg-red-500/20 transition disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-red-500/40 bg-red-500/10 text-red-200 text-xs font-semibold hover:bg-red-500/20 transition disabled:opacity-50"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         {isDeleting ? 'Deleting...' : 'Delete'}
@@ -277,7 +277,7 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
                       type="button"
                       onClick={() => handleVote(post.id, 'up')}
                       disabled={isVoting}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-200 text-xs font-medium hover:bg-emerald-500/20 transition disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 text-emerald-200 text-xs font-medium hover:bg-emerald-500/20 transition disabled:opacity-50"
                     >
                       <ThumbsUp className="h-3.5 w-3.5" />
                       <span>{post.upvotes ?? 0}</span>
@@ -286,7 +286,7 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
                       type="button"
                       onClick={() => handleVote(post.id, 'down')}
                       disabled={isVoting}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-200 text-xs font-medium hover:bg-amber-500/20 transition disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-200 text-xs font-medium hover:bg-amber-500/20 transition disabled:opacity-50"
                     >
                       <ThumbsDown className="h-3.5 w-3.5" />
                       <span>{post.downvotes ?? 0}</span>
@@ -295,7 +295,7 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
                       type="button"
                       onClick={() => handleVote(post.id, 'like')}
                       disabled={isVoting}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-500/40 bg-rose-500/10 text-rose-200 text-xs font-medium hover:bg-rose-500/20 transition disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-rose-500/40 bg-rose-500/10 text-rose-200 text-xs font-medium hover:bg-rose-500/20 transition disabled:opacity-50"
                     >
                       <Heart className="h-3.5 w-3.5" />
                       <span>{post.likes ?? 0}</span>
@@ -304,32 +304,32 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
 
                   <div className="flex flex-wrap gap-2 mb-4">
                     {post.idea.ideaType && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-gray-500/10 text-gray-200 border border-gray-500/30 uppercase">
+                      <span className="text-xs px-2 py-1 rounded-md bg-gray-500/10 text-gray-200 border border-gray-500/30 uppercase">
                         {post.idea.ideaType}
                       </span>
                     )}
                     {post.idea.targetMarket && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/30">
+                      <span className="text-xs px-2 py-1 rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/30">
                         Target: {post.idea.targetMarket}
                       </span>
                     )}
                     {post.idea.businessModel && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/30">
+                      <span className="text-xs px-2 py-1 rounded-md bg-sky-500/10 text-sky-300 border border-sky-500/30">
                         Model: {post.idea.businessModel}
                       </span>
                     )}
                     {post.idea.industry && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                      <span className="text-xs px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
                         Industry: {post.idea.industry}
                       </span>
                     )}
                     {post.idea.budget && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                      <span className="text-xs px-2 py-1 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/30">
                         Budget: {post.idea.budget}
                       </span>
                     )}
                     {post.idea.timeline && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/30">
+                      <span className="text-xs px-2 py-1 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/30">
                         Timeline: {post.idea.timeline}
                       </span>
                     )}
@@ -360,7 +360,7 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
           </motion.div>
 
           <div className="space-y-4 lg:sticky lg:top-24">
-            <div className="bg-gradient-to-br from-gray-900/70 to-gray-800/50 border border-gray-700/60 rounded-2xl p-5 shadow-lg">
+            <div className="bg-gradient-to-br from-gray-900/70 to-gray-800/50 border border-gray-700/60 rounded-lg p-5 shadow-lg">
               <div className="flex items-center gap-2 mb-4">
                 <div className="p-2 rounded-lg bg-emerald-500/15">
                   <TrendingUp className="h-4 w-4 text-emerald-300" />
