@@ -146,7 +146,7 @@ class ApiService {
     }
   }
 
-  // Extract form fields from PDF text using Gemini AI
+  // Extract form fields from PDF text using Dristi AI
   async extractFormFieldsFromPdf(pdfText: string): Promise<any> {
     try {
       const response = await api.post('/analyze/extract-pdf-fields', { pdfText });

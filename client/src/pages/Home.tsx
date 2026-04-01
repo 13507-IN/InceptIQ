@@ -267,7 +267,7 @@ const Home: React.FC = () => {
     },
     {
       title: 'AI deep scan',
-      description: 'Gemini analyzes uniqueness, market viability, and competitive pressure.',
+      description: 'Dristi AI analyzes uniqueness, market viability, and competitive pressure.',
       icon: BrainCircuit
     },
     {

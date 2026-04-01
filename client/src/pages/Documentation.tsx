@@ -35,7 +35,7 @@ const Documentation: React.FC = () => {
       icon: <Code className="h-6 w-6" />,
       steps: [
         'Submit your startup concept',
-        'AI processes your idea using Gemini',
+        'AI processes your idea using Dristi AI',
         'Analysis includes market potential, risks, and recommendations',
         'Download detailed PDF report',
       ],

@@ -112,7 +112,7 @@ const PrivacyPolicy: React.FC = () => {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">6. Third-Party Services</h2>
             <p className="text-gray-300 leading-relaxed">
-              We use Google Gemini AI to analyze your startup ideas. Your anonymized data may be processed by these
+              We use Dristi AI to analyze your startup ideas. Your anonymized data may be processed by these
               third-party services in accordance with their privacy policies. We do not share your personal
               information (email, name) with third parties without your consent.
             </p>

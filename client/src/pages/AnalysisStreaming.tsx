@@ -18,7 +18,7 @@ interface StreamState {
     phase: Phase;
     analysisId: string | null;
     overallScore: number | null;
-    rawChunks: string;     // accumulated raw text from Gemini
+    rawChunks: string;     // accumulated raw text from Dristi AI
     charCount: number;
     errorMessage: string | null;
 }
@@ -223,7 +223,7 @@ const AnalysisStreaming: React.FC = () => {
 
     const statusLabel =
         state.phase === 'connecting' ? 'Connecting to AI...' :
-            state.phase === 'thinking' ? 'Gemini is thinking...' :
+            state.phase === 'thinking' ? 'Dristi AI is thinking...' :
                 state.phase === 'streaming' ? currentPhaseInfo.label :
                     state.phase === 'parsing' ? 'Finalising your report...' :
                         state.phase === 'done' ? 'Analysis complete! Redirecting...' :
@@ -307,7 +307,7 @@ const AnalysisStreaming: React.FC = () => {
                                 </span>
                             </h1>
                             <p className="text-sand-400">
-                                Gemini AI is running a deep analysis — this typically takes 30–60 seconds.
+                                Dristi AI is running a deep analysis — this typically takes 30–60 seconds.
                             </p>
                         </div>
 

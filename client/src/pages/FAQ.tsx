@@ -9,7 +9,7 @@ const FAQ: React.FC = () => {
     {
       question: 'How does inceptIQ analyze my startup idea?',
       answer:
-        'inceptIQ uses advanced AI (Google Gemini) to analyze your startup idea comprehensively. It evaluates market potential, identifies potential risks, provides recommendations, and assesses viability. Our AI considers industry trends, competition, and your specific market segment to provide personalized insights.',
+        'inceptIQ uses advanced AI (Dristi AI) to analyze your startup idea comprehensively. It evaluates market potential, identifies potential risks, provides recommendations, and assesses viability. Our AI considers industry trends, competition, and your specific market segment to provide personalized insights.',
     },
     {
       question: 'What information do I need to provide?',

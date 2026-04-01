@@ -718,7 +718,7 @@ const Analysis: React.FC = () => {
                 <span className="ml-1 text-[10px] uppercase tracking-widest font-bold bg-white/15 px-1.5 py-0.5 rounded-full">Live</span>
               </motion.button>
               <p className="text-gray-400 text-sm mt-4 text-center max-w-md">
-                Results stream in real time — you'll see Gemini's thinking as it happens.
+                Results stream in real time — you'll see Dristi AI's thinking as it happens.
               </p>
             </motion.div>
           </motion.form>
