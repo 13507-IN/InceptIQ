@@ -12,7 +12,6 @@ const pitchDeckRoutes = require('./pitchDecks');
 const uploadRoutes = require('./uploads');
 const shareRoutes = require('./share');
 const notificationRoutes = require('./notifications');
-const researchRoutes = require('./research');
 const benchmarkRoutes = require('./benchmark');
 const competitorRoutes = require('./competitors');
 
@@ -27,7 +26,6 @@ router.use('/pitch-decks', pitchDeckRoutes);
 router.use('/uploads', uploadRoutes);
 router.use('/share', shareRoutes);
 router.use('/notifications', notificationRoutes);
-router.use('/research', researchRoutes);
 router.use('/benchmark', benchmarkRoutes);
 router.use('/competitors', competitorRoutes);
 
