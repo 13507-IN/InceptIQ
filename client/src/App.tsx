@@ -16,6 +16,7 @@ import Compare from './pages/Compare';
 import Profile from './pages/Profile';
 import Community from './pages/Community';
 import CommunityPublish from './pages/CommunityPublish';
+import CompetitorTracker from './pages/CompetitorTracker';
 import Pricing from './pages/Pricing';
 import InvestorDirectory from './pages/InvestorDirectory';
 import InvestorLanding from './pages/InvestorLanding';
@@ -144,6 +145,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <ScoreTrends />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/competitors"
+                      element={
+                        <ProtectedRoute>
+                          <CompetitorTracker />
                         </ProtectedRoute>
                       }
                     />

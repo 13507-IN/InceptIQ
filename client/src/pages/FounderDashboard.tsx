@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { apiService } from '../services/api';
-import { ArrowRight, LineChart, Plus, TrendingUp, Calendar, Users, Zap, BarChart3, FileText, AlertCircle } from 'lucide-react';
+import { ArrowRight, LineChart, Plus, TrendingUp, Calendar, Users, Zap, BarChart3, FileText, AlertCircle, Target } from 'lucide-react';
 
 interface Analysis {
   id: string;
@@ -118,13 +118,21 @@ const FounderDashboard: React.FC = () => {
         </motion.div>
 
         {/* Quick Action Button */}
-        <motion.div variants={itemVariants} className="mb-8">
+        <motion.div variants={itemVariants} className="mb-8 flex flex-wrap gap-4">
           <Link
             to="/founder/analysis"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sage-500 to-sage-400 hover:from-sage-400 hover:to-sage-300 text-ink-900 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-sage-500/30 group"
           >
             <Plus className="h-5 w-5" />
             Start New Analysis
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+          <Link
+            to="/competitors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#0a122a] border border-sage-500/30 hover:border-sage-400 hover:bg-sage-500/10 text-sage-400 font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-sage-500/20 group"
+          >
+            <Target className="h-5 w-5" />
+            Competitors Tracker
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>

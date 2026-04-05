@@ -547,6 +547,56 @@ class ApiService {
       throw new Error(error.response?.data?.error || 'Failed to remove push subscription.');
     }
   }
+  // --- Benchmark ---
+  async getIndustryBenchmark(industry: string, overallScore?: number, ideaTitle?: string) {
+    const params = new URLSearchParams();
+    if (overallScore) params.append('overallScore', overallScore.toString());
+    if (ideaTitle) params.append('ideaTitle', ideaTitle);
+    
+    try {
+      const response = await api.get(`/benchmark/${encodeURIComponent(industry)}?${params.toString()}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to fetch benchmark.');
+    }
+  }
+
+  // --- Competitors ---
+  async listCompetitors() {
+    try {
+      const response = await api.get('/competitors');
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to list competitors.');
+    }
+  }
+
+  async addCompetitor(data: { name: string, website?: string, notes?: string, analysisId?: string }) {
+    try {
+      const response = await api.post('/competitors', data);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to add competitor.');
+    }
+  }
+
+  async deleteCompetitor(id: string) {
+    try {
+      const response = await api.delete(`/competitors/${id}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to delete competitor.');
+    }
+  }
+
+  async generateCompetitorReport(id: string) {
+    try {
+      const response = await api.post(`/competitors/${id}/report`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to generate report.');
+    }
+  }
 }
 
 // Export singleton instance

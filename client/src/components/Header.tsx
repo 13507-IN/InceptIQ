@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
-import { Home, FileText, Menu, X, User, Users, BarChart2, Bell } from 'lucide-react';
+import { Home, FileText, Menu, X, User, Users, BarChart2, Bell, Target } from 'lucide-react';
 import { useNotifications } from '../hooks/useNotifications';
 import { motion } from 'framer-motion';
 
@@ -105,6 +105,16 @@ const Header: React.FC = () => {
                 >
                   <Users className="h-4 w-4" />
                   <span>Community</span>
+                </Link>
+                <Link
+                  to="/competitors"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive('/competitors')
+                      ? 'text-sand-100 bg-sage-500/20 border border-sage-400/40'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
+                    }`}
+                >
+                  <Target className="h-4 w-4" />
+                  <span>Competitors</span>
                 </Link>
               </>
             )}
@@ -219,6 +229,19 @@ const Header: React.FC = () => {
                   <div className="flex items-center space-x-2">
                     <Users className="h-4 w-4" />
                     <span>Community</span>
+                  </div>
+                </Link>
+                <Link
+                  to="/competitors"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive('/competitors')
+                      ? 'text-sand-100 bg-sage-500/20'
+                      : 'text-sand-300 hover:text-sand-100 hover:bg-sand-100/5'
+                    }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Target className="h-4 w-4" />
+                    <span>Competitors</span>
                   </div>
                 </Link>
               </>

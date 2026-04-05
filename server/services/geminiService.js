@@ -547,6 +547,92 @@ Be intelligent about inferring missing information from context. If a field cann
             };
         }
     }
+    async generateIndustryBenchmark(industry, userOverallScore, ideaTitle) {
+        const prompt = `
+You are an expert startup analyst providing real-world industry benchmarks.
+Context:
+- Industry: ${industry}
+- The user's startup ("${ideaTitle || 'the startup'}") has an overall AI viability score of: ${userOverallScore || 50}/100.
+
+Provide benchmark data for the ${industry} industry. 
+Include:
+1. Average uniqueness, market viability, and competition scores for typical early-stage startups in this industry.
+2. An estimated percentile for the user's score (${userOverallScore || 50}).
+3. 2-3 brief insights on current trends or challenges in this specific industry.
+
+Format as JSON:
+{
+  "industry": "${industry}",
+  "averageScores": {
+    "overall": [0-100],
+    "uniqueness": [0-100],
+    "marketViability": [0-100],
+    "competition": [0-100]
+  },
+  "userPercentile": [0-100],
+  "insights": ["insight 1", "insight 2"]
+}
+Provide ONLY the JSON response without markdown formatting.
+`;
+        try {
+            const result = await this.model.generateContent(prompt);
+             const response = await result.response;
+            const text = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(text);
+        } catch (error) {
+            console.error('Failed to generate industry benchmark:', error);
+            // Fallback
+             return {
+                industry,
+                averageScores: { overall: 60, uniqueness: 55, marketViability: 65, competition: 50 },
+                userPercentile: 50,
+                insights: ["The industry is highly competitive.", "Differentiation is key to survival."]
+            };
+        }
+    }
+
+    async generateCompetitorReport(competitor, userStartup) {
+        const prompt = `
+You are a competitive intelligence AI. Analyze this competitor relative to the user's startup.
+
+User's Startup:
+- Title: ${userStartup?.ideaTitle || 'Unknown'}
+- Description: ${userStartup?.ideaDescription || 'Unknown'}
+- Industry: ${userStartup?.industry || 'Unknown'}
+
+Competitor:
+- Name: ${competitor.name}
+- Website: ${competitor.website || 'Not provided'}
+- User Notes: ${competitor.notes || 'None'}
+
+Provide a competitive intelligence report in JSON format:
+{
+  "summary": "2-3 sentences summarizing the competitor's market position relative to the user's startup.",
+  "threatLevel": "High" (or "Medium", "Low"),
+  "strengths": ["strength 1", "strength 2"],
+  "weaknesses": ["weakness 1", "weakness 2"],
+  "recentMoves": ["likely recent move or focus area 1", "move 2"],
+  "recommendations": ["how the user can compete organically 1", "recommendation 2"]
+}
+Provide ONLY the JSON response without markdown formatting.
+`;
+         try {
+            const result = await this.model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(text);
+        } catch (error) {
+            console.error('Failed to generate competitor report:', error);
+            return {
+                summary: "Unable to generate detailed competitive intelligence at this time.",
+                threatLevel: "Medium",
+                strengths: ["Established presence"],
+                weaknesses: ["Potential innovation lag"],
+                recentMoves: ["Maintaining current market share"],
+                recommendations: ["Focus on your unique value proposition."]
+            };
+        }
+    }
 }
 
 module.exports = new GeminiService();

@@ -107,8 +107,42 @@ const notifyUser = async (userDoc, matchData) => {
   }
 };
 
+const sendActionNotification = async (userDoc, actionTitle, actionBody, targetUrl = '/') => {
+  if (!userDoc || !Array.isArray(userDoc.pushSubscriptions) || userDoc.pushSubscriptions.length === 0) return;
+
+  const payload = {
+    title: actionTitle,
+    body: actionBody,
+    icon: '/logo-main.png',
+    badge: '/logo-main.png',
+    data: {
+      url: targetUrl
+    }
+  };
+
+  const expiredEndpoints = [];
+  await Promise.all(
+    userDoc.pushSubscriptions.map(async (sub) => {
+      const result = await sendNotification(sub, payload);
+      if (result === 'expired') expiredEndpoints.push(sub.endpoint);
+    })
+  );
+
+  if (expiredEndpoints.length > 0) {
+    userDoc.pushSubscriptions = userDoc.pushSubscriptions.filter(
+      (sub) => !expiredEndpoints.includes(sub.endpoint)
+    );
+    try {
+      await userDoc.save();
+    } catch (err) {
+      console.warn('[PushNotifications] Could not clean up expired subscriptions:', err.message);
+    }
+  }
+};
+
 module.exports = {
   sendMatchNotification,
   notifyUser,
+  sendActionNotification,
   getVapidPublicKey: () => VAPID_PUBLIC_KEY || ''
 };

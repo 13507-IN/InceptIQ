@@ -11,6 +11,7 @@ import { AuthContext } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { FounderMatch } from "../types";
 import MarketSizeEstimator from "../components/MarketSizeEstimator";
+import IndustryBenchmark from "../components/IndustryBenchmark";
 
 const Results: React.FC = () => {
   const navigate = useNavigate();
@@ -1041,6 +1042,21 @@ const Results: React.FC = () => {
                   ))}
                 </div>
               </div>
+
+              {analysisInput?.industry && (
+                <div className="mt-8 mb-6">
+                  <IndustryBenchmark 
+                    industry={analysisInput.industry}
+                    overallScore={overallScore ?? 0}
+                    userScores={{
+                      uniqueness: uniquenessScore ?? 0,
+                      marketViability: marketViabilityScore ?? 0,
+                      competition: competitionScore ?? 0
+                    }}
+                    ideaTitle={analysisInput.ideaTitle}
+                  />
+                </div>
+              )}
 
               <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat) => (
