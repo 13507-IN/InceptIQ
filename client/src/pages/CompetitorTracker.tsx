@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Cpu, Globe, Target, AlertTriangle, Shield, CheckCircle } from 'lucide-react';
 import { apiService } from '../services/api';
-import Header from '../components/Header';
 
 interface Competitor {
   _id: string;
@@ -82,8 +81,6 @@ const CompetitorTracker: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0a122a] font-sans pb-12">
-      <Header />
-      
       <main className="container mx-auto px-4 max-w-5xl mt-12">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-4">
           <div>
