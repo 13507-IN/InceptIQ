@@ -18,8 +18,9 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0a122a]/90 shadow-lg border-b border-sand-200/10 backdrop-blur-md">
-      <div className="container mx-auto px-4">
+    <header className="sticky top-0 z-50 bg-[#0a122a]/70 backdrop-blur-xl border-b border-white/5 shadow-2xl transition-all duration-300">
+      <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-sage-500/50 to-transparent opacity-50" />
+      <div className="container mx-auto px-4 relative">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
           <Link to={logoLink} className="flex items-center space-x-3 group">
