@@ -1,32 +1,66 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles */
-body {
-  margin: 0;
-  font-family: 'Space Grotesk', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #0a122a;
-  color: #e7decd;
-}
+@layer base {
+  body {
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #0a122a;
+    color: #e7decd;
+  }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Space Grotesk', sans-serif;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  }
 }
 
 /* Custom component styles */
 @layer components {
   .btn-primary {
-    @apply bg-primary-500 hover:bg-primary-600 text-[#0a122a] font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2;
+    @apply bg-sage-500 hover:bg-sage-400 text-ink-900 font-semibold py-3 px-6 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-offset-2 focus:ring-offset-[#0a122a] shadow-lg shadow-sage-500/20 hover:shadow-sage-500/40;
   }
 
   .btn-secondary {
-    @apply bg-sand-200 hover:bg-sand-300 text-ink-900 font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sand-400 focus:ring-offset-2;
+    @apply bg-sand-200 hover:bg-sand-100 text-ink-900 font-semibold py-3 px-6 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-sand-400 focus:ring-offset-2 focus:ring-offset-[#0a122a] shadow-lg shadow-sand-200/10 hover:shadow-sand-200/30;
+  }
+
+  .glass-panel {
+    @apply bg-ink-800/40 backdrop-blur-xl border border-white/5 shadow-2xl;
+  }
+
+  .glass-card {
+    @apply bg-sand-100/5 border border-sand-100/10 backdrop-blur-md rounded-2xl shadow-xl transition-all duration-300 hover:border-sage-500/30 hover:bg-sand-100/10;
+  }
+
+  .text-gradient-premium {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-sage-300 via-sand-200 to-sage-500;
+  }
+
+  .glow-effect {
+    position: relative;
+  }
+  .glow-effect::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(to right, rgba(104, 143, 63, 0.5), rgba(231, 222, 205, 0.5));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .glow-effect:hover::before {
+    opacity: 1;
   }
 
   .card {
@@ -34,11 +68,11 @@ code {
   }
 
   .form-input {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200;
+    @apply w-full px-4 py-3 bg-[#111b36] border border-sand-200/20 text-sand-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent transition-all duration-300;
   }
 
   .form-textarea {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200 resize-none;
+    @apply w-full px-4 py-3 bg-[#111b36] border border-sand-200/20 text-sand-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent transition-all duration-300 resize-none;
   }
 
   .score-badge {
@@ -46,15 +80,15 @@ code {
   }
 
   .score-high {
-    @apply bg-success-100 text-success-800;
+    @apply bg-success-500/20 text-success-300 border border-success-500/30;
   }
 
   .score-medium {
-    @apply bg-warning-100 text-warning-800;
+    @apply bg-warning-500/20 text-warning-300 border border-warning-500/30;
   }
 
   .score-low {
-    @apply bg-danger-100 text-danger-800;
+    @apply bg-danger-500/20 text-danger-300 border border-danger-500/30;
   }
 }
 

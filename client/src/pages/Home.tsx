@@ -399,13 +399,13 @@ const Home: React.FC = () => {
               clarity before they commit time and money.
             </p>
             <div className="hero-cta mt-8 flex flex-col sm:flex-row gap-4">
-              <Button className="bg-sage-500 hover:bg-sage-400 text-ink-900 font-semibold px-6 py-3 rounded-full" asChild>
+              <Button className="btn-primary rounded-full group glow-effect" asChild>
                 <Link to={analysisCtaHref} className="flex items-center gap-2">
                   {analysisCtaLabel}
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-              <Button className="bg-transparent border border-sand-200/40 text-sand-100 px-6 py-3 rounded-full" asChild>
+              <Button className="btn-secondary rounded-full bg-transparent border border-sand-200/40 text-sand-100 hover:bg-sand-100/10 px-6 py-3" asChild>
                 <Link to="/community" className="flex items-center gap-2">
                   Explore Community
                 </Link>
@@ -680,13 +680,13 @@ const Home: React.FC = () => {
                 Start your analysis in minutes and turn your idea into a clear, actionable strategy.
               </p>
               <div className="mt-6 flex flex-col sm:flex-row gap-4">
-                <Button className="bg-sand-200 text-ink-900 font-semibold px-6 py-3 rounded-full" asChild>
+                <Button className="btn-secondary rounded-full group glow-effect" asChild>
                   <Link to={analysisCtaHref} className="flex items-center gap-2">
                     {finalCtaLabel}
-                    <Rocket className="h-4 w-4" />
+                    <Rocket className="h-4 w-4 group-hover:-translate-y-1 transition-transform" />
                   </Link>
                 </Button>
-                <Button className="bg-transparent border border-sand-200/40 text-sand-100 px-6 py-3 rounded-full" asChild>
+                <Button className="btn-primary rounded-full bg-transparent border border-sand-200/40 text-sand-100 hover:bg-sand-100/10 px-6 py-3" asChild>
                   <Link to="/documentation">See how it works</Link>
                 </Button>
               </div>
