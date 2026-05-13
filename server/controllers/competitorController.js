@@ -1,6 +1,6 @@
 const Competitor = require('../models/competitor');
 const User = require('../models/user');
-const geminiService = require('../services/geminiService');
+const aiService = require('../services/aiService');
 const pushNotificationService = require('../services/pushNotificationService');
 
 const competitorController = {
@@ -89,7 +89,7 @@ const competitorController = {
           userStartup = user.requests[0].input;
       }
 
-      const report = await geminiService.generateCompetitorReport(competitor, userStartup);
+      const report = await aiService.generateCompetitorReport(competitor, userStartup);
 
       competitor.lastReport = report;
       competitor.lastReportAt = new Date();

@@ -1,5 +1,5 @@
 const User = require('../models/user');
-const geminiService = require('../services/geminiService');
+const aiService = require('../services/aiService');
 const pushNotificationService = require('../services/pushNotificationService');
 
 const benchmarkController = {
@@ -14,7 +14,7 @@ const benchmarkController = {
 
       const user = await User.findById(req.user.id);
       
-      const benchmarkData = await geminiService.generateIndustryBenchmark(
+      const benchmarkData = await aiService.generateIndustryBenchmark(
         industry, 
         overallScore ? parseInt(overallScore) : null,
         ideaTitle

@@ -1,7 +1,7 @@
 {
   "name": "ai-startup-validator-server",
   "version": "1.0.0",
-  "description": "Backend server for AI Startup Validator - analyzes startup ideas using Google Gemini AI",
+  "description": "Backend server for AI Startup Validator - analyzes startup ideas using xAI Grok (primary) and Google Gemini AI (fallback)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -32,6 +32,7 @@
     "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.6.7",
+    "openai": "^6.37.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.17.2",

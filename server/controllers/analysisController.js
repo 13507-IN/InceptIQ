@@ -1,4 +1,4 @@
-const geminiService = require('../services/geminiService');
+const aiService = require('../services/aiService');
 const { v4: uuidv4 } = require('uuid');
 const { analysisStorage } = require('../utils/storage');
 const User = require('../models/user');
@@ -11,8 +11,8 @@ const analysisController = {
 
             console.log(`🔄 Starting analysis for idea: "${ideaData.ideaTitle}" (ID: ${analysisId})`);
 
-            // Get AI analysis from Gemini
-            const aiResult = await geminiService.analyzeStartupIdea(ideaData);
+            // Get AI analysis
+            const aiResult = await aiService.analyzeStartupIdea(ideaData);
 
             // Store the complete analysis result
             const analysisResult = {
@@ -168,7 +168,7 @@ const analysisController = {
                 });
             }
 
-            const insights = await geminiService.getQuickInsights(ideaTitle, ideaDescription);
+            const insights = await aiService.getQuickInsights(ideaTitle, ideaDescription);
 
             res.status(200).json({
                 success: true,
@@ -229,7 +229,7 @@ const analysisController = {
             console.log('📄 Extracting form fields from PDF text...');
             console.log(`📊 PDF text size: ${pdfText.length} bytes`);
             
-            const result = await geminiService.extractFormFieldsFromPdfText(pdfText);
+            const result = await aiService.extractFormFieldsFromPdfText(pdfText);
 
             if (!result.success) {
                 return res.status(400).json({
@@ -282,12 +282,12 @@ const analysisController = {
             res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
         };
 
-        send('thinking', { message: 'Gemini is analyzing your idea...', analysisId });
+        send('thinking', { message: 'AI is analyzing your idea...', analysisId });
 
         let charCount = 0;
 
         try {
-            const aiResult = await geminiService.analyzeStartupIdeaStream(ideaData, (chunkText) => {
+            const aiResult = await aiService.analyzeStartupIdeaStream(ideaData, (chunkText) => {
                 charCount += chunkText.length;
                 send('chunk', { text: chunkText, chars: charCount });
             });

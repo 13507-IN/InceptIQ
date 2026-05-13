@@ -1,35 +1,46 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 
-class GeminiService {
+class GrokService {
     constructor() {
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error('GEMINI_API_KEY is required but not found in environment variables');
-        }
+        this.apiKey = process.env.GROK_API_KEY;
+        this.model = process.env.GROK_MODEL || 'grok-2-1212';
+        this.baseURL = 'https://api.x.ai/v1';
 
-        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        if (this.apiKey) {
+            this.client = new OpenAI({
+                apiKey: this.apiKey,
+                baseURL: this.baseURL,
+            });
+        }
+    }
+
+    isAvailable() {
+        return !!this.apiKey;
     }
 
     async analyzeStartupIdea(ideaData) {
         const { ideaTitle, ideaDescription, targetMarket, businessModel, industry, budget, timeline } = ideaData;
 
-        const prompt = this.createAnalysisPrompt({
-            ideaTitle,
-            ideaDescription,
-            targetMarket,
-            businessModel,
-            industry,
-            budget,
-            timeline
+        const systemPrompt = `You are an expert startup analyst and business consultant. Analyze the following startup idea and provide a comprehensive evaluation in JSON format. Respond ONLY with valid JSON, no markdown, no extra text.`;
+
+        const userPrompt = this.createAnalysisPrompt({
+            ideaTitle, ideaDescription, targetMarket, businessModel, industry, budget, timeline
         });
 
         try {
-            console.log('Sending request to Gemini AI for startup analysis...');
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response;
-            const analysisText = response.text();
+            console.log('Sending request to Grok AI for startup analysis...');
+            const response = await this.client.chat.completions.create({
+                model: this.model,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                response_format: { type: 'json_object' },
+                temperature: 0.7,
+                max_tokens: 8192,
+            });
 
-            // Parse the structured response
+            const analysisText = response.choices[0].message.content;
             const analysis = this.parseAnalysisResponse(analysisText);
 
             return {
@@ -39,39 +50,37 @@ class GeminiService {
                 timestamp: new Date().toISOString()
             };
         } catch (error) {
-            console.error('Gemini AI analysis failed:', error);
+            console.error('Grok AI analysis failed:', error);
             throw new Error(`AI analysis failed: ${error.message}`);
         }
     }
 
-    /**
-     * Streaming version of analyzeStartupIdea.
-     * Calls Gemini's generateContentStream and invokes onChunk(text) for every
-     * incremental text delta, then returns the final parsed analysis.
-     * 
-     * @param {object} ideaData   - The startup idea form data
-     * @param {function} onChunk  - Called with each raw text chunk as it arrives
-     */
     async analyzeStartupIdeaStream(ideaData, onChunk) {
         const { ideaTitle, ideaDescription, targetMarket, businessModel, industry, budget, timeline } = ideaData;
 
-        const prompt = this.createAnalysisPrompt({
-            ideaTitle,
-            ideaDescription,
-            targetMarket,
-            businessModel,
-            industry,
-            budget,
-            timeline
+        const systemPrompt = `You are an expert startup analyst and business consultant. Analyze the following startup idea and provide a comprehensive evaluation in JSON format. Respond ONLY with valid JSON, no markdown, no extra text.`;
+
+        const userPrompt = this.createAnalysisPrompt({
+            ideaTitle, ideaDescription, targetMarket, businessModel, industry, budget, timeline
         });
 
         try {
-            console.log('🔄 Starting streaming Gemini AI analysis...');
-            const streamResult = await this.model.generateContentStream(prompt);
+            console.log('Starting streaming Grok AI analysis...');
+            const stream = await this.client.chat.completions.create({
+                model: this.model,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                response_format: { type: 'json_object' },
+                temperature: 0.7,
+                max_tokens: 8192,
+                stream: true,
+            });
 
             let fullText = '';
-            for await (const chunk of streamResult.stream) {
-                const chunkText = chunk.text();
+            for await (const chunk of stream) {
+                const chunkText = chunk.choices[0]?.delta?.content || '';
                 if (chunkText) {
                     fullText += chunkText;
                     if (typeof onChunk === 'function') {
@@ -80,7 +89,7 @@ class GeminiService {
                 }
             }
 
-            console.log('✅ Streaming complete. Parsing final response...');
+            console.log('Grok streaming complete. Parsing final response...');
             const analysis = this.parseAnalysisResponse(fullText);
 
             return {
@@ -90,16 +99,249 @@ class GeminiService {
                 timestamp: new Date().toISOString()
             };
         } catch (error) {
-            console.error('Gemini AI streaming analysis failed:', error);
+            console.error('Grok AI streaming analysis failed:', error);
             throw new Error(`AI streaming analysis failed: ${error.message}`);
+        }
+    }
+
+    async getQuickInsights(ideaTitle, ideaDescription) {
+        const prompt = `Provide a quick 3-sentence insight about this startup idea:
+Title: ${ideaTitle}
+Description: ${ideaDescription}
+
+Focus on: uniqueness, market potential, and one key challenge.`;
+
+        try {
+            const response = await this.client.chat.completions.create({
+                model: this.model,
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0.7,
+                max_tokens: 500,
+            });
+            return response.choices[0].message.content.trim();
+        } catch (error) {
+            console.error('Quick insights generation failed:', error);
+            return "Unable to generate insights at this time. Please try again.";
+        }
+    }
+
+    async extractFormFieldsFromPdfText(pdfText) {
+        const sanitizedText = this.sanitizePdfText(pdfText);
+        const { text: trimmedText, truncated } = this.truncatePdfText(sanitizedText, 12000);
+
+        const systemPrompt = `You are an expert at extracting structured information from documents. Extract the requested fields from the PDF text and return ONLY valid JSON.`;
+
+        const userPrompt = `I have extracted text from a PDF about a startup idea. Please analyze this text and extract the following fields in JSON format:
+
+Extracted PDF Text:
+${trimmedText}
+
+Respond ONLY with a valid JSON object (no markdown, no extra text) with these fields:
+{
+    "ideaTitle": "The main startup idea or product name (max 200 chars)",
+    "ideaDescription": "A detailed description of the startup idea (max 5000 chars)",
+    "targetMarket": "Who are the target customers/market?",
+    "businessModel": "What is the business model? (choose from: subscription, marketplace, ecommerce, freemium, advertising, transaction, licensing, other)",
+    "industry": "What industry? (choose from: technology, healthcare, finance, education, retail, manufacturing, services, entertainment, other)",
+    "budget": "What is the budget range? (choose from: under-10k, 10k-50k, 50k-100k, 100k-500k, 500k-1m, over-1m)",
+    "timeline": "Timeline to market? (choose from: 3-months, 6-months, 1-year, over-1-year)",
+    "founderName": "(optional) Founder or contact name if present in the document",
+    "contactEmail": "(optional) Any contact email found in the PDF",
+    "website": "(optional) Website or URL mentioned in the document"
+}
+
+Be intelligent about inferring missing information from context. If a field cannot be determined, use null.`;
+
+        try {
+            console.log('Extracting form fields from PDF text using Grok...');
+            console.log(`PDF text length: ${sanitizedText.length} characters${truncated ? ' (truncated for prompt)' : ''}`);
+
+            if (!this.client) {
+                throw new Error('Grok client not initialized. Check GROK_API_KEY environment variable.');
+            }
+
+            let response = null;
+            const maxAttempts = 3;
+            let lastError = null;
+
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                try {
+                    response = await this.client.chat.completions.create({
+                        model: this.model,
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: userPrompt }
+                        ],
+                        response_format: { type: 'json_object' },
+                        temperature: 0.3,
+                        max_tokens: 4096,
+                    });
+                    break;
+                } catch (err) {
+                    lastError = err;
+                    const retryable = this.isRetryableError(err);
+                    if (!retryable || attempt === maxAttempts) {
+                        break;
+                    }
+                    const delayMs = 500 * attempt;
+                    console.warn(`Grok request failed (attempt ${attempt}/${maxAttempts}). Retrying in ${delayMs}ms...`);
+                    await this.delay(delayMs);
+                }
+            }
+
+            if (!response) {
+                throw lastError || new Error('No response received from Grok API');
+            }
+
+            const jsonText = response.choices[0].message.content.trim();
+            console.log(`Grok response received (${jsonText.length} chars)`);
+
+            let parsed = null;
+            try {
+                const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    parsed = JSON.parse(jsonMatch[0]);
+                } else {
+                    parsed = JSON.parse(jsonText);
+                }
+            } catch (parseErr) {
+                console.error('Failed to parse Grok JSON response:', parseErr.message);
+                const fallback = this.extractFormFieldsHeuristically(sanitizedText);
+                return {
+                    success: true,
+                    data: fallback,
+                    warning: 'AI response could not be parsed. Used heuristic extraction instead.',
+                    rawResponse: jsonText.substring(0, 1000),
+                    timestamp: new Date().toISOString()
+                };
+            }
+
+            console.log('Form fields extracted successfully');
+            return {
+                success: true,
+                data: parsed,
+                timestamp: new Date().toISOString()
+            };
+        } catch (error) {
+            const errorMessage = error && error.message ? String(error.message) : '';
+            console.error('Form field extraction failed:', errorMessage || error);
+
+            let userMessage = 'Failed to extract form fields from PDF';
+            if (errorMessage.includes('API key') || errorMessage.includes('api_key')) {
+                userMessage = 'API key not configured. Please contact support.';
+            } else if (errorMessage.includes('Insufficient') || errorMessage.includes('quota')) {
+                userMessage = 'AI service quota exceeded. Please try again later.';
+            } else if (errorMessage.includes('rate')) {
+                userMessage = 'AI service is currently busy. Please try again in a moment.';
+            }
+
+            const fallback = this.extractFormFieldsHeuristically(sanitizedText);
+            return {
+                success: true,
+                data: fallback,
+                warning: userMessage,
+                timestamp: new Date().toISOString()
+            };
+        }
+    }
+
+    async generateCompetitorReport(competitor, userStartup) {
+        const competitorName = competitor.name || 'Unknown';
+        const competitorWebsite = competitor.website || 'Not specified';
+        const competitorNotes = competitor.notes || 'None provided';
+
+        const userIdeaTitle = userStartup?.ideaTitle || 'Unknown';
+        const userIdeaDesc = userStartup?.ideaDescription || 'Not specified';
+        const userIndustry = userStartup?.industry || 'Not specified';
+
+        const prompt = `You are a competitive intelligence analyst. Compare the following startup with its competitor and provide a strategic analysis in JSON format.
+
+User's Startup:
+- Name: ${userIdeaTitle}
+- Description: ${userIdeaDesc}
+- Industry: ${userIndustry}
+
+Competitor:
+- Name: ${competitorName}
+- Website: ${competitorWebsite}
+- Notes: ${competitorNotes}
+
+Provide a JSON object with:
+{
+  "competitorOverview": "Brief description of the competitor",
+  "strengths": ["array of competitor strengths"],
+  "weaknesses": ["array of competitor weaknesses"],
+  "marketPosition": "How the competitor is positioned in the market",
+  "threatLevel": "High/Medium/Low",
+  "userAdvantages": ["array of user's advantages over this competitor"],
+  "recommendedStrategies": ["array of actionable strategies to compete"],
+  "keyDifferentiators": ["array of ways the user can differentiate"],
+  "riskFactors": ["array of risks to consider"]
+}`;
+
+        try {
+            console.log(`Generating competitor report for ${competitorName}...`);
+            const response = await this.client.chat.completions.create({
+                model: this.model,
+                messages: [{ role: 'user', content: prompt }],
+                response_format: { type: 'json_object' },
+                temperature: 0.7,
+                max_tokens: 4096,
+            });
+
+            const text = response.choices[0].message.content;
+            return JSON.parse(text);
+        } catch (error) {
+            console.error('Competitor report generation failed:', error);
+            throw new Error(`Failed to generate competitor report: ${error.message}`);
+        }
+    }
+
+    async generateIndustryBenchmark(industry, overallScore, ideaTitle) {
+        const score = overallScore || 'N/A';
+        const title = ideaTitle || 'Unknown';
+
+        const prompt = `You are an industry benchmarking expert. Analyze how a startup compares to industry standards and provide benchmark data in JSON format.
+
+Startup:
+- Name: ${title}
+- Industry: ${industry}
+- Overall Score: ${score}
+
+Provide a JSON object with:
+{
+  "industry": "${industry}",
+  "averageScore": "Average score for this industry",
+  "userScore": ${score},
+  "percentileRanking": "Estimated percentile ranking",
+  "industryInsights": ["Key insights about the industry"],
+  "strengthAreas": ["Areas where the startup scores above average"],
+  "improvementAreas": ["Areas needing improvement vs industry standards"],
+  "industryTrends": ["Current trends in this industry"],
+  "recommendations": ["Actionable recommendations to improve standing"]
+}`;
+
+        try {
+            console.log(`Generating industry benchmark for ${industry}...`);
+            const response = await this.client.chat.completions.create({
+                model: this.model,
+                messages: [{ role: 'user', content: prompt }],
+                response_format: { type: 'json_object' },
+                temperature: 0.7,
+                max_tokens: 4096,
+            });
+
+            const text = response.choices[0].message.content;
+            return JSON.parse(text);
+        } catch (error) {
+            console.error('Industry benchmark generation failed:', error);
+            throw new Error(`Failed to generate industry benchmark: ${error.message}`);
         }
     }
 
     createAnalysisPrompt(ideaData) {
         return `
-You are an expert startup analyst and business consultant. Analyze the following startup idea and provide a comprehensive evaluation in JSON format.
-
-**Startup Idea Details:**
+Startup Idea Details:
 - Title: ${ideaData.ideaTitle}
 - Description: ${ideaData.ideaDescription}
 - Target Market: ${ideaData.targetMarket || 'Not specified'}
@@ -108,8 +350,7 @@ You are an expert startup analyst and business consultant. Analyze the following
 - Budget: ${ideaData.budget || 'Not specified'}
 - Timeline: ${ideaData.timeline || 'Not specified'}
 
-Please provide your analysis in the following JSON structure:
-
+Provide your analysis in the following JSON structure:
 {
   "uniquenessScore": [0-100 numeric score],
   "marketViabilityScore": [0-100 numeric score],
@@ -166,15 +407,11 @@ Please provide your analysis in the following JSON structure:
     "breakEvenPoint": "estimated break-even timeline",
     "scalabilityRating": "High/Medium/Low"
   }
-}
-
-Provide only the JSON response without any additional text or markdown formatting.
-`;
+}`;
     }
 
     parseAnalysisResponse(responseText) {
         try {
-            // Clean the response to extract JSON
             const cleanedResponse = responseText
                 .replace(/```json/g, '')
                 .replace(/```/g, '')
@@ -182,7 +419,6 @@ Provide only the JSON response without any additional text or markdown formattin
 
             const analysis = JSON.parse(cleanedResponse);
 
-            // Validate required fields
             const requiredFields = ['uniquenessScore', 'marketViabilityScore', 'competitionScore', 'overallScore', 'analysis'];
             const missingFields = requiredFields.filter(field => !(field in analysis));
 
@@ -195,7 +431,6 @@ Provide only the JSON response without any additional text or markdown formattin
             console.error('Failed to parse AI response:', error);
             console.log('Raw response:', responseText);
 
-            // Return a fallback structure
             return {
                 uniquenessScore: 50,
                 marketViabilityScore: 50,
@@ -251,25 +486,6 @@ Provide only the JSON response without any additional text or markdown formattin
         }
     }
 
-    async getQuickInsights(ideaTitle, ideaDescription) {
-        const prompt = `
-Provide a quick 3-sentence insight about this startup idea:
-Title: ${ideaTitle}
-Description: ${ideaDescription}
-
-Focus on: uniqueness, market potential, and one key challenge.
-`;
-
-        try {
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response;
-            return response.text().trim();
-        } catch (error) {
-            console.error('Quick insights generation failed:', error);
-            return "Unable to generate insights at this time. Please try again.";
-        }
-    }
-
     sanitizePdfText(rawText) {
         if (!rawText) return '';
         return rawText
@@ -289,17 +505,17 @@ Focus on: uniqueness, market potential, and one key challenge.
         return { text: text.slice(0, maxChars), truncated: true };
     }
 
-    isRetryableGeminiError(error) {
+    isRetryableError(error) {
         const message = (error && error.message ? String(error.message) : '').toLowerCase();
         return (
-            message.includes('resource_exhausted') ||
+            message.includes('rate_limit') ||
             message.includes('rate limit') ||
             message.includes('429') ||
             message.includes('503') ||
-            message.includes('unavailable') ||
-            message.includes('deadline') ||
             message.includes('timeout') ||
-            message.includes('internal')
+            message.includes('unavailable') ||
+            message.includes('internal') ||
+            message.includes('server_error')
         );
     }
 
@@ -345,18 +561,15 @@ Focus on: uniqueness, market potential, and one key challenge.
         if (candidate && candidate.length <= 200) {
             return candidate.replace(/\s+/g, ' ').trim();
         }
-
         const lineCandidate = text.split(/\n/).map(s => s.trim()).filter(Boolean)[0];
         if (lineCandidate && lineCandidate.length <= 200 && lineCandidate.split(/\s+/).length <= 12) {
             return lineCandidate;
         }
-
         const sentenceCandidate = text.split(/[.!?]\s+/)[0] || '';
         const cleanedSentence = sentenceCandidate.replace(/\s+/g, ' ').trim();
         if (cleanedSentence && cleanedSentence.length <= 200) {
             return cleanedSentence;
         }
-
         const words = text.split(/\s+/).filter(Boolean).slice(0, 12).join(' ');
         return words || null;
     }
@@ -366,7 +579,6 @@ Focus on: uniqueness, market potential, and one key challenge.
         if (cleanCandidate && cleanCandidate.length >= 20) {
             return cleanCandidate.slice(0, 5000);
         }
-
         if (!text) return null;
         const normalized = text.replace(/\s+/g, ' ').trim();
         if (!normalized) return null;
@@ -417,219 +629,6 @@ Focus on: uniqueness, market potential, and one key challenge.
         if (/(over\s*1\s*year|18\s*months?|2\s*years?)/.test(lower)) return 'over-1-year';
         return null;
     }
-
-    async extractFormFieldsFromPdfText(pdfText) {
-        const sanitizedText = this.sanitizePdfText(pdfText);
-        const { text: trimmedText, truncated } = this.truncatePdfText(sanitizedText, 12000);
-
-        const prompt = `
-You are an expert at extracting structured information from documents. 
-I have extracted text from a PDF about a startup idea. 
-Please analyze this text and extract the following fields in JSON format:
-
-**Extracted PDF Text:**
-${trimmedText}
-
-Please respond ONLY with a valid JSON object (no markdown, no extra text) with these fields:
-{
-    "ideaTitle": "The main startup idea or product name (max 200 chars)",
-    "ideaDescription": "A detailed description of the startup idea (max 5000 chars)",
-    "targetMarket": "Who are the target customers/market?",
-    "businessModel": "What is the business model? (choose from: subscription, marketplace, ecommerce, freemium, advertising, transaction, licensing, other)",
-    "industry": "What industry? (choose from: technology, healthcare, finance, education, retail, manufacturing, services, entertainment, other)",
-    "budget": "What is the budget range? (choose from: under-10k, 10k-50k, 50k-100k, 100k-500k, 500k-1m, over-1m)",
-    "timeline": "Timeline to market? (choose from: 3-months, 6-months, 1-year, over-1-year)",
-    "founderName": "(optional) Founder or contact name if present in the document",
-    "contactEmail": "(optional) Any contact email found in the PDF",
-    "website": "(optional) Website or URL mentioned in the document"
 }
 
-Be intelligent about inferring missing information from context. If a field cannot be determined, use null.
-`;
-
-        try {
-            console.log('Extracting form fields from PDF text using Gemini...');
-            console.log(`PDF text length: ${sanitizedText.length} characters${truncated ? ' (truncated for prompt)' : ''}`);
-
-            if (!this.model) {
-                throw new Error('Gemini model not initialized. Check GEMINI_API_KEY environment variable.');
-            }
-
-            let result = null;
-            const maxAttempts = 3;
-            let lastError = null;
-
-            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-                try {
-                    result = await this.model.generateContent(prompt);
-                    break;
-                } catch (err) {
-                    lastError = err;
-                    const retryable = this.isRetryableGeminiError(err);
-                    if (!retryable || attempt === maxAttempts) {
-                        break;
-                    }
-                    const delayMs = 500 * attempt;
-                    console.warn(`Gemini request failed (attempt ${attempt}/${maxAttempts}). Retrying in ${delayMs}ms...`);
-                    await this.delay(delayMs);
-                }
-            }
-
-            if (!result) {
-                throw lastError || new Error('No response received from Gemini API');
-            }
-
-            const response = await result.response;
-
-            if (!response) {
-                throw new Error('Invalid response object from Gemini API');
-            }
-
-            const jsonText = response.text().trim();
-
-            console.log(`Gemini response received (${jsonText.length} chars)`);
-
-            // Parse JSON response
-            let parsed = null;
-            try {
-                // Extract JSON from response (in case there's markdown wrapping)
-                const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    parsed = JSON.parse(jsonMatch[0]);
-                } else {
-                    parsed = JSON.parse(jsonText);
-                }
-            } catch (parseErr) {
-                console.error('Failed to parse Gemini JSON response:', parseErr.message);
-                console.log('Raw response:', jsonText.substring(0, 500));
-
-                const fallback = this.extractFormFieldsHeuristically(sanitizedText);
-                return {
-                    success: true,
-                    data: fallback,
-                    warning: 'AI response could not be parsed. Used heuristic extraction instead.',
-                    rawResponse: jsonText.substring(0, 1000),
-                    timestamp: new Date().toISOString()
-                };
-            }
-
-            console.log('Form fields extracted successfully');
-            return {
-                success: true,
-                data: parsed,
-                timestamp: new Date().toISOString()
-            };
-        } catch (error) {
-            const errorMessage = error && error.message ? String(error.message) : '';
-            console.error('Form field extraction failed:', errorMessage || error);
-            console.error('Error type:', error && error.constructor ? error.constructor.name : 'Unknown');
-            console.error('Full error:', error);
-
-            // Provide more specific error messages
-            let userMessage = 'Failed to extract form fields from PDF';
-
-            if (errorMessage.includes('API key')) {
-                userMessage = 'API key not configured. Please contact support.';
-            } else if (errorMessage.includes('INVALID_ARGUMENT')) {
-                userMessage = 'Invalid request to AI service. The PDF might be too large or contain unsupported content.';
-            } else if (errorMessage.includes('RESOURCE_EXHAUSTED')) {
-                userMessage = 'AI service is currently busy. Please try again in a moment.';
-            } else if (errorMessage.includes('PERMISSION_DENIED')) {
-                userMessage = 'Not authorized to use AI service. Please check API key.';
-            }
-
-            const fallback = this.extractFormFieldsHeuristically(sanitizedText);
-            return {
-                success: true,
-                data: fallback,
-                warning: userMessage,
-                timestamp: new Date().toISOString()
-            };
-        }
-    }
-    async generateCompetitorReport(competitor, userStartup) {
-        const competitorName = competitor.name || 'Unknown';
-        const competitorWebsite = competitor.website || 'Not specified';
-        const competitorNotes = competitor.notes || 'None provided';
-
-        const userIdeaTitle = userStartup?.ideaTitle || 'Unknown';
-        const userIdeaDesc = userStartup?.ideaDescription || 'Not specified';
-        const userIndustry = userStartup?.industry || 'Not specified';
-
-        const prompt = `You are a competitive intelligence analyst. Compare the following startup with its competitor and provide a strategic analysis in JSON format.
-
-User's Startup:
-- Name: ${userIdeaTitle}
-- Description: ${userIdeaDesc}
-- Industry: ${userIndustry}
-
-Competitor:
-- Name: ${competitorName}
-- Website: ${competitorWebsite}
-- Notes: ${competitorNotes}
-
-Provide a JSON object with:
-{
-  "competitorOverview": "Brief description of the competitor",
-  "strengths": ["array of competitor strengths"],
-  "weaknesses": ["array of competitor weaknesses"],
-  "marketPosition": "How the competitor is positioned in the market",
-  "threatLevel": "High/Medium/Low",
-  "userAdvantages": ["array of user's advantages over this competitor"],
-  "recommendedStrategies": ["array of actionable strategies to compete"],
-  "keyDifferentiators": ["array of ways the user can differentiate"],
-  "riskFactors": ["array of risks to consider"]
-}`;
-
-        try {
-            console.log(`Generating competitor report for ${competitorName} via Gemini...`);
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text().trim();
-            const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(cleaned);
-        } catch (error) {
-            console.error('Competitor report generation failed:', error);
-            throw new Error(`Failed to generate competitor report: ${error.message}`);
-        }
-    }
-
-    async generateIndustryBenchmark(industry, overallScore, ideaTitle) {
-        const score = overallScore || 'N/A';
-        const title = ideaTitle || 'Unknown';
-
-        const prompt = `You are an industry benchmarking expert. Analyze how a startup compares to industry standards and provide benchmark data in JSON format.
-
-Startup:
-- Name: ${title}
-- Industry: ${industry}
-- Overall Score: ${score}
-
-Provide a JSON object with:
-{
-  "industry": "${industry}",
-  "averageScore": "Average score for this industry",
-  "userScore": ${score},
-  "percentileRanking": "Estimated percentile ranking",
-  "industryInsights": ["Key insights about the industry"],
-  "strengthAreas": ["Areas where the startup scores above average"],
-  "improvementAreas": ["Areas needing improvement vs industry standards"],
-  "industryTrends": ["Current trends in this industry"],
-  "recommendations": ["Actionable recommendations to improve standing"]
-}`;
-
-        try {
-            console.log(`Generating industry benchmark for ${industry} via Gemini...`);
-            const result = await this.model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text().trim();
-            const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(cleaned);
-        } catch (error) {
-            console.error('Industry benchmark generation failed:', error);
-            throw new Error(`Failed to generate industry benchmark: ${error.message}`);
-        }
-    }
-}
-
-module.exports = new GeminiService();
+module.exports = new GrokService();
