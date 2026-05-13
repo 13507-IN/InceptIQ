@@ -23,6 +23,13 @@ const VoteSchema = new Schema({
   like: { type: [String], default: [] }
 }, { _id: false });
 
+const InterestedInvestorSchema = new Schema({
+  userId: { type: String, required: true },
+  name: { type: String, default: null },
+  email: { type: String, default: null },
+  expressedAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const CommunityPostSchema = new Schema({
   id: { type: String, required: true, unique: true },
   analysisId: { type: String, default: null },
@@ -32,7 +39,9 @@ const CommunityPostSchema = new Schema({
   upvotes: { type: Number, default: 0 },
   downvotes: { type: Number, default: 0 },
   likes: { type: Number, default: 0 },
-  votes: { type: VoteSchema, default: () => ({}) }
+  votes: { type: VoteSchema, default: () => ({}) },
+  interestedInvestors: { type: [InterestedInvestorSchema], default: [] },
+  interestCount: { type: Number, default: 0 }
 }, { versionKey: false });
 
 CommunityPostSchema.index({ createdAt: -1 });
