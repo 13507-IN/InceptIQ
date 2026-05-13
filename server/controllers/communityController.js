@@ -3,7 +3,8 @@ const { analysisStorage, communityStorage } = require('../utils/storage');
 const CommunityPost = require('../models/communityPost');
 const { mongoose } = require('../db');
 const { findFounderMatches } = require('../services/founderMatchService');
-const { notifyUser } = require('../services/pushNotificationService');
+const { notifyUser, sendActionNotification, sendInvestorInterestNotification } = require('../services/pushNotificationService');
+const notificationService = require('../services/notificationService');
 const User = require('../models/user');
 
 const normalizeIdeaType = (value) => {
@@ -189,7 +190,7 @@ const communityController = {
                 data: post
             });
 
-            // Fire-and-forget: notify matched founders via Chrome push notifications
+            // Fire-and-forget: notify matched founders via push + in-app notifications
             setImmediate(async () => {
                 try {
                     const allPosts = isDbConnected()
@@ -210,7 +211,6 @@ const communityController = {
                     const matcherName = post.author?.name || post.author?.email || 'A founder';
                     const matcherTitle = post.idea?.ideaTitle || '';
 
-                    // Collect unique author IDs to notify
                     const authorIds = [...new Set(matches.map(m => m.author?.id).filter(Boolean))];
 
                     await Promise.all(
@@ -219,6 +219,15 @@ const communityController = {
                                 const matchedUser = await User.findById(authorId);
                                 if (!matchedUser) return;
                                 const bestMatch = matches.find(m => m.author?.id === authorId);
+
+                                await notificationService.create(
+                                    authorId,
+                                    'founder_match',
+                                    'New Founder Match!',
+                                    `${matcherName}'s idea "${matcherTitle}" matches yours with ${bestMatch?.matchScore ?? 0}% score.`,
+                                    { postId: post.id, matchScore: bestMatch?.matchScore ?? 0, url: '/community' }
+                                );
+
                                 await notifyUser(matchedUser, {
                                     matcherName,
                                     matcherTitle,
@@ -485,6 +494,144 @@ const communityController = {
             return res.status(500).json({
                 success: false,
                 error: 'Failed to delete post',
+                message: error.message
+            });
+        }
+    },
+
+    async expressInterest(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user?.id;
+
+            if (!id) {
+                return res.status(400).json({
+                    success: false, error: 'Missing post ID',
+                    message: 'Post ID is required'
+                });
+            }
+
+            if (!userId) {
+                return res.status(401).json({
+                    success: false, error: 'Unauthorized',
+                    message: 'Please log in'
+                });
+            }
+
+            if (req.user?.role !== 'investor') {
+                return res.status(403).json({
+                    success: false, error: 'Forbidden',
+                    message: 'Only investor accounts can express interest'
+                });
+            }
+
+            const investor = { userId, name: req.user.name || null, email: req.user.email || null, expressedAt: new Date().toISOString() };
+
+            if (isDbConnected()) {
+                const post = await CommunityPost.findOne({ id });
+                if (!post) {
+                    return res.status(404).json({
+                        success: false, error: 'Post not found',
+                        message: `No community post found with ID: ${id}`
+                    });
+                }
+
+                if (post.interestedInvestors?.some(inv => inv.userId === userId)) {
+                    return res.status(409).json({
+                        success: false, error: 'Already interested',
+                        message: 'You have already expressed interest in this post'
+                    });
+                }
+
+                post.interestedInvestors.push(investor);
+                post.interestCount = post.interestedInvestors.length;
+                await post.save();
+
+                const updatedPost = post.toObject();
+
+                if (post.author?.id) {
+                    setImmediate(async () => {
+                        try {
+                            const authorUser = await User.findById(post.author.id);
+                            if (authorUser) {
+                                await notificationService.create(
+                                    post.author.id,
+                                    'investor_interest',
+                                    'Investor Interested in Your Idea!',
+                                    `${req.user.name || 'An investor'} is interested in "${post.idea?.ideaTitle || 'your idea'}".`,
+                                    { postId: post.id, investorName: req.user.name, url: '/community' }
+                                );
+
+                                await sendInvestorInterestNotification(
+                                    authorUser,
+                                    req.user.name,
+                                    post.idea?.ideaTitle,
+                                    post.id
+                                );
+                            }
+                        } catch (err) {
+                            console.warn('[Interest] Could not notify author:', err.message);
+                        }
+                    });
+                }
+
+                return res.status(200).json({
+                    success: true, data: normalizeVoteCounts(updatedPost)
+                });
+            }
+
+            const post = communityStorage.get(id);
+            if (!post) {
+                return res.status(404).json({
+                    success: false, error: 'Post not found',
+                    message: `No community post found with ID: ${id}`
+                });
+            }
+
+            if (!Array.isArray(post.interestedInvestors)) post.interestedInvestors = [];
+            if (post.interestedInvestors.some(inv => inv.userId === userId)) {
+                return res.status(409).json({
+                    success: false, error: 'Already interested',
+                    message: 'You have already expressed interest in this post'
+                });
+            }
+
+            post.interestedInvestors.push(investor);
+            post.interestCount = (post.interestCount || 0) + 1;
+
+            if (post.author?.id) {
+                setImmediate(async () => {
+                    try {
+                        const authorUser = await User.findById(post.author.id);
+                        if (authorUser) {
+                            await notificationService.create(
+                                post.author.id,
+                                'investor_interest',
+                                'Investor Interested in Your Idea!',
+                                `${req.user.name || 'An investor'} is interested in "${post.idea?.ideaTitle || 'your idea'}".`,
+                                { postId: post.id, investorName: req.user.name, url: '/community' }
+                            );
+
+                            await sendInvestorInterestNotification(
+                                authorUser,
+                                req.user.name,
+                                post.idea?.ideaTitle,
+                                post.id
+                            );
+                        }
+                    } catch (err) {
+                        console.warn('[Interest] Could not notify author:', err.message);
+                    }
+                });
+            }
+
+            return res.status(200).json({
+                success: true, data: normalizeVoteCounts(post)
+            });
+        } catch (error) {
+            console.error('Community express interest failed:', error);
+            return res.status(500).json({
+                success: false, error: 'Failed to register interest',
                 message: error.message
             });
         }
