@@ -1,11 +1,8 @@
 const User = require('../models/user');
 const { getVapidPublicKey } = require('../services/pushNotificationService');
+const notificationService = require('../services/notificationService');
 
 const notificationController = {
-  /**
-   * GET /api/notifications/vapid-public-key
-   * Returns the VAPID public key so the client can subscribe to push.
-   */
   async getVapidKey(req, res) {
     const key = getVapidPublicKey();
     if (!key) {
@@ -14,11 +11,6 @@ const notificationController = {
     return res.status(200).json({ success: true, publicKey: key });
   },
 
-  /**
-   * POST /api/notifications/subscribe
-   * Body: { endpoint, expirationTime, keys: { p256dh, auth } }
-   * Saves or updates the push subscription for the authenticated user.
-   */
   async subscribe(req, res) {
     try {
       if (!req.user) {
@@ -38,7 +30,6 @@ const notificationController = {
 
       if (!Array.isArray(user.pushSubscriptions)) user.pushSubscriptions = [];
 
-      // Replace an existing subscription with the same endpoint, or add new
       const existing = user.pushSubscriptions.findIndex(s => s.endpoint === endpoint);
       const newSub = { endpoint, expirationTime: expirationTime || null, keys: { p256dh: keys.p256dh, auth: keys.auth } };
 
@@ -57,11 +48,6 @@ const notificationController = {
     }
   },
 
-  /**
-   * DELETE /api/notifications/unsubscribe
-   * Body: { endpoint }
-   * Removes the push subscription for the given endpoint.
-   */
   async unsubscribe(req, res) {
     try {
       if (!req.user) {
@@ -85,6 +71,60 @@ const notificationController = {
     } catch (error) {
       console.error('[Notifications] Unsubscribe failed:', error);
       return res.status(500).json({ success: false, error: 'Failed to remove push subscription.', message: error.message });
+    }
+  },
+
+  async listNotifications(req, res) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+      }
+      const limit = parseInt(req.query.limit) || 50;
+      const notifications = await notificationService.list(req.user.id, limit);
+      return res.status(200).json({ success: true, data: notifications });
+    } catch (error) {
+      console.error('[Notifications] List failed:', error);
+      return res.status(500).json({ success: false, error: 'Failed to list notifications.', message: error.message });
+    }
+  },
+
+  async getUnreadCount(req, res) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+      }
+      const count = await notificationService.getUnreadCount(req.user.id);
+      return res.status(200).json({ success: true, count });
+    } catch (error) {
+      console.error('[Notifications] Unread count failed:', error);
+      return res.status(500).json({ success: false, error: 'Failed to get unread count.', message: error.message });
+    }
+  },
+
+  async markAsRead(req, res) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+      }
+      const { id } = req.params;
+      const result = await notificationService.markAsRead(id, req.user.id);
+      return res.status(200).json({ success: true, updated: result });
+    } catch (error) {
+      console.error('[Notifications] Mark as read failed:', error);
+      return res.status(500).json({ success: false, error: 'Failed to mark notification as read.', message: error.message });
+    }
+  },
+
+  async markAllAsRead(req, res) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+      }
+      const count = await notificationService.markAllAsRead(req.user.id);
+      return res.status(200).json({ success: true, updated: count });
+    } catch (error) {
+      console.error('[Notifications] Mark all as read failed:', error);
+      return res.status(500).json({ success: false, error: 'Failed to mark all as read.', message: error.message });
     }
   }
 };
