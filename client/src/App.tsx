@@ -28,6 +28,7 @@ import TermsOfService from './pages/TermsOfService';
 import CookiePolicy from './pages/CookiePolicy';
 import SharedResults from './pages/SharedResults';
 import ScoreTrends from './pages/ScoreTrends';
+import Notifications from './pages/Notifications';
 import './App.css';
 
 const isInvestorPath = (path: string) => path === '/investor' || path.startsWith('/investor/');
@@ -139,6 +140,14 @@ function App() {
                     <Route path="/privacy" element={<PrivacyPolicy />} />
                     <Route path="/terms" element={<TermsOfService />} />
                     <Route path="/cookies" element={<CookiePolicy />} />
+                    <Route
+                      path="/notifications"
+                      element={
+                        <ProtectedRoute>
+                          <Notifications />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route path="/share/:token" element={<SharedResults />} />
                     <Route
                       path="/score-trends"
