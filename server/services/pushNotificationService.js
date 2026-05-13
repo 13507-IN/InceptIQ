@@ -140,9 +140,46 @@ const sendActionNotification = async (userDoc, actionTitle, actionBody, targetUr
   }
 };
 
+const sendInvestorInterestNotification = async (userDoc, investorName, ideaTitle, postId) => {
+  if (!userDoc || !Array.isArray(userDoc.pushSubscriptions) || userDoc.pushSubscriptions.length === 0) return;
+
+  const payload = {
+    title: 'Investor Interested!',
+    body: `${investorName || 'An investor'} is interested in your idea "${ideaTitle || 'your idea'}".`,
+    icon: '/logo-main.png',
+    badge: '/logo-main.png',
+    type: 'investor_interest',
+    data: {
+      url: '/community',
+      postId,
+      tag: 'investor-interest'
+    }
+  };
+
+  const expiredEndpoints = [];
+  await Promise.all(
+    userDoc.pushSubscriptions.map(async (sub) => {
+      const result = await sendNotification(sub, payload);
+      if (result === 'expired') expiredEndpoints.push(sub.endpoint);
+    })
+  );
+
+  if (expiredEndpoints.length > 0) {
+    userDoc.pushSubscriptions = userDoc.pushSubscriptions.filter(
+      (sub) => !expiredEndpoints.includes(sub.endpoint)
+    );
+    try {
+      await userDoc.save();
+    } catch (err) {
+      console.warn('[PushNotifications] Could not clean up expired subscriptions:', err.message);
+    }
+  }
+};
+
 module.exports = {
   sendMatchNotification,
   notifyUser,
   sendActionNotification,
+  sendInvestorInterestNotification,
   getVapidPublicKey: () => VAPID_PUBLIC_KEY || ''
 };
