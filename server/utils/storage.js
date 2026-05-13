@@ -102,6 +102,10 @@ class CommunityStorage {
         post.downvotes = Math.max(post.downvotes ?? 0, post.votes.down.length);
         post.likes = Math.max(post.likes ?? 0, post.votes.like.length);
 
+        if (!Array.isArray(post.interestedInvestors)) post.interestedInvestors = [];
+        if (post.interestCount === undefined || post.interestCount === null) post.interestCount = 0;
+        post.interestCount = Math.max(post.interestCount ?? 0, post.interestedInvestors.length);
+
         return post;
     }
 
@@ -177,12 +181,52 @@ class UserStorage {
 
 const userStorage = new UserStorage();
 
+class NotificationStorage {
+    constructor() {
+        this.notifications = [];
+    }
+
+    add(notification) {
+        this.notifications.unshift(notification);
+        if (this.notifications.length > 1000) this.notifications = this.notifications.slice(0, 1000);
+        return notification;
+    }
+
+    list() {
+        return [...this.notifications];
+    }
+
+    markRead(notificationId, userId) {
+        const n = this.notifications.find(n => n.id === notificationId && n.userId === userId);
+        if (n) {
+            n.read = true;
+            return true;
+        }
+        return false;
+    }
+
+    markAllRead(userId) {
+        let count = 0;
+        for (const n of this.notifications) {
+            if (n.userId === userId && !n.read) {
+                n.read = true;
+                count++;
+            }
+        }
+        return count;
+    }
+}
+
+const notificationStorage = new NotificationStorage();
+
 module.exports = {
     analysisStorage,
     AnalysisStorage,
     communityStorage,
     CommunityStorage,
     userStorage,
-    UserStorage
+    UserStorage,
+    notificationStorage,
+    NotificationStorage
 };
 

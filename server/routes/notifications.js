@@ -3,13 +3,18 @@ const router = express.Router();
 const notificationController = require('../controllers/notificationController');
 const requireAuth = require('../middleware/requireAuth');
 
-// GET /api/notifications/vapid-public-key – get VAPID public key (no auth required)
 router.get('/vapid-public-key', notificationController.getVapidKey);
 
-// POST /api/notifications/subscribe – save push subscription (requires auth)
 router.post('/subscribe', requireAuth, notificationController.subscribe);
 
-// DELETE /api/notifications/unsubscribe – remove push subscription (requires auth)
 router.delete('/unsubscribe', requireAuth, notificationController.unsubscribe);
+
+router.get('/', requireAuth, notificationController.listNotifications);
+
+router.get('/unread-count', requireAuth, notificationController.getUnreadCount);
+
+router.put('/read-all', requireAuth, notificationController.markAllAsRead);
+
+router.put('/:id/read', requireAuth, notificationController.markAsRead);
 
 module.exports = router;
