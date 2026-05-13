@@ -22,27 +22,28 @@ self.addEventListener('push', (event) => {
     data = { title: 'InceptIQ', body: event.data ? event.data.text() : 'You have a new notification.' };
   }
 
-  const title = data.title || '🎉 New Founder Match!';
+  const title = data.title || 'InceptIQ Notification';
   const options = {
-    body: data.body || 'Someone on InceptIQ matched your idea!',
+    body: data.body || 'You have a new notification.',
     icon: data.icon || '/logo-main.png',
     badge: '/logo-main.png',
-    tag: 'founder-match',
+    tag: data.data?.tag || 'inceptiq-notification',
     renotify: true,
     requireInteraction: true,
-    data: data.data || { url: '/community' },
+    data: data.data || { url: '/notifications' },
     actions: [
-      { action: 'view', title: 'View Match' },
+      { action: 'view', title: 'View' },
       { action: 'dismiss', title: 'Dismiss' }
     ]
   };
 
+  const broadcastType = data.type === 'investor_interest' ? 'INTEREST_RECEIVED' : 'MATCH_RECEIVED';
+
   event.waitUntil(
     self.registration.showNotification(title, options).then(() => {
-      // Broadcast to any open InceptIQ tabs so the bell badge updates
       return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
         const channel = new BroadcastChannel(NOTIF_CHANNEL);
-        channel.postMessage({ type: 'MATCH_RECEIVED', payload: data });
+        channel.postMessage({ type: broadcastType, payload: data });
         channel.close();
       });
     })
