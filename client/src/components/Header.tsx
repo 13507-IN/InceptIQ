@@ -274,7 +274,7 @@ const notifTypeIcon = (type: string) => {
 const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) => {
   const { user, setAuth } = useContext<AuthContextValue>(AuthContext);
   const navigate = useNavigate();
-  const { unreadCount, clearUnread, requestSubscription, isSubscribed, fetchUnreadCount } = useNotifications();
+  const { unreadCount, clearUnread, requestSubscription, isSubscribed } = useNotifications();
   const [showDropdown, setShowDropdown] = useState(false);
   const [recentNotifs, setRecentNotifs] = useState<AppNotification[]>([]);
 
