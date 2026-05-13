@@ -3,9 +3,6 @@ import { apiService } from '../services/api';
 
 const VAPID_PUBLIC_KEY = process.env.REACT_APP_VAPID_PUBLIC_KEY;
 
-/**
- * Base64 url-to-uint8 format helper for VAPID keys.
- */
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -23,7 +20,16 @@ export function useNotifications() {
   });
   const [isSubscribed, setIsSubscribed] = useState(false);
 
-  // Checks and updates our subscription status silently on mount or when user changes
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const count = await apiService.getUnreadNotificationCount();
+      setUnreadCount(count);
+      localStorage.setItem('iv_notif_count', count.toString());
+    } catch {
+      // fall back to local count
+    }
+  }, []);
+
   const initPushSubscription = useCallback(async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     try {
@@ -31,7 +37,6 @@ export function useNotifications() {
       const existing = await registration.pushManager.getSubscription();
       if (existing) {
         setIsSubscribed(true);
-        // Resync backend state silently
         await apiService.subscribePushNotifications(existing).catch(console.warn);
       }
     } catch (err) {
@@ -87,33 +92,26 @@ export function useNotifications() {
     }
   };
 
-  const clearUnread = useCallback(() => {
-    localStorage.removeItem('iv_notif_count');
+  const clearUnread = useCallback(async () => {
+    await apiService.markAllNotificationsAsRead().catch(() => {});
     setUnreadCount(0);
+    localStorage.setItem('iv_notif_count', '0');
   }, []);
 
   useEffect(() => {
     initPushSubscription();
-  }, [initPushSubscription]);
+    fetchUnreadCount();
+  }, [initPushSubscription, fetchUnreadCount]);
 
   useEffect(() => {
-    // Listen to our Service Worker's broadcast channel for inbound push alerts
     if ('BroadcastChannel' in window) {
       const channel = new BroadcastChannel('inceptiq-notifications');
       channel.onmessage = (event) => {
-        if (event.data && event.data.type === 'MATCH_RECEIVED') {
-          // Increase badge count
-          setUnreadCount((prev) => {
-            const current = parseInt(localStorage.getItem('iv_notif_count') || '0', 10);
-            const active = prev > current ? prev : current;
-            const updated = active + 1;
-            localStorage.setItem('iv_notif_count', updated.toString());
-            return updated;
-          });
+        if (event.data && (event.data.type === 'MATCH_RECEIVED' || event.data.type === 'INTEREST_RECEIVED')) {
+          fetchUnreadCount();
 
-          // Track the specific post ID that matched so we can highlight it
           const postId = event.data.payload?.data?.postId;
-          if (postId) {
+          if (postId && event.data.type === 'MATCH_RECEIVED') {
             try {
               const matchedPosts = JSON.parse(localStorage.getItem('iv_matched_posts') || '[]');
               if (!matchedPosts.includes(postId)) {
@@ -126,24 +124,23 @@ export function useNotifications() {
           }
         }
       };
-      // Polling fallback to keep cross-tab in sync without event
       const interval = setInterval(() => {
-        const local = parseInt(localStorage.getItem('iv_notif_count') || '0', 10);
-        setUnreadCount((prev) => (local !== prev ? local : prev));
-      }, 5000);
+        fetchUnreadCount();
+      }, 15000);
 
       return () => {
         channel.close();
         clearInterval(interval);
       };
     }
-  }, []);
+  }, [fetchUnreadCount]);
 
   return {
     unreadCount,
     isSubscribed,
     requestSubscription,
     removeSubscription,
-    clearUnread
+    clearUnread,
+    fetchUnreadCount
   };
 }
