@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Loader2, AlertCircle, Sparkles, ThumbsUp, ThumbsDown, Heart, TrendingUp, Mail, Briefcase, Trash2 } from 'lucide-react';
+import { Users, Loader2, AlertCircle, Sparkles, ThumbsUp, ThumbsDown, Heart, TrendingUp, Mail, Briefcase, Trash2, Handshake } from 'lucide-react';
 import { apiService } from '../services/api';
 import { CommunityPost } from '../types';
 import { AuthContext } from '../contexts/AuthContext';
@@ -19,6 +19,7 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
   const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
   const [voting, setVoting] = useState<Record<string, boolean>>({});
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
+  const [interesting, setInteresting] = useState<Record<string, boolean>>({});
 
   const isProjects = variant === 'projects';
   const title = isProjects ? 'Projects' : 'Community Ideas';
@@ -221,6 +222,9 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
                 ? `mailto:${authorEmail}?subject=${encodeURIComponent(`Investor inquiry: ${post.idea.ideaTitle || 'Project'}`)}`
                 : '';
               const isMatched = matchedPostsMap[post.id];
+              const isInvestor = user?.role === 'investor';
+              const isAlreadyInterested = post.interestedInvestors?.some(inv => inv.userId === user?.id);
+              const isInteresting = interesting[post.id];
 
               return (
                 <motion.div
@@ -334,6 +338,40 @@ const Community: React.FC<CommunityProps> = ({ variant = 'community' }) => {
                       </span>
                     )}
                   </div>
+
+                  {isInvestor && (
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            setActionError(null);
+                            setInteresting(prev => ({ ...prev, [post.id]: true }));
+                            const updated = await apiService.expressInterest(post.id);
+                            setPosts(prev => prev.map(p =>
+                              p.id === post.id ? { ...p, ...updated } : p
+                            ));
+                          } catch (err: any) {
+                            setActionError(err.message || 'Failed to register interest.');
+                          } finally {
+                            setInteresting(prev => ({ ...prev, [post.id]: false }));
+                          }
+                        }}
+                        disabled={isAlreadyInterested || isInteresting}
+                        className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition ${
+                          isAlreadyInterested
+                            ? 'border border-emerald-500/60 bg-emerald-500/20 text-emerald-100'
+                            : 'border border-emerald-500/40 bg-emerald-500/10 text-emerald-100 hover:bg-emerald-500/20'
+                        }`}
+                      >
+                        <Handshake className="h-3.5 w-3.5" />
+                        {isAlreadyInterested ? 'Interested' : isInteresting ? 'Registering...' : 'Interested'}
+                        {post.interestCount != null && post.interestCount > 0 && (
+                          <span className="ml-1 text-emerald-300">({post.interestCount})</span>
+                        )}
+                      </button>
+                    </div>
+                  )}
 
                   {showContact && (
                     <div className="flex flex-wrap items-center gap-3 mb-3">
