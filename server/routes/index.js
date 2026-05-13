@@ -34,7 +34,7 @@ router.get('/', (req, res) => {
     res.json({
         name: 'AI Startup Validator API',
         version: '1.0.0',
-        description: 'API for analyzing startup ideas using Google Gemini AI',
+        description: 'API for analyzing startup ideas using AI (Grok + Gemini)',
         endpoints: {
             analysis: '/api/analyze',
             reports: '/api/reports',
