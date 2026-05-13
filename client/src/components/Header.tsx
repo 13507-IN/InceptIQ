@@ -1,8 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext, AuthContextValue } from '../contexts/AuthContext';
-import { Home, FileText, Menu, X, User, Users, BarChart2, Bell, Target } from 'lucide-react';
+import { Home, FileText, Menu, X, User, Users, BarChart2, Bell, Target, Handshake, Sparkles, Info } from 'lucide-react';
 import { useNotifications } from '../hooks/useNotifications';
+import { apiService } from '../services/api';
+import { AppNotification } from '../types';
 import { motion } from 'framer-motion';
 
 const Header: React.FC = () => {
@@ -261,18 +263,32 @@ const Header: React.FC = () => {
   );
 };
 
+const notifTypeIcon = (type: string) => {
+  switch (type) {
+    case 'investor_interest': return <Handshake className="h-3.5 w-3.5 text-emerald-400" />;
+    case 'founder_match': return <Sparkles className="h-3.5 w-3.5 text-indigo-400" />;
+    default: return <Info className="h-3.5 w-3.5 text-blue-400" />;
+  }
+};
+
 const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) => {
   const { user, setAuth } = useContext<AuthContextValue>(AuthContext);
   const navigate = useNavigate();
-  const { unreadCount, clearUnread, requestSubscription, isSubscribed } = useNotifications();
+  const { unreadCount, clearUnread, requestSubscription, isSubscribed, fetchUnreadCount } = useNotifications();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [recentNotifs, setRecentNotifs] = useState<AppNotification[]>([]);
 
-  React.useEffect(() => {
-    // Automatically request permission on login/entry
+  useEffect(() => {
     if (user && !isSubscribed) {
       requestSubscription().catch(() => {});
     }
   }, [user, isSubscribed, requestSubscription]);
+
+  useEffect(() => {
+    if (showDropdown && user) {
+      apiService.listNotifications(5).then(setRecentNotifs).catch(() => {});
+    }
+  }, [showDropdown, user]);
 
   const logout = () => {
     setAuth(null);
@@ -295,47 +311,69 @@ const AuthStatus: React.FC<{ isInvestorView: boolean }> = ({ isInvestorView }) =
           >
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-[#0a122a]"></span>
+              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-green-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center border-2 border-[#0a122a]">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
             )}
           </button>
           
-          {/* Notification Dropdown */}
           {showDropdown && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="absolute right-0 mt-2 w-72 bg-[#111b36] border border-sand-200/10 rounded-lg shadow-xl overflow-hidden z-50 text-left"
+              className="absolute right-0 mt-2 w-80 bg-[#111b36] border border-sand-200/10 rounded-lg shadow-xl overflow-hidden z-50 text-left"
             >
               <div className="p-3 border-b border-sand-200/10 flex justify-between items-center bg-[#0a122a]">
                 <h3 className="text-sm font-semibold text-sand-100">Notifications</h3>
-                {unreadCount > 0 && (
-                  <button 
-                    onClick={() => {
-                      clearUnread();
-                      setShowDropdown(false);
-                    }} 
-                    className="text-xs text-sage-400 hover:text-sage-300 transition-colors"
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <button 
+                      onClick={() => {
+                        clearUnread();
+                        setRecentNotifs(prev => prev.map(n => ({ ...n, read: true })));
+                      }} 
+                      className="text-xs text-sage-400 hover:text-sage-300 transition-colors"
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                  <Link
+                    to="/notifications"
+                    onClick={() => setShowDropdown(false)}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
                   >
-                    Mark as read
-                  </button>
-                )}
+                    View all
+                  </Link>
+                </div>
               </div>
-              <div className="p-2 max-h-64 overflow-y-auto">
-                {unreadCount > 0 ? (
-                  <div 
-                    onClick={() => {
-                      clearUnread();
-                      setShowDropdown(false);
-                      navigate('/community');
-                    }}
-                    className="p-3 bg-sage-500/10 hover:bg-sage-500/20 rounded cursor-pointer transition-colors border-l-2 border-sage-500"
-                  >
-                    <p className="text-sm text-sand-100">You have {unreadCount} new founder match{unreadCount > 1 ? 'es' : ''}!</p>
-                    <p className="text-xs text-sand-400 mt-1">Click to view in community.</p>
-                  </div>
+              <div className="max-h-80 overflow-y-auto">
+                {recentNotifs.length > 0 ? (
+                  recentNotifs.map(n => (
+                    <div
+                      key={n.id}
+                      onClick={() => {
+                        if (!n.read) {
+                          apiService.markNotificationAsRead(n.id).catch(() => {});
+                        }
+                        setShowDropdown(false);
+                        if (n.data?.url) navigate(n.data.url);
+                      }}
+                      className={`p-3 border-b border-sand-200/5 cursor-pointer transition-colors flex items-start gap-3 ${
+                        n.read ? 'hover:bg-gray-800/30' : 'bg-sage-500/5 hover:bg-sage-500/10 border-l-2 border-sage-500'
+                      }`}
+                    >
+                      <div className="mt-0.5">{notifTypeIcon(n.type)}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm ${n.read ? 'text-gray-400' : 'text-sand-100 font-medium'}`}>
+                          {n.title}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5 truncate">{n.body}</p>
+                      </div>
+                    </div>
+                  ))
                 ) : (
-                  <div className="p-4 text-center text-sm text-sand-400">
-                    No new notifications
+                  <div className="p-6 text-center text-sm text-sand-400">
+                    No notifications yet
                   </div>
                 )}
               </div>
@@ -405,14 +443,21 @@ interface MobileAuthStatusProps {
 const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, setMobileMenuOpen, isInvestorView }) => {
   const { user, setAuth } = useContext<AuthContextValue>(AuthContext);
   const navigate = useNavigate();
-  const { unreadCount, clearUnread, requestSubscription, isSubscribed } = useNotifications();
+  const { unreadCount, requestSubscription, isSubscribed } = useNotifications();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [recentNotifs, setRecentNotifs] = useState<AppNotification[]>([]);
 
   React.useEffect(() => {
     if (user && !isSubscribed) {
       requestSubscription().catch(() => {});
     }
   }, [user, isSubscribed, requestSubscription]);
+
+  React.useEffect(() => {
+    if (showDropdown && user) {
+      apiService.listNotifications(5).then(setRecentNotifs).catch(() => {});
+    }
+  }, [showDropdown, user]);
 
   const logout = () => {
     setAuth(null);
@@ -433,30 +478,48 @@ const MobileAuthStatus: React.FC<MobileAuthStatusProps> = ({ mobileMenuOpen, set
             >
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-[#0a122a]"></span>
+                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-green-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center border-2 border-[#0a122a]">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               )}
             </button>
           </div>
           
-          {/* Mobile Notification Dropdown embedded */}
           {showDropdown && (
             <div className="bg-[#0a122a]/50 rounded border border-sand-200/10 p-2 mt-2">
               <div className="flex justify-between items-center mb-2 px-1">
                 <span className="text-xs font-semibold text-sand-300">Notifications</span>
-              </div>
-              {unreadCount > 0 ? (
-                <div 
-                  onClick={() => {
-                    clearUnread();
-                    setMobileMenuOpen(false);
-                    navigate('/community');
-                  }}
-                  className="p-3 bg-sage-500/10 rounded border-l-2 border-sage-500 cursor-pointer"
+                <Link
+                  to="/notifications"
+                  onClick={() => { setShowDropdown(false); setMobileMenuOpen(false); }}
+                  className="text-xs text-indigo-400 hover:text-indigo-300"
                 >
-                  <p className="text-sm text-sand-100">You have {unreadCount} new match{unreadCount > 1 ? 'es' : ''}!</p>
-                </div>
+                  View all
+                </Link>
+              </div>
+              {recentNotifs.length > 0 ? (
+                recentNotifs.map(n => (
+                  <div
+                    key={n.id}
+                    onClick={() => {
+                      if (!n.read) apiService.markNotificationAsRead(n.id).catch(() => {});
+                      setShowDropdown(false);
+                      setMobileMenuOpen(false);
+                      if (n.data?.url) navigate(n.data.url);
+                    }}
+                    className={`p-2 rounded border-b border-sand-200/5 cursor-pointer flex items-start gap-2 ${
+                      n.read ? 'hover:bg-gray-800/30' : 'bg-sage-500/5 border-l-2 border-sage-500'
+                    }`}
+                  >
+                    <div className="mt-0.5">{notifTypeIcon(n.type)}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs ${n.read ? 'text-gray-400' : 'text-sand-100 font-medium'}`}>{n.title}</p>
+                      <p className="text-[11px] text-gray-500 truncate">{n.body}</p>
+                    </div>
+                  </div>
+                ))
               ) : (
-                <p className="text-xs text-sand-400 text-center py-2">No new notifications</p>
+                <p className="text-xs text-sand-400 text-center py-2">No notifications yet</p>
               )}
             </div>
           )}

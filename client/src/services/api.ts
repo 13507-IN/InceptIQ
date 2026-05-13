@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { StartupIdea, AnalysisResponse, CommunityPost, CommunityIdea, Investor, InvestorMatch, InvestorMatchRequest, FounderMatch, FounderMatchRequest } from '../types';
+import { StartupIdea, AnalysisResponse, CommunityPost, CommunityIdea, Investor, InvestorMatch, InvestorMatchRequest, FounderMatch, FounderMatchRequest, AppNotification } from '../types';
 
 // Base API configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -456,6 +456,65 @@ class ApiService {
         throw new Error(error.response.data.message);
       }
       throw new Error('Failed to register vote.');
+    }
+  }
+
+  // Community: express interest as an investor
+  async expressInterest(postId: string): Promise<CommunityPost> {
+    try {
+      const response = await api.post(`/community/${postId}/interest`);
+      return response.data?.data;
+    } catch (error: any) {
+      console.error('Failed to express interest:', error);
+      if (error.response?.status === 401) throw new Error('Please log in.');
+      if (error.response?.status === 403) throw new Error('Only investors can express interest.');
+      if (error.response?.status === 409) throw new Error('You already expressed interest.');
+      throw new Error(error.response?.data?.message || 'Failed to express interest.');
+    }
+  }
+
+  // Notifications: list in-app notifications
+  async listNotifications(limit?: number): Promise<AppNotification[]> {
+    try {
+      const params = limit ? `?limit=${limit}` : '';
+      const response = await api.get(`/notifications${params}`);
+      return response.data?.data || [];
+    } catch (error: any) {
+      console.error('Failed to list notifications:', error);
+      throw new Error('Failed to load notifications.');
+    }
+  }
+
+  // Notifications: get unread count
+  async getUnreadNotificationCount(): Promise<number> {
+    try {
+      const response = await api.get('/notifications/unread-count');
+      return response.data?.count || 0;
+    } catch (error: any) {
+      console.error('Failed to get unread count:', error);
+      return 0;
+    }
+  }
+
+  // Notifications: mark as read
+  async markNotificationAsRead(notificationId: string): Promise<boolean> {
+    try {
+      const response = await api.put(`/notifications/${notificationId}/read`);
+      return response.data?.updated || false;
+    } catch (error: any) {
+      console.error('Failed to mark notification as read:', error);
+      return false;
+    }
+  }
+
+  // Notifications: mark all as read
+  async markAllNotificationsAsRead(): Promise<number> {
+    try {
+      const response = await api.put('/notifications/read-all');
+      return response.data?.updated || 0;
+    } catch (error: any) {
+      console.error('Failed to mark all as read:', error);
+      return 0;
     }
   }
 

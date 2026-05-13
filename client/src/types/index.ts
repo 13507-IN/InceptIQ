@@ -139,6 +139,18 @@ export interface CollaborationInfo {
   sharedAt?: string | null;
 }
 
+// Notification types
+export interface AppNotification {
+  id: string;
+  userId: string;
+  type: 'investor_interest' | 'founder_match' | 'competitor_alert' | 'system';
+  title: string;
+  body: string;
+  data: Record<string, any>;
+  read: boolean;
+  createdAt: string;
+}
+
 // Community types
 export interface CommunityIdea {
   ideaTitle: string;
@@ -166,6 +178,8 @@ export interface CommunityPost {
   upvotes?: number;
   downvotes?: number;
   likes?: number;
+  interestedInvestors?: Array<{ userId: string; name?: string; email?: string; expressedAt: string }>;
+  interestCount?: number;
 }
 
 // Founder matching types
