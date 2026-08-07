@@ -656,6 +656,15 @@ class ApiService {
       throw new Error(error.response?.data?.error || 'Failed to generate report.');
     }
   }
+
+  async runVentureFollowUp(analysisId: string, stage: string, progressNotes?: string) {
+    try {
+      const response = await api.post(`/analyze/${analysisId}/followup`, { stage, progressNotes });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to generate venture follow-up report.');
+    }
+  }
 }
 
 // Export singleton instance
