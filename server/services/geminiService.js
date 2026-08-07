@@ -114,7 +114,8 @@ Please provide your analysis in the following JSON structure:
   "uniquenessScore": [0-100 numeric score],
   "marketViabilityScore": [0-100 numeric score],
   "competitionScore": [0-100 numeric score where higher is better/less competition],
-  "overallScore": [0-100 average of all scores],
+  "moatScore": [0-100 numeric score rating defensibility and barriers to entry],
+  "overallScore": [0-100 weighted average score],
   "analysis": {
     "uniqueness": {
       "score": [0-100],
@@ -125,7 +126,7 @@ Please provide your analysis in the following JSON structure:
     "marketViability": {
       "score": [0-100],
       "summary": "Market potential assessment",
-      "marketSize": "Estimated market size and growth potential",
+      "marketSize": "Estimated market size (TAM/SAM/SOM breakdown)",
       "targetAudience": "Key customer segments",
       "trends": ["relevant market trend 1", "trend 2"]
     },
@@ -160,6 +161,18 @@ Please provide your analysis in the following JSON structure:
       "timeline": "suggested timeframe"
     }
   ],
+  "financials": {
+    "tam": "Total Addressable Market in USD (e.g. $12B)",
+    "sam": "Serviceable Addressable Market in USD (e.g. $1.8B)",
+    "som": "Serviceable Obtainable Market in USD (e.g. $150M)",
+    "ltvCacRatio": "Target LTV:CAC ratio (e.g. 3.5:1)",
+    "estimatedMargin": "Projected gross margin percentage (e.g. 75%)"
+  },
+  "goToMarket": {
+    "primaryChannel": "Main customer acquisition channel",
+    "strategySummary": "Actionable 90-day launch playbook",
+    "targetCAC": "Estimated Cost per Acquisition"
+  },
   "keyMetrics": {
     "fundingRequired": "estimated funding needed",
     "timeToMarket": "estimated time to launch",
@@ -628,6 +641,47 @@ Provide a JSON object with:
         } catch (error) {
             console.error('Industry benchmark generation failed:', error);
             throw new Error(`Failed to generate industry benchmark: ${error.message}`);
+        }
+    }
+
+    async generateVentureFollowUp(ideaData, stage = 'mvp', progressNotes = '') {
+        const title = ideaData?.ideaTitle || 'Startup';
+        const desc = ideaData?.ideaDescription || 'Not specified';
+        const industry = ideaData?.industry || 'Technology';
+
+        const prompt = `You are a Y Combinator startup partner and growth advisor. A founder who previously validated their startup idea on our platform is returning after working on it. Provide stage-specific follow-up strategic advice, launch tactics, and an investor update draft in JSON format.
+
+Startup Details:
+- Title: ${title}
+- Description: ${desc}
+- Industry: ${industry}
+- Current Venture Stage: ${stage.toUpperCase()} (options: MVP, PRELAUNCH, LAUNCH, GROWTH)
+- Founder Progress Notes: ${progressNotes || 'Building & preparing for launch'}
+
+Respond ONLY with a JSON object containing:
+{
+  "stage": "${stage}",
+  "stageTitle": "A catchy executive title for this stage milestone",
+  "milestoneSummary": "Summary of current position and launch readiness assessment",
+  "priorities": ["top 3 priority focus areas for this milestone"],
+  "betaAcquisitionTactics": ["3 actionable customer acquisition tactics tailored to this stage"],
+  "launchChecklist": [
+    { "task": "Specific task name", "category": "Product/Marketing/Operations", "timeframe": "Next 7-14 Days" },
+    { "task": "Specific task name", "category": "Product/Marketing/Operations", "timeframe": "Next 14-30 Days" }
+  ],
+  "investorUpdateDraft": "Ready-to-send investor email draft with Subject, Key Highlights, Metrics, and Ask"
+}`;
+
+        try {
+            console.log(`Generating venture follow-up for ${title} at stage ${stage} via Gemini...`);
+            const result = await this.model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text().trim();
+            const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(cleaned);
+        } catch (error) {
+            console.error('Venture follow-up generation failed:', error);
+            throw new Error(`Failed to generate venture follow-up: ${error.message}`);
         }
     }
 }
