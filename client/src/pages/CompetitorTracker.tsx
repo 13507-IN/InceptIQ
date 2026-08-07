@@ -18,6 +18,8 @@ const CompetitorTracker: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newComp, setNewComp] = useState({ name: '', website: '', notes: '' });
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
+  const [threatFilter, setThreatFilter] = useState<'ALL' | 'HIGH' | 'MEDIUM' | 'LOW'>('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchCompetitors = async () => {
     try {
@@ -34,6 +36,14 @@ const CompetitorTracker: React.FC = () => {
   useEffect(() => {
     fetchCompetitors();
   }, []);
+
+  const filteredCompetitors = competitors.filter(comp => {
+    const matchesThreat = threatFilter === 'ALL' || (comp.lastReport?.threatLevel?.toUpperCase() === threatFilter);
+    const matchesSearch = !searchTerm || comp.name.toLowerCase().includes(searchTerm.toLowerCase()) || comp.notes?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesThreat && matchesSearch;
+  });
+
+  const highThreatCount = competitors.filter(c => c.lastReport?.threatLevel?.toUpperCase() === 'HIGH').length;
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,12 +92,12 @@ const CompetitorTracker: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0a122a] font-sans pb-12">
       <main className="container mx-auto px-4 max-w-5xl mt-12">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-sage-300 to-sand-300 bg-clip-text text-transparent mb-2">
-              Competitor Tracker
+              Competitor Intelligence Tracker
             </h1>
-            <p className="text-sand-400 text-lg">Monitor rivals and generate AI intelligence reports.</p>
+            <p className="text-sand-400 text-lg">Monitor rivals, analyze weaknesses, and refine your market moat.</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
@@ -95,6 +105,60 @@ const CompetitorTracker: React.FC = () => {
           >
             <Plus className="h-5 w-5" /> Add Competitor
           </button>
+        </div>
+
+        {/* Intelligence Summary Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-[#111b36] border border-stone-800 rounded-2xl p-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-stone-400 uppercase tracking-wider font-medium">Tracked Rivals</p>
+              <p className="text-2xl font-bold text-sand-100 mt-1">{competitors.length}</p>
+            </div>
+            <Target className="h-8 w-8 text-sage-400 opacity-80" />
+          </div>
+
+          <div className="bg-[#111b36] border border-stone-800 rounded-2xl p-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-stone-400 uppercase tracking-wider font-medium">High Threat Alerts</p>
+              <p className="text-2xl font-bold text-rose-400 mt-1">{highThreatCount}</p>
+            </div>
+            <AlertTriangle className="h-8 w-8 text-rose-400 opacity-80" />
+          </div>
+
+          <div className="bg-[#111b36] border border-stone-800 rounded-2xl p-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-stone-400 uppercase tracking-wider font-medium">Moat Coverage</p>
+              <p className="text-2xl font-bold text-emerald-400 mt-1">{competitors.length > 0 ? 'Active' : 'N/A'}</p>
+            </div>
+            <Shield className="h-8 w-8 text-emerald-400 opacity-80" />
+          </div>
+        </div>
+
+        {/* Filter and Search Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 bg-[#111b36] p-4 rounded-2xl border border-stone-800">
+          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+            {(['ALL', 'HIGH', 'MEDIUM', 'LOW'] as const).map(level => (
+              <button
+                key={level}
+                onClick={() => setThreatFilter(level)}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  threatFilter === level
+                    ? 'bg-sage-500 text-ink-900 shadow-md shadow-sage-500/20'
+                    : 'bg-stone-800/80 text-sand-400 hover:text-sand-200'
+                }`}
+              >
+                {level === 'ALL' ? 'All Threats' : `${level} Threat`}
+              </button>
+            ))}
+          </div>
+
+          <input
+            type="text"
+            placeholder="Search competitors..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full sm:w-64 bg-[#0a122a] border border-stone-700 text-sand-100 placeholder-stone-500 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-sage-500"
+          />
         </div>
 
         {loading ? (
@@ -113,7 +177,7 @@ const CompetitorTracker: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {competitors.map(comp => {
+            {filteredCompetitors.map(comp => {
               const rep = comp.lastReport;
               return (
                 <motion.div 

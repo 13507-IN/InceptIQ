@@ -301,17 +301,64 @@ const FounderDashboard: React.FC = () => {
                         })()}
                       </div>
                     </div>
-                    <Link
-                      to={`/results/${analysis.id}`}
-                      className="flex-shrink-0 px-4 py-2 bg-sage-500/20 hover:bg-sage-500/40 text-sage-300 rounded-lg transition-colors whitespace-nowrap"
-                    >
-                      View
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reports/download/${analysis.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3 py-2 bg-stone-800 hover:bg-stone-700 text-sand-200 border border-stone-700 rounded-lg transition-colors text-xs font-medium flex items-center gap-1.5"
+                        title="Download Executive PDF Report"
+                      >
+                        <FileText className="h-3.5 w-3.5 text-sage-400" />
+                        PDF
+                      </a>
+                      <Link
+                        to={`/results/${analysis.id}`}
+                        className="px-4 py-2 bg-sage-500/20 hover:bg-sage-500/40 text-sage-300 rounded-lg transition-colors whitespace-nowrap text-sm"
+                      >
+                        View
+                      </Link>
+                    </div>
                   </div>
                 </motion.div>
               ))}
             </motion.div>
           )}
+
+          {/* 7-Day Execution Roadmap Section */}
+          <motion.div variants={itemVariants} className="mt-12 bg-[#111b36] border border-stone-800 rounded-2xl p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-sand-100 flex items-center gap-2">
+                  <Target className="h-5 w-5 text-sage-400" />
+                  7-Day Founder Execution Checklist
+                </h3>
+                <p className="text-sm text-sand-400 mt-1">Recommended action items derived from your latest validation scores.</p>
+              </div>
+              <span className="text-xs bg-sage-500/10 text-sage-400 border border-sage-500/30 px-3 py-1 rounded-full font-medium">
+                Active Wedge
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { day: 'Day 1-2', task: 'Validate Problem Hypothesis', desc: 'Conduct 5 customer discovery interviews with your target segment.' },
+                { day: 'Day 3', task: 'Analyze Top 3 Competitors', desc: 'Log competitor feature gaps in the Competitor Intelligence Tracker.' },
+                { day: 'Day 4-5', task: 'Draft Landing Page MVP', desc: 'Define key value proposition headline & early waitlist sign-up CTA.' },
+                { day: 'Day 6-7', task: 'Review Unit Economics & PDF', desc: 'Export executive PDF report and calculate estimated CAC/LTV targets.' }
+              ].map((item, idx) => (
+                <div key={idx} className="bg-[#0a122a] border border-stone-800 rounded-xl p-4 flex items-start gap-3">
+                  <span className="text-xs font-bold px-2 py-1 bg-sage-500/20 text-sage-300 rounded whitespace-nowrap mt-0.5">
+                    {item.day}
+                  </span>
+                  <div>
+                    <h4 className="text-sm font-semibold text-sand-100">{item.task}</h4>
+                    <p className="text-xs text-sand-400 mt-1">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
 
           {analyses.length > 0 && (stats.totalAnalyses > 3) && (
             <motion.div
