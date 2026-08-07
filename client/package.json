@@ -20,7 +20,7 @@
     "pdfjs-dist": "^4.0.379",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.9.3",
+    "react-router-dom": "^7.18.0",
     "react-scripts": "5.0.1",
     "recharts": "^3.2.1",
     "tailwind-merge": "^3.3.1",
@@ -67,6 +67,21 @@
     "@babel/plugin-proposal-class-properties": "npm:@babel/plugin-transform-class-properties@^7.23.4",
     "@babel/plugin-proposal-private-property-in-object": "npm:@babel/plugin-transform-private-property-in-object@^7.23.4",
     "sourcemap-codec": "npm:@jridgewell/sourcemap-codec@^1.5.0",
-    "svgo": "^3.3.2"
+    "svgo": "^3.3.2",
+    "websocket-driver": "^0.7.5",
+    "shell-quote": "^1.8.5",
+    "ws": "^8.21.0",
+    "nth-check": "^2.1.1",
+    "braces": "^3.0.3",
+    "micromatch": "^4.0.8",
+    "semver": "^7.6.3",
+    "cookie": "^0.7.2",
+    "send": "^0.19.0",
+    "express": "^4.20.0",
+    "body-parser": "^1.20.3",
+    "serialize-javascript": "^6.0.2",
+    "lodash": "^4.17.25",
+    "launch-editor": "^2.15.0",
+    "js-yaml": "^4.1.1"
   }
 }
