@@ -408,46 +408,47 @@ if (!reportAnalysis.uniqueness?.summary) {
 
         // Overall Score Box
         const scoreBoxY = doc.y;
-        doc.rect(50, scoreBoxY, 495, 80)
-           .fillAndStroke('#f3f4f6', '#d1d5db');
+        doc.rect(50, scoreBoxY, 495, 85)
+           .fillAndStroke('#f8fafc', '#cbd5e1');
 
-        doc.fontSize(14)
-           .fillColor('#374151')
-           .text('Overall Viability Score', 70, scoreBoxY + 15);
+        doc.fontSize(12)
+           .fillColor('#475569')
+           .text('Overall Viability Score', 70, scoreBoxY + 14);
 
         const overallDisplay = (analysis.overallScore === undefined || analysis.overallScore === null || analysis.overallScore === '')
             ? 'N/A'
             : `${analysis.overallScore}/100`;
 
-        doc.fontSize(32)
+        doc.fontSize(30)
            .fillColor('#059669')
-           .text(overallDisplay, 70, scoreBoxY + 35);
+           .text(overallDisplay, 70, scoreBoxY + 34);
 
         // Score breakdown
         const scores = [
             { label: 'Uniqueness', value: analysis.uniquenessScore },
             { label: 'Market Viability', value: analysis.marketViabilityScore },
-            { label: 'Competition', value: analysis.competitionScore }
+            { label: 'Competition', value: analysis.competitionScore },
+            { label: 'Moat Defensibility', value: analysis.moatScore ?? root.moatScore ?? 'N/A' }
         ];
 
-        let xPos = 250;
+        let xPos = 210;
         scores.forEach(score => {
-            doc.fontSize(10)
-               .fillColor('#6b7280')
-               .text(score.label, xPos, scoreBoxY + 15);
+            doc.fontSize(9)
+               .fillColor('#64748b')
+               .text(score.label, xPos, scoreBoxY + 16, { width: 75, align: 'center' });
             
             const scoreDisplay = (score.value === undefined || score.value === null || score.value === '')
                 ? 'N/A'
                 : `${score.value}`;
 
-            doc.fontSize(18)
-               .fillColor('#374151')
-               .text(scoreDisplay, xPos, scoreBoxY + 30);
+            doc.fontSize(16)
+               .fillColor('#1e293b')
+               .text(scoreDisplay, xPos, scoreBoxY + 34, { width: 75, align: 'center' });
 
-            xPos += 80;
+            xPos += 75;
         });
 
-        doc.y = scoreBoxY + 100;
+        doc.y = scoreBoxY + 105;
     }
 
     addDetailedAnalysis(doc, analysis) {

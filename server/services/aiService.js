@@ -38,6 +38,10 @@ class AIService {
     async generateIndustryBenchmark(industry, overallScore, ideaTitle) {
         return this._tryGrok('generateIndustryBenchmark', industry, overallScore, ideaTitle);
     }
+
+    async generateVentureFollowUp(ideaData, stage, progressNotes) {
+        return this._tryGrok('generateVentureFollowUp', ideaData, stage, progressNotes);
+    }
 }
 
 module.exports = new AIService();

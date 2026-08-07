@@ -228,7 +228,7 @@ const FounderDashboard: React.FC = () => {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-sage-300 to-sand-200 bg-clip-text text-transparent mb-2">
               Founder Execution & Launch Hub
             </h1>
-            <p className="text-sand-400 text-base">Track active ventures, turn AI analysis into execution, and run stage follow-ups.</p>
+            <p className="text-sand-400 text-base">Welcome back, {user?.email || 'Founder'}! Track active ventures, turn AI analysis into execution, and run stage follow-ups.</p>
           </div>
           <Link
             to="/founder/analysis"

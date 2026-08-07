@@ -408,6 +408,40 @@ const analysisController = {
                 message: error.message
             });
         }
+    },
+
+    // POST /api/analyze/:id/followup
+    // Generate stage-specific launch playbook, beta customer tactics, and investor update draft
+    async generateVentureFollowUp(req, res) {
+        try {
+            const { id } = req.params;
+            const { stage, progressNotes } = req.body;
+
+            let analysisObj = analysisStorage.get(id);
+            if (!analysisObj && req.user && req.user.id) {
+                const user = await User.findById(req.user.id).lean();
+                if (user && user.requests) {
+                    const reqObj = user.requests.find(r => r.id === id);
+                    if (reqObj) analysisObj = reqObj.analysis;
+                }
+            }
+
+            const ideaData = analysisObj?.input || { ideaTitle: 'Startup Idea' };
+            const followUpData = await aiService.generateVentureFollowUp(ideaData, stage || 'mvp', progressNotes || '');
+
+            res.status(200).json({
+                success: true,
+                data: followUpData,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('Venture follow-up failed:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to generate venture follow-up',
+                message: error.message
+            });
+        }
     }
 };
 

@@ -16,6 +16,9 @@ router.post('/extract-pdf-fields', requireAuth, analysisController.extractFormFi
 // Must be before /:id wildcard.
 router.post('/stream', requireAuth, validateAnalysisRequest, analysisController.analyzeIdeaStream);
 
+// POST /api/analyze/:id/followup - Generate venture stage follow-up playbook & investor update
+router.post('/:id/followup', requireAuth, analysisController.generateVentureFollowUp);
+
 // DELETE /api/analyze/:id - Delete analysis from user's profile
 router.delete('/:id', requireAuth, analysisController.deleteAnalysis);
 
