@@ -492,6 +492,12 @@ const FounderDashboard: React.FC = () => {
             </span>
           </div>
 
+          {error && (
+            <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-300 text-xs">
+              {error}
+            </div>
+          )}
+
           {loading ? (
             <div className="text-center py-12">
               <div className="inline-block">
